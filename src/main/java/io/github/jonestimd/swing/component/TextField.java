@@ -34,6 +34,10 @@ import io.github.jonestimd.swing.validation.RequiredValidator;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.Validator;
 
+/**
+ * Factory for initializing a {@link JTextField}.
+ * @param <T> the class of the text field
+ */
 public class TextField<T extends JTextField> {
     private final T textField;
 
@@ -41,32 +45,60 @@ public class TextField<T extends JTextField> {
         this.textField = textField;
     }
 
+    /**
+     * Set the text field to read only.
+     * @return this {@code TextField} for further configuration
+     */
     public TextField<T> readOnly() {
         textField.setEditable(false);
         return this;
     }
 
+    /**
+     * Set the text field to be right aligned.
+     * @return this {@code TextField} for further configuration
+     */
     public TextField<T> rightAligned() {
         textField.setHorizontalAlignment(JTextField.RIGHT);
         return this;
     }
 
+    /**
+     * @return the configured text field
+     */
     public T get() {
         return textField;
     }
 
+    /**
+     * Create a {@link JFormattedTextField} using the specified format.
+     * @return a {@code TextField} for further configuration
+     */
     public static TextField<JFormattedTextField> formatted(Format format) {
         return new TextField<>(new JFormattedTextField(format));
     }
 
+    /**
+     * Create a {@link JTextField} with the default configuration.
+     * @return a {@code TextField} for further configuration
+     */
     public static TextField<JTextField> plain() {
         return new TextField<>(new JTextField());
     }
 
+    /**
+     * Create a factory for initializing a validated text field.
+     * @param bundle the resource bundle for validation messages
+     * @param resourcePrefix the resource key prefix for validation messages
+     * @return an instance of {@link Validated} for further configuration.
+     */
     public static Validated validated(ResourceBundle bundle, String resourcePrefix) {
         return new Validated(bundle, resourcePrefix);
     }
 
+    /**
+     * Factory class for creating a {@link ValidatedTextField}.
+     */
     public static class Validated {
         private final ResourceBundle bundle;
         private final String resourcePrefix;
@@ -77,26 +109,57 @@ public class TextField<T extends JTextField> {
             this.resourcePrefix = resourcePrefix;
         }
 
+        /**
+         * Add a {@link RequiredValidator}.
+         * @param message the resource key suffix for the validation error message
+         * @return this {@code Validated} factory for further configuration
+         */
         public Validated required(String message) {
             validators.add(new RequiredValidator(bundle.getString(resourcePrefix + message)));
             return this;
         }
 
+        /**
+         * Add a {@link NumberValidator}.
+         * @param message the resource key suffix for the validation error message
+         * @return this {@code Validated} factory for further configuration
+         */
         public Validated numeric(String message) {
             validators.add(new NumberValidator(bundle.getString(resourcePrefix + message)));
             return this;
         }
 
+        /**
+         * Add a {@link PositiveNumberValidator}.
+         * @param message the resource key suffix for the validation error message
+         * @return this {@code Validated} factory for further configuration
+         */
         public Validated positiveNumber(String message) {
             validators.add(new PositiveNumberValidator(bundle.getString(resourcePrefix + message)));
             return this;
         }
 
+        /**
+         * Add the specified validator to the text field.
+         * @return this {@code Validated} factory for further configuration
+         */
+        public Validated add(Validator<String> validator) {
+            validators.add(validator);
+            return this;
+        }
+
+        /**
+         * Create and configure the {@link ValidatedTextField}.
+         */
         public ValidatedTextField get() {
             Validator<String> validator = validators.size() == 1 ? validators.get(0) : new CompositeValidator<>(validators);
             return new ValidatedTextField(validator);
         }
 
+        /**
+         * Create and initialize the {@link ValidatedTextField}.
+         * @return an instance of {@link TextField} for further configuration
+         */
         public TextField<ValidatedTextField> configure() {
             return new TextField<>(get());
         }
