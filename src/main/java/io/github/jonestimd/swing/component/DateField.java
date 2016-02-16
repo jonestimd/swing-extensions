@@ -35,13 +35,31 @@ import javax.swing.text.DateFormatter;
 
 import io.github.jonestimd.swing.ComponentTreeUtils;
 
+/**
+ * A formatted text field for selecting a date. The date can be typed or selected from a calendar popup menu.  The
+ * popup menu is activated by clicking on a {@link CalendarButtonBorder}.
+ * <h3>Keyboard</h3>
+ * The default keyboard behavior is the same as for a {@link JFormattedTextField} with the following exceptions:
+ * <ul>
+ *     <li>the focus-lost behavior defaults to {@link JFormattedTextField#COMMIT_OR_REVERT}</li>
+ *     <li>{@code ESC} does not reset the field value</li>
+ *     <li>typing the sub-field separator character selects the next date sub-field</li>
+ *     <li>the {@code up} and {@code down} keys can be used to increment/decrement the current sub-field</li>
+ * </ul>
+ * @see DateFormatter
+ * @see SimpleDateFormat
+ */
 public class DateField extends JFormattedTextField {
     private static final int FORMATTED_LENGTH = 10;
-    private static final String SEPARATOR_STRING = "/";
-    private static final char SEPARATOR = SEPARATOR_STRING.charAt(0);
-    private static final String FIELD_PATTERN = "([0-9]+/?)*";
+    public static final String SEPARATOR_STRING = "/";
+    public static final char SEPARATOR = SEPARATOR_STRING.charAt(0);
+    public static final String FIELD_PATTERN = "([0-9]+/?)*";
     private CalendarButtonBorder calendarButtonBorder;
 
+    /**
+     * Construct a new {@code DateField} using a {@link SimpleDateFormat} to parse the input.
+     * @param dateFormat the date format pattern used to create the {@link SimpleDateFormat}
+     */
     public DateField(String dateFormat) {
         super(new DateFormatter(new SimpleDateFormat(dateFormat)));
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "disable-reset-field-edit");
@@ -51,16 +69,30 @@ public class DateField extends JFormattedTextField {
         setValue(new Date());
     }
 
+    /**
+     * Overridden to combine {@code border} with a {@link CalendarButtonBorder}.  If {@code border} is {@code null} then
+     * the {@link CalendarButtonBorder} is used alone.
+     * @param border the border to use as the outer component of a {@link CompoundBorder}
+     */
+    @Override
     public void setBorder(Border border) {
         super.setBorder(border == null ? calendarButtonBorder : new CompoundBorder(border, calendarButtonBorder));
     }
 
+    /**
+     * Overridden to select the first date sub-field after updating the selected date.
+     * @param value the selected date
+     */
     @Override
     public void setValue(Object value) {
         super.setValue(value);
         selectField(0);
     }
 
+    /**
+     * Overridden to cast the value to a {@link Date}.
+     * @return the currently selected date.
+     */
     @Override
     public Date getValue() {
         return (Date) super.getValue();
@@ -86,6 +118,10 @@ public class DateField extends JFormattedTextField {
         }
     }
 
+    /**
+     * Overridden to ignore invalid input.  The {@code content} must match the {@link #FIELD_PATTERN} regular expression.
+     * @param content the replacement for the selected content
+     */
     @Override
     public void replaceSelection(String content) {
         if (content.matches(FIELD_PATTERN)) {
@@ -188,7 +224,7 @@ public class DateField extends JFormattedTextField {
     }
 
     /**
-     * Override to select a field when the focus is gained.  If the opposite component is not an ancestor then the
+     * Overridden to select a field when the focus is gained.  If the opposite component is not an ancestor then the
      * field containing the caret position is selected.  If the opposite component is an ancestor and the caret
      * position is not in the first field then the current field is selected (special case for a table
      * cell editor and the edit was started by typing {@code '/'}).
