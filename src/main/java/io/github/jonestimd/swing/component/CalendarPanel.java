@@ -54,12 +54,18 @@ import javax.swing.table.TableCellRenderer;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
 
+/**
+ * A panel that displays a calendar for selecting a date.  The calendar shows a single month and indicates the current
+ * date and the currently selected date.  The panel also includes controls for selecting the month and year to display
+ * in the calendar.  Property change events are fired when the selected date changes.
+ */
 public class CalendarPanel extends Box {
     private static final String SELECTION_COMPLETE = "selectionComplete";
     private static final String CANCEL_SELECTION = "cancelSelection";
     private static final String NEXT_MONTH = "navigateToNextMonth";
     private static final String PREVIOUS_MONTH = "navigateToPreviousMonth";
 
+    /** The property name used for change events. */
     public static final String DATE_PROPERTY = "date";
 
     private Calendar navigationCalendar = Calendar.getInstance();
@@ -110,6 +116,10 @@ public class CalendarPanel extends Box {
         setDate(initialValue);
     }
 
+    /**
+     * Overridden to set focus to the calendar contained in this panel.
+     */
+    @Override
     public void requestFocus() {
         super.requestFocus();
         calendarTable.requestFocus();
@@ -190,10 +200,17 @@ public class CalendarPanel extends Box {
         return component.getPreferredSize().width;
     }
 
+    /**
+     * @return the currently selected date
+     */
     public Date getDate() {
         return selectedDate;
     }
 
+    /**
+     * Set the selected date and update the month and year on the panel so the date is visible.
+     * @param value the selected date
+     */
     public void setDate(Date value) {
         selectedDate = value == null ? null : truncate(value);
         updateNavigationCalendar(value == null ? new Date() : value);

@@ -28,15 +28,27 @@ import java.awt.LayoutManager;
 
 import javax.swing.JComponent;
 
+/**
+ * Extends {@link JComponent} to fill the bounds using the background color at a specified transparency.
+ */
 public class AlphaPanel extends JComponent {
 
     private float alpha;
 
+    /**
+     * Construct a new panel.
+     * @param layout the layout manager for child components
+     * @param alpha the transparency to use when drawing the background
+     */
     public AlphaPanel(LayoutManager layout, float alpha) {
         this.alpha = alpha;
         setLayout(layout);
     }
 
+    /**
+     * Fill the component using the background color at the specified transparency.
+     */
+    @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         Composite composite = g2d.getComposite();
@@ -47,6 +59,10 @@ public class AlphaPanel extends JComponent {
         super.paint(g);
     }
 
+    /**
+     * Overridden to set the component to be opaque.
+     */
+    @Override
     protected void addImpl(Component comp, Object constraints, int index) {
         if (comp instanceof JComponent) {
             ((JComponent)comp).setOpaque(true);

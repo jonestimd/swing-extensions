@@ -48,6 +48,8 @@ import io.github.jonestimd.swing.ComponentTreeUtils;
  * </ul>
  * @see DateFormatter
  * @see SimpleDateFormat
+ * @see CalendarButtonBorder
+ * @see CalendarPanel
  */
 public class DateField extends JFormattedTextField {
     private static final int FORMATTED_LENGTH = 10;

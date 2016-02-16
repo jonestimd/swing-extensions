@@ -24,7 +24,7 @@ import java.awt.Dimension;
 import javax.swing.JTextField;
 
 /**
- * A text field that resizes when the text changes.
+ * A text field that resizes itself when the text changes.
  */
 public class AutosizeTextField extends JTextField {
     public AutosizeTextField(boolean editable) {

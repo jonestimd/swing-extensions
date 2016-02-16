@@ -33,7 +33,11 @@ import javax.swing.JFormattedTextField;
 
 import io.github.jonestimd.swing.ComponentFactory;
 
-public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextField, CalendarPanel> { // TODO close popup on escape key
+/**
+ * The border for a {@link DateField}.  This border contains a calendar "button" that allows the user to select a
+ * date in a {@link CalendarPanel} when the "button" is clicked.
+ */
+public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextField, CalendarPanel> {
     public CalendarButtonBorder(JFormattedTextField textField) {
         this(textField, new CalendarPanel((Date) textField.getValue()));
         setTooltip(ComponentFactory.DEFAULT_BUNDLE.getString("calendar.button.tooltip"));
@@ -47,10 +51,12 @@ public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextFie
         });
     }
 
+    @Override
     protected void initializePopup(JFormattedTextField borderComponent, CalendarPanel popupComponent) {
         popupComponent.setDate((Date) borderComponent.getValue());
     }
 
+    @Override
     protected void paintBorder(Component c, Graphics g, int x, int y, int width, int height, int inset) {
         int size = Math.min(inset, height);
         Graphics2D g2d = (Graphics2D) g.create(x + width - size, y + (height - size)/2, size, size--);
@@ -77,6 +83,7 @@ public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextFie
         g2d.dispose();
     }
 
+    @Override
     protected Point getPopupLocation(Dimension screenSize, Dimension popupSize, JFormattedTextField borderComponent) {
         Point location = borderComponent.getLocationOnScreen();
         location.x += borderComponent.getWidth();

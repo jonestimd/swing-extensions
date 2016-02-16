@@ -51,7 +51,7 @@ import io.github.jonestimd.swing.UnsavedChangesIndicator;
 import io.github.jonestimd.swing.component.AlphaPanel;
 
 /**
- * This class extends {@link JFrame} disable user input and to provide progress messages during long running processes.
+ * This class extends {@link JFrame} to disable user input and provide progress messages during long running processes.
  * It also uses {@link SettingsPersister} to store state when the window is closed.
  */
 public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChangesIndicator {
