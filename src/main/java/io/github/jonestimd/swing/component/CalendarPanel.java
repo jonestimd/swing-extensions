@@ -303,12 +303,17 @@ public class CalendarPanel extends Box {
     }
 
     private class CalendarTableModel extends AbstractTableModel {
+        public static final int WEEKDAY_COUNT = Calendar.SATURDAY - Calendar.SUNDAY + 1;
         private String[] weekdays;
         private Date[][] dates;
 
         public CalendarTableModel() {
-            weekdays = new DateFormatSymbols().getShortWeekdays();
-            weekdays = Arrays.copyOfRange(weekdays, navigationCalendar.getFirstDayOfWeek(), weekdays.length);
+            String[] names = new DateFormatSymbols().getShortWeekdays();
+            weekdays = new String[WEEKDAY_COUNT];
+            for (int i = 0,j = navigationCalendar.getFirstDayOfWeek(); i < weekdays.length; i++) {
+                weekdays[i] = names[j++];
+                if (j > Calendar.SATURDAY) j = Calendar.SUNDAY;
+            }
             int rowCount = (Calendar.getInstance().getMaximum(Calendar.DATE) / weekdays.length) + 2;
             dates = new Date[rowCount][weekdays.length];
             for (int i = 0; i < dates.length; i++) {
