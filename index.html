@@ -16,7 +16,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1 class="header">Swing-extensions</h1>
+        <h1 class="header">swing-extensions</h1>
         <p class="header">Java Swing extensions</p>
 
         <ul>
@@ -26,43 +26,56 @@
         </ul>
 
         <p class="header">This project is maintained by <a class="header name" href="https://github.com/jonestimd">jonestimd</a></p>
-
+        <p><img src="https://travis-ci.org/jonestimd/swing-extensions.svg?branch=master" alt="Build Status"></p>
 
       </header>
       <section>
-        <h1>
-<a id="swing-extensions" class="anchor" href="#swing-extensions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>swing-extensions</h1>
+        <h1><a id="custom-components" class="anchor" href="#custom-components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Components</h1>
+        <h3>Date field with calendar popup</h3>
+        <p style="float: right;"><img src="screenshots/datefield.png" alt="DateField"/></p>
+        <ul>
+          <li>Configurable date format</li>
+          <li>Localized (month/day names and first day of week)</li>
+          <li>Support for use as a table cell editor</li>
+        </ul>
 
-<p><img src="https://travis-ci.org/jonestimd/swing-extensions.svg?branch=master" alt="Build Status"></p>
+        <h3 style="clear: right;">Bean list combo box</h3>
+        <div style="float: right;">
+          <p><img src="screenshots/empty-combobox.png" alt="empty BeanListComboBox"/></p>
+          <p><img src="screenshots/editable-combobox.png" alt="editable BeanListComboBox"/></p>
+        </div>
+        <ul>
+          <li>Renders list items using a <code>java.text.Format</code></li>
+          <li>Select an item by typing initial characters of the display value</li>
+          <li>Display feedback for a required value</li>
+          <li>Support for use as a table cell editor</li>
+        </ul>
 
-<p>Java Swing extensions</p>
+        <h3 style="clear: right;">Validated panel</h3>
+        <p style="float: right;"><img src="screenshots/validated-panel.png" alt="ValidatedPanel"></p>
+        <ul>
+          <li>Display validation messages for fields</li>
+          <li>Display validation messages for table cells</li>
+        </ul>
 
-<h2>
-<a id="custom-components" class="anchor" href="#custom-components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Components</h2>
-
-<ul>
-<li>Date field with calendar popup</li>
-<li>Bean list combo box</li>
-<li>Validated text field</li>
-</ul>
-
-<h3>
-<a id="table-extensions" class="anchor" href="#table-extensions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table Extensions</h3>
-
-<ul>
-<li>Bean table model</li>
-<li>Validation</li>
-<li>Highlight unsaved changes</li>
-<li>Search/Filter</li>
-<li>Date cell editor</li>
-<li>Mixed row table
-
-<ul>
-<li>Header/detail table</li>
-<li>Section table</li>
-</ul>
-</li>
-</ul>
+        <h3><a id="table-extensions" class="anchor" href="#table-extensions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table Extensions</h3>
+        <ul>
+          <li>Bean list table model</li>
+          <ul>
+            <li>Table data as a list of Java beans</li>
+            <li>Table columns correspond to bean properties</li>
+            <li>Define column adapters to read/write bean properties</li>
+            <li>Support for asynchronous data providers</li>
+          </ul>
+          <li>Input validation</li>
+          <li>Highlight unsaved changes</li>
+          <li>Support for search/filter</li>
+          <li>Mixed row table</li>
+          <ul>
+            <li>Header/detail table</li>
+            <li>Section table</li>
+          </ul>
+        </ul>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
