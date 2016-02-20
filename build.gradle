@@ -1,8 +1,11 @@
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
 compileJava.sourceCompatibility = 1.8
+compileJava.targetCompatibility = 1.8
+
 group = 'io.github.jonestimd'
 version = '0.1-SNAPSHOT'
 
@@ -25,6 +28,16 @@ jar {
                    'Implementation-Version': version
     }
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/reports/coverage"
+    }
+}
+
+check.dependsOn jacocoTestReport
 
 javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
