@@ -1,5 +1,5 @@
 # swing-extensions
-![Build Status](https://travis-ci.org/jonestimd/swing-extensions.svg?branch=master)
+[![travis-ci.org](https://travis-ci.org/jonestimd/swing-extensions.svg?branch=master)](https://travis-ci.org/jonestimd/swing-extensions?branch=master)
 
 Java Swing extensions
 
