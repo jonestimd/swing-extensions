@@ -8,6 +8,12 @@ import static org.fest.assertions.Assertions.*;
 
 public class ComparablesTest {
     @Test
+    public void minReturnsMinValue() throws Exception {
+        assertThat(Comparables.min("a", "A")).isEqualTo("A");
+        assertThat(Comparables.min(3, 1, -9, 1)).isEqualTo(-9);
+    }
+
+    @Test
     public void nullFirst_nullAndNotNull() throws Exception {
         assertThat(Comparables.nullFirst(null, 0L)).isLessThan(0);
     }

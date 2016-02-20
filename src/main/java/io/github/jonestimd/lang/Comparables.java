@@ -53,21 +53,6 @@ public class Comparables {
      * If one list contains the leading elements of the other then the comparison result is the difference in the list sizes.
      * @return the result of tne first non-zero comparison of the list elements or the comparison of the list sizes
      */
-    public static <T extends Comparable<? super T>> int compare(List<T> list1, List<T> list2) {
-        for (int i = 0; i < Math.min(list1.size(), list2.size()); i++) {
-            int diff = list1.get(i).compareTo(list2.get(i));
-            if (diff != 0) {
-                return diff;
-            }
-        }
-        return list1.size() - list2.size();
-    }
-
-    /**
-     * Compare each element in {@code list1} to the corresponding element in {@code list2} until a difference is found.
-     * If one list contains the leading elements of the other then the comparison result is the difference in the list sizes.
-     * @return the result of tne first non-zero comparison of the list elements or the comparison of the list sizes
-     */
     public static int compareIgnoreCase(List<String> list1, List<String> list2) {
         for (int i = 0; i < Math.min(list1.size(), list2.size()); i++) {
             int diff = list1.get(i).compareToIgnoreCase(list2.get(i));
