@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,24 +21,26 @@
 // SOFTWARE.
 package io.github.jonestimd.collection;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Builder for immutable maps.
- * @param <K> the key type
- * @param <V> the value type
- */
-public class MapBuilder<K, V> {
-    private final Map<K, V> map = new HashMap<>();
+import junit.framework.Assert;
+import org.junit.Test;
 
-    public MapBuilder<K, V> put(K key, V value) {
-        map.put(key, value);
-        return this;
-    }
+import static org.fest.assertions.Assertions.*;
 
-    public Map<K, V> get() {
-        return Collections.unmodifiableMap(map);
+public class MapBuilderTest {
+    @Test
+    public void createsImmutableMap() throws Exception {
+        Map<String, Integer> map = new MapBuilder<String, Integer>().put("one", 1).put("two", 2).get();
+
+        assertThat(map.size()).isEqualTo(2);
+        assertThat(map.get("one")).isEqualTo(1);
+        assertThat(map.get("two")).isEqualTo(2);
+        try {
+            map.put("three", 3);
+            Assert.fail("expected UnsupportedOperationException");
+        } catch (UnsupportedOperationException ex) {
+            // expected
+        }
     }
 }
