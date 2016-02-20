@@ -30,25 +30,37 @@ import javax.swing.JTextArea;
 
 import io.github.jonestimd.swing.ChangeBuffer;
 import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.SwingResource;
 import io.github.jonestimd.swing.dialog.Dialogs;
 import io.github.jonestimd.swing.validation.FieldChangeTracker;
 import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
+import io.github.jonestimd.swing.validation.ValidatedComponent;
 import io.github.jonestimd.swing.window.ConfirmCloseAdapter;
 
+/**
+ * This component displays a {@code form} and validation messages for {@link ValidatedComponent}s contained in
+ * the {@code form}.  This component uses a {@link BorderLayout} with the {@code form} in the center position
+ * and the validation messages in the south position.  {@link ValidatedComponent}s can be added to the {@code form}
+ * at any time and their validation messages will automatically be displayed.
+ */
 public abstract class ValidatedPanel extends MenuActionPanel {
     private JTextArea statusArea;
     private FieldChangeTracker changeTracker = new FieldChangeTracker(new ValidationHandler());
 
-    public ValidatedPanel(ResourceBundle bundle, int statusRows) {
+    /**
+     * Construct a new validated panel.
+     * @param bundle provides the background color for the message area
+     * (see {@link SwingResource#VALIDATION_MESSAGE_BACKGROUND})
+     * @param statusRows the number visible rows for the message area
+     * @param form the container for the {@link ValidatedComponent}s
+     */
+    public ValidatedPanel(ResourceBundle bundle, int statusRows, JComponent form) {
         statusArea = ComponentFactory.createValidationStatusArea(statusRows, bundle);
         statusArea.setVisible(false);
         setLayout(new BorderLayout());
-        add(BorderLayout.SOUTH, statusArea);
-    }
-
-    protected void setForm(JComponent formPanel) { // FIXME own the form: replace set with get
-        add(formPanel, BorderLayout.CENTER);
-        changeTracker.trackFieldChanges(formPanel);
+        add(statusArea, BorderLayout.SOUTH);
+        add(form, BorderLayout.CENTER);
+        changeTracker.trackFieldChanges(form);
     }
 
     protected abstract ChangeBuffer getChangeBuffer();

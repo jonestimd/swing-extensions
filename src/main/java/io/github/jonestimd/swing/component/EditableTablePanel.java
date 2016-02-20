@@ -78,7 +78,7 @@ public abstract class EditableTablePanel<T> extends ValidatedPanel {
 
     @SuppressWarnings("unchecked")
     protected EditableTablePanel(ResourceBundle bundle, DecoratedTable<T, ValidatedBeanListTableModel<T>> table, String resourceGroup) {
-        super(bundle, 1);
+        super(bundle, 1, new JScrollPane(table));
         this.bundle = bundle;
         this.table = table;
         this.tableModel = table.getModel();
@@ -99,7 +99,6 @@ public abstract class EditableTablePanel<T> extends ValidatedPanel {
         });
         tableModel.addTableModelListener(changeHandler);
         createActions();
-        setForm(new JScrollPane(table));
         addTableSummaryPanel();
     }
 
