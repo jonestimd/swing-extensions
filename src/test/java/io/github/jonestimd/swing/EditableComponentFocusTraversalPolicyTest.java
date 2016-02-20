@@ -24,6 +24,7 @@ package io.github.jonestimd.swing;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -39,34 +40,38 @@ public class EditableComponentFocusTraversalPolicyTest {
 
     @Test
     public void getComponentAfterSkipsReadOnlyJTextFields() throws Exception {
-        List<JTextField> fields = Arrays.asList(
+        List<JComponent> fields = Arrays.asList(
                 new MockTextField(),
+                new MockComboBox(),
                 new TextField<>(new MockTextField()).readOnly().get(),
                 new TextField<>(new MockTextField()).readOnly().get(),
                 new MockTextField());
         JPanel panel = new MockPanel(fields);
         new JFrame().getContentPane().add(panel);
 
-        assertThat(policy.getComponentAfter(panel, fields.get(0))).isSameAs(fields.get(3));
-        assertThat(policy.getComponentAfter(panel, fields.get(1))).isSameAs(fields.get(3));
-        assertThat(policy.getComponentAfter(panel, fields.get(2))).isSameAs(fields.get(3));
-        assertThat(policy.getComponentAfter(panel, fields.get(3))).isSameAs(fields.get(0));
+        assertThat(policy.getComponentAfter(panel, fields.get(0))).isSameAs(fields.get(1));
+        assertThat(policy.getComponentAfter(panel, fields.get(1))).isSameAs(fields.get(4));
+        assertThat(policy.getComponentAfter(panel, fields.get(2))).isSameAs(fields.get(4));
+        assertThat(policy.getComponentAfter(panel, fields.get(3))).isSameAs(fields.get(4));
+        assertThat(policy.getComponentAfter(panel, fields.get(4))).isSameAs(fields.get(0));
     }
 
     @Test
     public void getComponentBeforeSkipsReadOnlyJTextFields() throws Exception {
-        List<JTextField> fields = Arrays.asList(
+        List<JComponent> fields = Arrays.asList(
                 new MockTextField(),
+                new MockComboBox(),
                 new TextField<>(new MockTextField()).readOnly().get(),
                 new TextField<>(new MockTextField()).readOnly().get(),
                 new MockTextField());
         JPanel panel = new MockPanel(fields);
         new JFrame().getContentPane().add(panel);
 
-        assertThat(policy.getComponentBefore(panel, fields.get(3))).isSameAs(fields.get(0));
-        assertThat(policy.getComponentBefore(panel, fields.get(2))).isSameAs(fields.get(0));
+        assertThat(policy.getComponentBefore(panel, fields.get(4))).isSameAs(fields.get(1));
+        assertThat(policy.getComponentBefore(panel, fields.get(3))).isSameAs(fields.get(1));
+        assertThat(policy.getComponentBefore(panel, fields.get(2))).isSameAs(fields.get(1));
         assertThat(policy.getComponentBefore(panel, fields.get(1))).isSameAs(fields.get(0));
-        assertThat(policy.getComponentBefore(panel, fields.get(0))).isSameAs(fields.get(3));
+        assertThat(policy.getComponentBefore(panel, fields.get(0))).isSameAs(fields.get(4));
     }
 
     private static class MockPanel extends JPanel {
@@ -87,6 +92,13 @@ public class EditableComponentFocusTraversalPolicyTest {
     }
 
     private static class MockTextField extends JTextField {
+        @Override
+        public boolean isDisplayable() {
+            return true;
+        }
+    }
+
+    private static class MockComboBox extends JComboBox {
         @Override
         public boolean isDisplayable() {
             return true;

@@ -29,7 +29,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
 import io.github.jonestimd.util.Streams;
@@ -37,14 +36,17 @@ import io.github.jonestimd.util.Streams;
 public class ButtonBarFactory {
     public static final int BUTTON_GAP = 5;
 
+    /**
+     * Make all buttons on the button bar the same size as the preferred size of the largest button.
+     * @param buttonBar the button bar
+     * @return {@code buttonBar}
+     */
     public static Box setSize(Box buttonBar) {
         Dimension maxSize = getMaxSize(buttonBar.getComponents());
         buttonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize.height));
         for (Component component : buttonBar.getComponents()) {
             if (component instanceof AbstractButton) {
-                component.setMinimumSize(maxSize);
-                component.setMaximumSize(maxSize);
-                component.setPreferredSize(maxSize);
+                setFixedSize(maxSize, component);
             }
         }
         return buttonBar;
@@ -65,18 +67,34 @@ public class ButtonBarFactory {
         return max;
     }
 
-    public static JComponent createVerticalButtonBar(Component... buttons) {
+    private static void setFixedSize(Dimension size, Component component) {
+        component.setMinimumSize(size);
+        component.setMaximumSize(size);
+        component.setPreferredSize(size);
+    }
+
+    /**
+     * Create a vertical button bar.
+     * @param buttons the buttons to add to the button bar
+     * @return the button bar
+     */
+    public static Box createVerticalButtonBar(Component... buttons) {
         return createVerticalButtonBar(Arrays.asList(buttons));
     }
 
-    public static JComponent createVerticalButtonBar(List<? extends Component> components) {
+    /**
+     * Create a vertical button bar.
+     * @param components the components to add to the button bar
+     * @return the button bar
+     */
+    public static Box createVerticalButtonBar(List<? extends Component> components) {
         Dimension maxSize = getMaxSize(components);
         Box box = Box.createVerticalBox();
         box.setBorder(new EmptyBorder(0, 5, 0, 5));
         for (Component component : components) {
-            component.setMinimumSize(maxSize);
-            component.setMaximumSize(maxSize);
-            component.setPreferredSize(maxSize);
+            if (component instanceof AbstractButton) {
+                setFixedSize(maxSize, component);
+            }
             box.add(component);
             box.add(Box.createVerticalStrut(5));
         }
@@ -90,11 +108,23 @@ public class ButtonBarFactory {
         buttonBar = Box.createHorizontalBox();
     }
 
+    /**
+     * Make the button bar right aligned.
+     * @return this factory
+     */
     public ButtonBarFactory alignRight() {
         buttonBar.add(Box.createHorizontalGlue(), 0);
         return this;
     }
 
+    /**
+     * Set an empty border on the button bar.  If only {@code top} is specified then it is used for all edges.
+     * If {@code bottom} is not specified then the value for {@code top} is used.  If {@code right} is not
+     * specified then the value for {@code left} (or {@code top}) is used.
+     * @param top the top border width
+     * @param borders the {@code left}, {@code bottom}, and {@code right} border widths
+     * @return this factory
+     */
     public ButtonBarFactory border(int top, int... borders) {
         int left = borders.length > 0 ? borders[0] : top;
         int bottom = borders.length > 1 ? borders[1] : top;
