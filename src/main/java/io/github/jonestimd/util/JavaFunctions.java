@@ -22,8 +22,6 @@ package io.github.jonestimd.util;
 import java.util.function.Function;
 
 public class JavaFunctions {
-    private JavaFunctions() {}
-
     public static <T, R> Function<T, R> nullGuard(Function<T, R> function) {
         return input -> input == null ? null : function.apply(input);
     }

@@ -29,8 +29,6 @@ import static io.github.jonestimd.swing.ComponentFactory.*;
  * Factory class for common dialogs.
  */
 public class Dialogs {
-    private Dialogs() {}
-
     /**
      * Display a dialog to confirm closing a window with unsaved data.
      * @param owner the owner for the dialog (e.g. the window being closed)

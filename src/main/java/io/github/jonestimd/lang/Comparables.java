@@ -22,9 +22,6 @@ package io.github.jonestimd.lang;
 import java.util.List;
 
 public class Comparables {
-    private Comparables() {
-    }
-
     @SafeVarargs
     public static <T extends Comparable<? super T>> T min(T c1, T... others) {
         T min = c1;

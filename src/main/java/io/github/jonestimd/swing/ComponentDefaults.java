@@ -28,8 +28,6 @@ import javax.swing.border.Border;
 public class ComponentDefaults {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(UIDefaultsBundle.class.getName());
 
-    private ComponentDefaults() {}
-
     public static Color getColor(String key) {
         Color color = UIManager.getColor(key);
         if (color == null) {

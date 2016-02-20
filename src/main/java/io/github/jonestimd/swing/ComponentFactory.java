@@ -56,8 +56,6 @@ import io.github.jonestimd.swing.component.IconBorder.Side;
 public class ComponentFactory {
     public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
 
-    private ComponentFactory() {}
-
     public static JRadioButton[] createRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
         JRadioButton[] buttons = new JRadioButton[mnemonicAndNameKeys.length];

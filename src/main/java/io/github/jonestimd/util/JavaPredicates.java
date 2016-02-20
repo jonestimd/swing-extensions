@@ -23,8 +23,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class JavaPredicates {
-    private JavaPredicates() {}
-
     public static <T, R> Predicate<T> onResult(Function<T, ? extends R> function, Predicate<R> predicate) {
         return input -> predicate.test(function.apply(input));
     }
