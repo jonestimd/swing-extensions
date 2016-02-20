@@ -20,6 +20,9 @@ dependencies {
     testCompile( group: 'org.easytesting', name: 'fest-assert', version: '1.4' )
     testCompile( group: 'org.easytesting', name: 'fest-util', version: '1.1.6' )
     testCompile( group: 'org.mockito', name: 'mockito-core', version: '1.9.0' )
+
+    testRuntime( group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.5.3' )
+    testRuntime( group: 'com.jgoodies', name: 'jgoodies-common', version: '1.7.0' )
 }
 
 jar {

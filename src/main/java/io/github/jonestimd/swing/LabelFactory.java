@@ -33,11 +33,10 @@ public class LabelFactory {
      * {@code '_'} then the label will not have a mnemonic.
      */
     public LabelFactory mnemonicAndName(String mnemonicAndName) {
-        label.setText(mnemonicAndName.substring(1));
         if (mnemonicAndName.charAt(0) != '_') {
-            label.setDisplayedMnemonic(mnemonicAndName.charAt(0));
+            mnemonic(mnemonicAndName.charAt(0));
         }
-        return this;
+        return name(mnemonicAndName.substring(1));
     }
 
     public LabelFactory name(String name) {
