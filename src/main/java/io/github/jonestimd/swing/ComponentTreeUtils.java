@@ -21,32 +21,28 @@ package io.github.jonestimd.swing;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import io.github.jonestimd.util.JavaPredicates;
 
 public class ComponentTreeUtils {
-    public static final String CURSOR_HISTORY_KEY = "cursorHistory";
-
-    public static void visitComponentTree(Container rootComponent, ComponentVisitor<Component> visitor) {
+    public static void visitComponentTree(Container rootComponent, ComponentVisitor<? super Component> visitor) {
         visitComponentTree(rootComponent, visitor, JavaPredicates.alwaysTrue());
     }
 
-    public static void visitComponentTree(Container rootComponent, ComponentVisitor<Component> visitor, Predicate<Container> descend) {
+    public static void visitComponentTree(Container rootComponent, ComponentVisitor<? super Component> visitor, Predicate<Container> descend) {
         visitComponentTree(rootComponent, Component.class, visitor, descend);
     }
 
-    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<C> visitor) {
+    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor) {
         visitComponentTree(rootComponent, type, visitor, JavaPredicates.alwaysTrue());
     }
 
-    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<C> visitor, Predicate<Container> descend) {
+    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor, Predicate<Container> descend) {
         if (type.isInstance(rootComponent)) {
             visitor.visit(type.cast(rootComponent));
         }
@@ -63,34 +59,6 @@ public class ComponentTreeUtils {
 
     private static Component[] getComponents(Container container) {
         return container instanceof JMenu ? ((JMenu) container).getMenuComponents() : container.getComponents();
-    }
-
-    public static void resetCursor(Container container) {
-        final Cursor defaultCursor = Cursor.getDefaultCursor();
-        visitComponentTree(container, component -> {
-            Cursor cursor = defaultCursor;
-            if (component instanceof JComponent) {
-                JComponent jcomponent = (JComponent) component;
-                cursor = (Cursor) jcomponent.getClientProperty(CURSOR_HISTORY_KEY);
-                if (cursor != null) {
-                    jcomponent.putClientProperty(CURSOR_HISTORY_KEY, null);
-                } else
-                    cursor = defaultCursor;
-            }
-            component.setCursor(cursor);
-        });
-    }
-
-    public static void setCursor(Container container, final Cursor cursor) {
-        visitComponentTree(container, component -> {
-            if (component instanceof JComponent) {
-                JComponent jcomponent = (JComponent) component;
-                if (jcomponent.getClientProperty(CURSOR_HISTORY_KEY) == null) {
-                    jcomponent.putClientProperty(CURSOR_HISTORY_KEY, jcomponent.getCursor());
-                }
-            }
-            component.setCursor(cursor);
-        });
     }
 
     public static <C extends Component> C findComponent(Container container, Class<C> type) {
