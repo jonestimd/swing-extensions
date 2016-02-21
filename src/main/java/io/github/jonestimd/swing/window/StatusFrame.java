@@ -21,6 +21,7 @@ package io.github.jonestimd.swing.window;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -113,6 +114,7 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
                 e.consume();
             }
         });
+        glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         setGlassPane(glassPane);
     }
 
