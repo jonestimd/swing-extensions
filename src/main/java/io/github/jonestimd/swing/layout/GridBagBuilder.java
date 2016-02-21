@@ -81,7 +81,6 @@ public class GridBagBuilder {
      * <li><code>weightx, weighty =</code> 1.0
      * <li><code>anchor = WEST</code>
      * </ul>
-     * @param container
      */
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix) {
         this(container, bundle, resourcePrefix, 2, DEFAULT_CONSTRAINTS);
@@ -103,10 +102,6 @@ public class GridBagBuilder {
 
     public GridBagBuilder unrelatedVerticalGap() {
         return insets(UNRELATED_GAP, 0, 0, RELATED_GAP);
-    }
-
-    public GridBagBuilder unrelatedHorizontalGap() {
-        return insets(RELATED_GAP, 0, 0, UNRELATED_GAP);
     }
 
     public GridBagBuilder insets(int top, int left, int bottom, int right) {

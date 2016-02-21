@@ -53,7 +53,7 @@ public enum FormElement implements GridBagFormula {
             fill = weighty > 0 ? BOTH : HORIZONTAL;
         }
         else {
-            fill = weighty > 0 ? VERTICAL : NONE;
+            fill = NONE;
         }
     }
 
