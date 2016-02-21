@@ -56,7 +56,7 @@ import io.github.jonestimd.swing.component.IconBorder.Side;
 public class ComponentFactory {
     public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
 
-    public static JRadioButton[] createRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
+    public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
         JRadioButton[] buttons = new JRadioButton[mnemonicAndNameKeys.length];
         for (int i = 0; i < mnemonicAndNameKeys.length; i++) {
@@ -70,7 +70,7 @@ public class ComponentFactory {
         return buttons;
     }
 
-    public static JTextArea createValidationStatusArea(int rows, ResourceBundle bundle) {
+    public static JTextArea newValidationStatusArea(int rows, ResourceBundle bundle) {
         JTextArea statusArea = new JTextArea();
         statusArea.setEditable(false);
         statusArea.setRows(rows);
@@ -125,7 +125,7 @@ public class ComponentFactory {
         return button;
     }
 
-    public static JMenu createMenu(ResourceBundle bundle, String mnemonicAndNameKey) {
+    public static JMenu newMenu(ResourceBundle bundle, String mnemonicAndNameKey) {
         String mnemonicAndName = bundle.getString(mnemonicAndNameKey);
         JMenu menu = new JMenu(mnemonicAndName.substring(1));
         if (mnemonicAndName.charAt(0) != ' ') menu.setMnemonic(mnemonicAndName.charAt(0));
@@ -136,33 +136,29 @@ public class ComponentFactory {
     /**
      * Create a {@link JTextField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static JTextField filterField() {
-        return filterField(DEFAULT_BUNDLE);
+    public static JTextField newFilterField() {
+        return newFilterField(DEFAULT_BUNDLE);
     }
 
     /**
      * Create a {@link JTextField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static JTextField filterField(ResourceBundle bundle) {
+    public static JTextField newFilterField(ResourceBundle bundle) {
         return initializeFilterField(bundle, new JTextField());
     }
 
     /**
      * Create a {@link FilterField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static <T> FilterField<T> filterField(Function<String, Predicate<T>> predicateFactory) {
-        return filterField(DEFAULT_BUNDLE, predicateFactory);
+    public static <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory) {
+        return newFilterField(DEFAULT_BUNDLE, predicateFactory);
     }
 
     /**
      * Create a {@link FilterField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static <T> FilterField<T> filterField(ResourceBundle bundle, Function<String, Predicate<T>> predicateFactory) {
-        FilterField<T> field = initializeFilterField(bundle, new FilterField<>(predicateFactory));
-        Color background = field.getBackground();
-        Color invalid = (Color) bundle.getObject("filter.invalid.background");
-        field.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, event -> field.setBackground(event.getNewValue() == null ? background : invalid));
-        return field;
+    public static <T> FilterField<T> newFilterField(ResourceBundle bundle, Function<String, Predicate<T>> predicateFactory) {
+        return initializeFilterField(bundle, new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")));
     }
 
     private static <T extends JTextComponent> T initializeFilterField(ResourceBundle bundle, T field) {

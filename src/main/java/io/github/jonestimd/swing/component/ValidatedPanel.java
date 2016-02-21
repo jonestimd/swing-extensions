@@ -55,7 +55,7 @@ public abstract class ValidatedPanel extends MenuActionPanel {
      * @param form the container for the {@link ValidatedComponent}s
      */
     public ValidatedPanel(ResourceBundle bundle, int statusRows, JComponent form) {
-        statusArea = ComponentFactory.createValidationStatusArea(statusRows, bundle);
+        statusArea = ComponentFactory.newValidationStatusArea(statusRows, bundle);
         statusArea.setVisible(false);
         setLayout(new BorderLayout());
         add(statusArea, BorderLayout.SOUTH);

@@ -192,7 +192,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     }
 
     private JMenu createHelpMenu() {
-        JMenu menu = ComponentFactory.createMenu(bundle, "menu.help.mnemonicAndName");
+        JMenu menu = ComponentFactory.newMenu(bundle, "menu.help.mnemonicAndName");
         menu.add(new MnemonicAction(bundle, "menu.help.about") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -204,7 +204,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     }
 
     private JMenu createWindowsMenu() {
-        JMenu menu = ComponentFactory.createMenu(bundle, WINDOWS_MENU_KEY);
+        JMenu menu = ComponentFactory.newMenu(bundle, WINDOWS_MENU_KEY);
         for (WindowAction action : menuActions.values()) {
             menu.add(new JMenuItem(action));
         }

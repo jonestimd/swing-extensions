@@ -66,7 +66,7 @@ public abstract class FormDialog extends MessageDialog {
         this.saveButton = new JButton(saveAction);
         formPanel.setBorder(new EmptyBorder(BUTTON_BAR_BORDER, BUTTON_BAR_BORDER, 0, BUTTON_BAR_BORDER));
         buttonBar = new ButtonBarFactory().alignRight().border(BUTTON_BAR_BORDER).add(saveButton, new JButton(cancelAction)).get();
-        statusArea = ComponentFactory.createValidationStatusArea(1, bundle);
+        statusArea = ComponentFactory.newValidationStatusArea(1, bundle);
 
         GridBagBuilder builder = new GridBagBuilder(getContentPane(), bundle, "");
         builder.append(getFormPanel());

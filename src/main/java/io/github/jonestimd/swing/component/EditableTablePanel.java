@@ -172,7 +172,7 @@ public abstract class EditableTablePanel<T> extends ValidatedPanel {
     private void addMenu(JMenuBar menuBar) {
         String mnemonicAndNameKey = String.format("menu.%s.mnemonicAndName", resourceGroup);
         if (bundle.containsKey(mnemonicAndNameKey)) {
-            JMenu menu = ComponentFactory.createMenu(bundle, mnemonicAndNameKey);
+            JMenu menu = ComponentFactory.newMenu(bundle, mnemonicAndNameKey);
             addActions(menu);
             menuBar.add(menu, 0);
             menuBar.add(ComponentFactory.newMenuBarSeparator());

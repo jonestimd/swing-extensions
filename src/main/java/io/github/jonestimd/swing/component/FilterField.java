@@ -57,11 +57,15 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     private Object highlightKey;
 
     private final BasicFilterParser<T> filterParser;
+    private final Color normalBackground;
+    private final Color errorBackground;
     private final List<String> terms = new ArrayList<>();
     private Predicate<T> predicate;
 
-    public FilterField(Function<String, Predicate<T>> predicateFactory) {
+    public FilterField(Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
         this.filterParser = new BasicFilterParser<>(predicateFactory, terms::add);
+        this.normalBackground = getBackground();
+        this.errorBackground = errorBackground;
         StyleConstants.setBold(boldStyle, true);
         StyleConstants.setForeground(boldStyle, Color.BLUE);
         addCaretListener(this::caretUpdate);
@@ -94,10 +98,12 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         try {
             predicate = getText().trim().isEmpty() ? null : filterParser.parse(FilterField.this);
             firePropertyChange(PREDICATE_PROPERTY, null, predicate);
+            setBackground(normalBackground);
         } catch (Exception ex) {
             predicate = null;
             terms.clear();
             setToolTipText(ex.getMessage());
+            setBackground(errorBackground);
             firePropertyChange(PREDICATE_PROPERTY, null, null);
         }
     }
@@ -161,7 +167,7 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         try {
             UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
             SwingUtilities.invokeAndWait(() -> {
-                FilterField<?> filterField = new FilterField<String>(term -> term::contains);
+                FilterField<?> filterField = new FilterField<String>(term -> term::contains, Color.PINK);
                 JFrame frame = new JFrame("Filter FIeld");
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 frame.setPreferredSize(new Dimension(400, 100));
