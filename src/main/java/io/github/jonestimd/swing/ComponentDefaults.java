@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.util.ResourceBundle;
 
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 public class ComponentDefaults {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(UIDefaultsBundle.class.getName());
@@ -34,13 +33,5 @@ public class ComponentDefaults {
             color = (Color) BUNDLE.getObject(key);
         }
         return color;
-    }
-
-    public static Border getBorder(String key) {
-        Border border = UIManager.getBorder(key);
-        if (border == null) {
-            border = (Border) BUNDLE.getObject(key);
-        }
-        return border;
     }
 }
