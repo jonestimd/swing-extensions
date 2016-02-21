@@ -20,6 +20,11 @@ public class ColorFactoryTest {
         assertNull(ColorFactory.createColor("grEen"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidFieldName() {
+        assertNull(ColorFactory.createColor("TRANSLUCENT"));
+    }
+
     @Test
     public void testCreateWithRgb() throws Exception {
         Color color = ColorFactory.createColor("5,6,7");

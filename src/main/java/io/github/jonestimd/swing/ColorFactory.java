@@ -28,7 +28,7 @@ public class ColorFactory {
     public static Color createColor(String value) {
         try {
             Field field = Color.class.getField(value);
-            if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Color.class.isAssignableFrom(field.getType())) {
+            if (Modifier.isStatic(field.getModifiers()) && Color.class.isAssignableFrom(field.getType())) {
                 return (Color) field.get(null);
             }
         } catch (Exception ex) {
