@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,40 +21,32 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.list;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
 
-/**
- * A list model that allows the entire list to be replaced.
- * @param <T> the class of the list items
- */
-public class MutableListModel<T> extends AbstractListModel<T> {
-    private List<T> elements = new ArrayList<T>();
+import io.github.jonestimd.util.Streams;
+import org.junit.Test;
 
-    public void setElements(List<T> elements) {
-        this.elements.clear();
-        this.elements.addAll(elements);
-        fireContentsChanged(this, 0, Integer.MAX_VALUE);
+import static org.fest.assertions.Assertions.*;
+
+public class ListModelIterableTest {
+    @Test
+    public void readModelItems() throws Exception {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        model.addElement("a");
+        model.addElement("b");
+
+        List<Object> list = Streams.toList(new ListModelIterable<>(model));
+
+        assertThat(list).containsExactly("a", "b");
     }
 
-    public void addElement(T element) {
-        int index = elements.size();
-        elements.add(element);
-        fireIntervalAdded(this, index, index);
-    }
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeThrowsUnsupportedOperationException() throws Exception {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        model.addElement("a");
 
-    public void removeElement(int index) {
-        elements.remove(index);
-        fireIntervalRemoved(this, index, index);
-    }
-
-    public T getElementAt(int index) {
-        return elements.get(index);
-    }
-
-    public int getSize() {
-        return elements.size();
+        new ListModelIterable<>(model).iterator().remove();
     }
 }

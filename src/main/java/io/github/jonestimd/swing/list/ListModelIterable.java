@@ -23,6 +23,10 @@ import java.util.Iterator;
 
 import javax.swing.ListModel;
 
+/**
+ * This class provides a read-only iterator for the items in a {@link ListModel}.
+ * @param <T> the class of items in the model
+ */
 public class ListModelIterable<T> implements Iterable<T> {
     private ListModel listModel;
     public ListModelIterable(ListModel listModel) {
