@@ -56,6 +56,16 @@ import io.github.jonestimd.swing.component.IconBorder.Side;
 public class ComponentFactory {
     public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
 
+    protected final ResourceBundle bundle;
+
+    public ComponentFactory() {
+        this(DEFAULT_BUNDLE);
+    }
+
+    public ComponentFactory(ResourceBundle bundle) {
+        this.bundle = bundle;
+    }
+
     public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
         JRadioButton[] buttons = new JRadioButton[mnemonicAndNameKeys.length];
@@ -136,32 +146,18 @@ public class ComponentFactory {
     /**
      * Create a {@link JTextField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static JTextField newFilterField() {
-        return newFilterField(DEFAULT_BUNDLE);
-    }
-
-    /**
-     * Create a {@link JTextField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
-     */
-    public static JTextField newFilterField(ResourceBundle bundle) {
-        return initializeFilterField(bundle, new JTextField());
+    public JTextField newFilterField() {
+        return initializeFilterField(new JTextField());
     }
 
     /**
      * Create a {@link FilterField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
-    public static <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory) {
-        return newFilterField(DEFAULT_BUNDLE, predicateFactory);
+    public <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory) {
+        return initializeFilterField(new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")));
     }
 
-    /**
-     * Create a {@link FilterField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
-     */
-    public static <T> FilterField<T> newFilterField(ResourceBundle bundle, Function<String, Predicate<T>> predicateFactory) {
-        return initializeFilterField(bundle, new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")));
-    }
-
-    private static <T extends JTextComponent> T initializeFilterField(ResourceBundle bundle, T field) {
+    private <T extends JTextComponent> T initializeFilterField(T field) {
         ImageIcon filterIcon = (ImageIcon) bundle.getObject("filter.iconImage");
         field.setBorder(new CompoundBorder(new OblongBorder(2, Color.GRAY),
                 new CompoundBorder(new EmptyBorder(0, 4, 0, 0), new IconBorder(Side.LEFT, filterIcon))));

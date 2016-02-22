@@ -189,7 +189,7 @@ public class ComponentFactoryTest {
 
     @Test
     public void newFilterFieldSetsBorders() throws Exception {
-        JTextField field = ComponentFactory.newFilterField();
+        JTextField field = new ComponentFactory().newFilterField();
 
         assertThat(field.getBorder()).isInstanceOf(CompoundBorder.class);
         assertThat(getOutsideBorder(field.getBorder())).isInstanceOf(OblongBorder.class);
@@ -208,7 +208,7 @@ public class ComponentFactoryTest {
 
     @Test
     public void newFilterFieldSetsErrorBackgroundForParseError() throws Exception {
-        FilterField<String> field = ComponentFactory.newFilterField(ComponentFactoryTest::parseFilter);
+        FilterField<String> field = new ComponentFactory().newFilterField(ComponentFactoryTest::parseFilter);
         Color background = field.getBackground();
 
         field.setText("invalid");
