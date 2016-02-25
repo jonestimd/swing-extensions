@@ -43,6 +43,12 @@ check.dependsOn jacocoTestReport
 
 javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('link', 'http://docs.oracle.com/javase/8/docs/api')
+    options.addStringOption('header',
+            '<style>' +
+            'div.description table, div.description td, div.description th ' +
+                    '{ border: 1px solid black; border-collapse: collapse; padding: 2px 3px 0 3px}' +
+            '</style>')
 }
 
 task javadocJar(type: Jar) {
