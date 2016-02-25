@@ -19,64 +19,64 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import io.github.jonestimd.collection.MapBuilder;
 import io.github.jonestimd.swing.ClientProperty;
 import io.github.jonestimd.swing.SettingsPersister;
-import io.github.jonestimd.swing.table.model.ColumnAdapter;
 
 // TODO allow user to change auto resize mode
 // TODO save/restore column widths for maximized & normal
-// TODO save columns when TransactionTable model changes
+/**
+ * Provides improved column resizing and handles save/restore of column sizes and ordering.
+ * <h2>Column Sizing</h2>
+ * <p>if {@link ColumnConfiguration#getWidth(TableColumn)} returns a {@code non-null} value then the column
+ * is initialized to that width.  Otherwise, the width is initialized to the value returned by
+ * {@link ColumnWidthCalculator#preferredWidth(TableColumn)}.</p>
+ * <p>If {@link ColumnWidthCalculator#isFixedWidth(TableColumn)} returns {@code true} then the column's min, max and
+ * preferred widths are all initialized to the same value so that the column's size will not change when other columns
+ * are resized by the user.  This class provides special handling for resizing a column with only fixed width columns
+ * to the right.  In that case, the right most column will adjust to compensate for the changing column's new size.
+ * This class does not prevent the user from explicitly changing the size of a column, including fixed width columns.</p>
+ * <p>If {@link ColumnWidthCalculator#isFixedWidth(TableColumn)} returns {@code false} for a column then only the preferred
+ * width is initialized using the saved width or the calculated preferred width.</p>
+ * <h2>Saved Settings</h2>
+ * <p>This class delegates to {@link ColumnConfiguration} for saving/loading the column widths and ordering.</p>
+ * @see ColumnConfiguration
+ * @see ColumnWidthCalculator
+ */
 public class ColumnResizeHandler implements SettingsPersister {
-    private static final String WIDTH_SUFFIX = ".width";
-    private static final String INDEX_SUFFIX = ".index";
-    private static final String PROTOTYPE_SUFFIX = ".prototype";
     private static final int DEFAULT_MIN_WIDTH = new TableColumn().getMinWidth();
     private static final int DEFAULT_MAX_WIDTH = new TableColumn().getMaxWidth();
 
-    private final WidthCalculator headerWidthCalculator = new WidthCalculator() {
-        protected Object getPrototypeValue(TableColumn column) {
-            return column.getHeaderValue();
-        }
-    };
-
-    private final Map<Class<?>, WidthCalculator> calculatorMap = new MapBuilder<Class<?>, WidthCalculator>()
-            .put(Boolean.class, headerWidthCalculator)
-            .put(Number.class, new NumberWidthCalculator())
-            .put(Enum.class, new EnumWidthCalculator()).get();
-
-    private JTable table;
+    private final JTable table;
+    private final ColumnConfiguration configuration;
+    private final ColumnWidthCalculator widthCalculator;
     private TableColumn resizingColumn;
     private TableColumn lastColumn;
-    private String settingsPrefix;
     private final PropertyChangeListener modelChangeHandler = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-            settingsPrefix = table.getModel().getClass().getSimpleName() + ".";
             table.setPreferredScrollableViewportSize(
                     new Dimension(initializePreferredWidths(table.getColumnModel()), table.getPreferredScrollableViewportSize().height));
             initializeColumnOrder(table.getColumnModel());
         }
     };
 
-    public ColumnResizeHandler(JTable table) {
+    public ColumnResizeHandler(JTable table, ColumnConfiguration configuration, ColumnWidthCalculator widthCalculator) {
         this.table = table;
+        this.configuration = configuration;
+        this.widthCalculator = widthCalculator;
         table.putClientProperty(ClientProperty.SETTINGS_PERSISTER, this);
         table.getTableHeader().addMouseListener(new HeaderMouseListener());
         table.addPropertyChangeListener("model", modelChangeHandler);
@@ -93,38 +93,39 @@ public class ColumnResizeHandler implements SettingsPersister {
     }
 
     private void initializeColumnOrder(TableColumnModel columnModel) {
-        Enumeration<TableColumn> columns = columnModel.getColumns();
-        while (columns.hasMoreElements()) {
-            TableColumn column = columns.nextElement();
-            int oldIndex = columnModel.getColumnIndex(column.getIdentifier());
-            int index = Integer.getInteger(getPropertyName(column, INDEX_SUFFIX), -1);
-            if (index >= 0 && index < columnModel.getColumnCount() && index != oldIndex) {
-                columnModel.moveColumn(oldIndex, index);
+        Enumeration<TableColumn> enumeration = columnModel.getColumns();
+        List<TableColumn> columns = new ArrayList<>(columnModel.getColumnCount());
+        while(enumeration.hasMoreElements()) {
+            columns.add(enumeration.nextElement());
+        }
+        for (TableColumn column : columns) {
+            int index = indexOf(column);
+            int configIndex = configuration.getIndex(column);
+            if (configIndex >= 0 && configIndex < columnModel.getColumnCount() && configIndex != index) {
+                columnModel.moveColumn(index, configIndex);
             }
         }
     }
 
-    private void setPreferredWidth(TableColumn column) {
-        int width = Integer.getInteger(getPropertyName(column, WIDTH_SUFFIX), -1);
-        boolean restoreWidth = width >= column.getMinWidth();
-        WidthCalculator widthCalculator = getWidthCalculator(column);
-        if (widthCalculator != null) {
-            setFixedWidth(column, restoreWidth ? width : widthCalculator.calculateWidth(column));
+    private int indexOf(TableColumn column) {
+        Enumeration<TableColumn> enumeration = table.getColumnModel().getColumns();
+        for (int i = 0; enumeration.hasMoreElements(); i++) {
+            if (enumeration.nextElement() == column) return i;
         }
-        else if (restoreWidth) {
-            column.setPreferredWidth(width);
-        }
-        else {
-            column.setPreferredWidth(Math.max(column.getPreferredWidth(), headerWidthCalculator.calculateWidth(column)));
-        }
+        throw new NoSuchElementException();
     }
 
-    private WidthCalculator getWidthCalculator(TableColumn column) {
-        Class<?> columnClass = table.getColumnClass(column.getModelIndex());
-        for (Entry<Class<?>, WidthCalculator> entry : calculatorMap.entrySet()) {
-            if (entry.getKey().isAssignableFrom(columnClass)) return entry.getValue();
+    private void setPreferredWidth(TableColumn column) {
+        Integer width = configuration.getWidth(column);
+        if (width == null) {
+            width = widthCalculator.preferredWidth(column);
         }
-        return null;
+        if (widthCalculator.isFixedWidth(column)) {
+            setFixedWidth(column, width);
+        }
+        else {
+            column.setPreferredWidth(width);
+        }
     }
 
     private void setFixedWidth(TableColumn column, int width) {
@@ -146,18 +147,14 @@ public class ColumnResizeHandler implements SettingsPersister {
         TableColumnModel columnModel = table.getColumnModel();
         for (int i = 0; i < table.getColumnCount(); i++) {
             TableColumn column = columnModel.getColumn(i);
-            System.setProperty(getPropertyName(column, WIDTH_SUFFIX), Integer.toString(column.getWidth()));
-            System.setProperty(getPropertyName(column, INDEX_SUFFIX), Integer.toString(i));
+            configuration.setWidth(column, column.getWidth());
+            configuration.setIndex(column, i);
         }
-    }
-
-    private String getPropertyName(TableColumn column, String suffix) {
-        return settingsPrefix + ((ColumnAdapter<?,?>) column.getIdentifier()).getColumnId() + suffix;
     }
 
     private boolean areTrailingColumnsFixed(TableColumn column) {
         TableColumnModel columnModel = table.getColumnModel();
-        int index = columnModel.getColumnIndex(column.getIdentifier())+1;
+        int index = indexOf(column)+1;
         boolean fixedWidths = index < columnModel.getColumnCount();
         while (fixedWidths && index < columnModel.getColumnCount()) {
             column = columnModel.getColumn(index++);
@@ -190,35 +187,6 @@ public class ColumnResizeHandler implements SettingsPersister {
             if (lastColumn != null) {
                 setFixedWidth(lastColumn, lastColumn.getWidth());
             }
-        }
-    }
-
-    private abstract class WidthCalculator {
-        public int calculateWidth(TableColumn column) {
-            TableCellRenderer renderer = table.getTableHeader().getDefaultRenderer();
-            Component rendererComponent = renderer.getTableCellRendererComponent(table, getPrototypeValue(column), false, false, -1, 0);
-            Insets insets = ((JComponent)renderer).getInsets();
-            return rendererComponent.getPreferredSize().width + insets.left + insets.right + 2;
-        }
-
-        protected abstract Object getPrototypeValue(TableColumn column);
-    }
-
-    private class NumberWidthCalculator extends WidthCalculator {
-        protected Object getPrototypeValue(TableColumn column) {
-            return ((ColumnAdapter<?,?>) column.getIdentifier()).getResource(PROTOTYPE_SUFFIX, column.getHeaderValue().toString());
-        }
-    }
-
-    private class EnumWidthCalculator extends WidthCalculator {
-        protected Object getPrototypeValue(TableColumn column) {
-            Class<?> enumClass = table.getModel().getColumnClass(column.getModelIndex());
-            Enum<?>[] constants = (Enum<?>[]) enumClass.getEnumConstants();
-            String longestValue = "";
-            for (Enum<?> value : constants) {
-                if (longestValue.length() < value.toString().length()) longestValue = value.toString();
-            }
-            return longestValue;
         }
     }
 }

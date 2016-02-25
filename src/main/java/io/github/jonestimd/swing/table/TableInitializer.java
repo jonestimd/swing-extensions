@@ -102,7 +102,8 @@ public class TableInitializer {
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
             initializeColumn(columnModel.getColumn(i));
         }
-        new ColumnResizeHandler(table);
+        BeanListColumnConfiguration configuration = new BeanListColumnConfiguration(table);
+        new ColumnResizeHandler(table, configuration, new ValueClassColumnWidthCalculator(table, configuration));
         setDecorators(table);
         addActions(table);
         return table;
