@@ -253,6 +253,7 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         return beanTableAdapter.getColumnCount();
     }
 
+    // TODO call from fireEvent methods instead of from sub-class
     protected void notifyDataProviders(T row, String columnId, Object oldValue) {
         beanTableAdapter.notifyDataProviders(row, indexOf(row::equals), columnId, oldValue);
     }

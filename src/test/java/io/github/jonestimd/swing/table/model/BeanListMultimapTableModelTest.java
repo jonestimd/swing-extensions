@@ -3,8 +3,6 @@ package io.github.jonestimd.swing.table.model;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -13,6 +11,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import io.github.jonestimd.swing.table.SectionTable;
 import org.junit.Ignore;
@@ -28,10 +27,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BeanListMultimapTableModelTest {
-    private static final com.google.common.base.Function<TestBean, TestGroup> GET_GROUP = input -> input.group;
-    private static final Function<TestGroup, String> GET_GROUP_NAME = input -> input.groupName;
     private static final ColumnAdapter<TestBean, String> BEAN_NAME_ADAPTER = new TestColumnAdapter<>("Name", String.class, TestBean::getName);
-    private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter<>("Value", String.class, TestBean::getValue);
+    private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter<>("Value", String.class, TestBean::getValue, TestBean::setValue);
     @Mock
     private TableDataProvider<TestBean> dataProvider;
     @Mock
@@ -42,6 +39,31 @@ public class BeanListMultimapTableModelTest {
     private TestGroup group3 = new TestGroup("group3");
 
     @Test
+    public void columnIdentifier() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> model = newTableModel();
+
+        assertThat(model.getColumnCount()).isEqualTo(2);
+        assertThat(model.getColumnIdentifier(0)).isSameAs(BEAN_NAME_ADAPTER);
+        assertThat(model.getColumnIdentifier(1)).isSameAs(BEAN_VALUE_ADAPTER);
+    }
+
+    @Test
+    public void columnName() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> model = newTableModel();
+
+        assertThat(model.getColumnName(0)).isSameAs(BEAN_NAME_ADAPTER.getName());
+        assertThat(model.getColumnName(1)).isSameAs(BEAN_VALUE_ADAPTER.getName());
+    }
+
+    @Test
+    public void columnClass() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> model = newTableModel();
+
+        assertThat(model.getColumnClass(0)).isSameAs(BEAN_NAME_ADAPTER.getType());
+        assertThat(model.getColumnClass(1)).isSameAs(BEAN_VALUE_ADAPTER.getType());
+    }
+
+    @Test
     public void setBeansGroupsRows() throws Exception {
         BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
         List<TestBean> beans = Arrays.asList(
@@ -50,9 +72,21 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group1, "bean1b", "x"),
                 new TestBean(group2, "bean2a", "x"));
 
-        tableModel.setBeans(Multimaps.index(beans, GET_GROUP));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
 
         assertThat(tableModel.getRowCount()).isEqualTo(6);
+        assertThat(tableModel.getBeanCount()).isEqualTo(4);
+        assertThat(tableModel.getBeans()).containsOnly(beans.toArray());
+        assertThat(tableModel.getSections()).containsExactly(group1, group2);
+        assertThat(tableModel.getGroup(0)).containsExactly(beans.get(0), beans.get(2));
+        assertThat(tableModel.getBeans(group1)).containsExactly(beans.get(0), beans.get(2));
+        assertThat(tableModel.getGroup(1)).containsExactly(beans.get(1), beans.get(3));
+        assertThat(tableModel.getBeans(group2)).containsExactly(beans.get(1), beans.get(3));
+        for (int i = 0; i < 6; i++) {
+            assertThat(tableModel.getSectionRow(i)).isEqualTo((i / 3) * 3);
+        }
+        assertThat(tableModel.getValue(beans.get(0), 0)).isEqualTo(beans.get(0).name);
+        assertThat(tableModel.getValue(beans.get(0), 1)).isEqualTo(beans.get(0).value);
         assertSectionRow(tableModel, 0, group1);
         assertBeanRow(tableModel, 1, beans.get(0));
         assertBeanRow(tableModel, 2, beans.get(2));
@@ -70,7 +104,7 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group1, "bean1a", "x"),
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
-                new TestBean(group2, "bean2a", "x")), GET_GROUP));
+                new TestBean(group2, "bean2a", "x")), TestBean::getGroup));
         reset(modelListener);
 
         TestBean bean = new TestBean(group1, "bean0", "x");
@@ -89,7 +123,7 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group1, "bean1a", "x"),
                 new TestBean(group3, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
-                new TestBean(group3, "bean2a", "x")), GET_GROUP));
+                new TestBean(group3, "bean2a", "x")), TestBean::getGroup));
 
         TestBean bean = new TestBean(group2, "bean0", "x");
         tableModel.put(group2, bean);
@@ -102,19 +136,58 @@ public class BeanListMultimapTableModelTest {
     }
 
     @Test
-    public void getBeans() throws Exception {
+    public void removeAll() throws Exception {
         BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
         List<TestBean> beans = Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
                 new TestBean(group2, "bean2a", "x"));
-        tableModel.setBeans(Multimaps.index(beans, GET_GROUP));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
 
-        List<TestBean> result = tableModel.getBeans();
+        List<TestBean> result = tableModel.removeAll(group1);
 
-        assertThat(result.stream().filter(Predicate.isEqual(null)).count()).isEqualTo(0);
-        assertThat(result).hasSize(beans.size());
+        assertThat(result).containsOnly(beans.get(0), beans.get(2));
+        assertThat(tableModel.getSections()).containsOnly(group2);
+        assertThat(tableModel.getBeanCount()).isEqualTo(2);
+        assertThat(tableModel.getRowCount()).isEqualTo(3);
+        verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 0, 2, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE)));
+    }
+
+    @Test
+    public void putAllAddsNewGroup() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group3, "bean3b", "x"),
+                new TestBean(group1, "bean1b", "x"),
+                new TestBean(group3, "bean3a", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        tableModel.putAll(group2, Lists.newArrayList(new TestBean(group2, "bean2a", "y")));
+
+        assertThat(tableModel.getSections()).containsExactly(group1, group2, group3);
+        assertThat(tableModel.getBeanCount()).isEqualTo(5);
+        assertThat(tableModel.getRowCount()).isEqualTo(8);
+        verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 3, 4, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
+    }
+
+    @Test
+    public void putAllAddsBeansToGroup() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group3, "bean3b", "x"),
+                new TestBean(group1, "bean1b", "x"),
+                new TestBean(group3, "bean3a", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        tableModel.putAll(group3, Lists.newArrayList(new TestBean(group3, "bean3c", "y"), new TestBean(group3, "bean3d", "y")));
+
+        assertThat(tableModel.getSections()).containsExactly(group1, group3);
+        assertThat(tableModel.getBeanCount()).isEqualTo(6);
+        assertThat(tableModel.getRowCount()).isEqualTo(8);
+        verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 6, 7, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
     }
 
     @Test
@@ -125,7 +198,7 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
                 new TestBean(group2, "bean2a", "x"));
-        tableModel.setBeans(Multimaps.index(beans, GET_GROUP));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
 
         assertThat(tableModel.getBean(0)).isNull();
         assertThat(tableModel.getBean(1)).isSameAs(beans.get(0));
@@ -143,17 +216,17 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
                 new TestBean(group2, "bean2a", "x"));
-        tableModel.setBeans(Multimaps.index(beans, GET_GROUP));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
         reset(modelListener);
 
         tableModel.remove(4);
 
         assertThat(tableModel.getRowCount()).isEqualTo(5);
         assertThat(tableModel.getBean(0)).isNull();
-        assertThat(tableModel.getBean(1).beanName).isEqualTo("bean1a");
-        assertThat(tableModel.getBean(2).beanName).isEqualTo("bean1b");
+        assertThat(tableModel.getBean(1).name).isEqualTo("bean1a");
+        assertThat(tableModel.getBean(2).name).isEqualTo("bean1b");
         assertThat(tableModel.getBean(3)).isNull();
-        assertThat(tableModel.getBean(4).beanName).isEqualTo("bean2a");
+        assertThat(tableModel.getBean(4).name).isEqualTo("bean2a");
         verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 4, 4, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE)));
         verify(dataProvider).removeBean(beans.get(1));
     }
@@ -166,7 +239,7 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group1, "bean1b", "x"),
                 new TestBean(group2, "bean2a", "x"));
-        tableModel.setBeans(Multimaps.index(beans, GET_GROUP));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
         reset(modelListener);
 
         tableModel.remove(1);
@@ -174,12 +247,64 @@ public class BeanListMultimapTableModelTest {
 
         assertThat(tableModel.getRowCount()).isEqualTo(3);
         assertThat(tableModel.getBean(0)).isNull();
-        assertThat(tableModel.getBean(1).beanName).isEqualTo("bean2b");
-        assertThat(tableModel.getBean(2).beanName).isEqualTo("bean2a");
+        assertThat(tableModel.getBean(1).name).isEqualTo("bean2b");
+        assertThat(tableModel.getBean(2).name).isEqualTo("bean2a");
         verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE)));
         verify(modelListener).tableChanged(matches(new TableModelEvent(tableModel, 0, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE)));
         verify(dataProvider).removeBean(beans.get(0));
         verify(dataProvider).removeBean(beans.get(2));
+    }
+
+    @Test
+    public void indexOf() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group2, "bean2b", "x"),
+                new TestBean(group1, "bean1b", "x"),
+                new TestBean(group2, "bean2a", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        assertThat(tableModel.indexOf(bean -> bean.name.equals("bean2b"))).isEqualTo(4);
+        assertThat(tableModel.indexOf(bean -> bean.name.equals("bean2a"))).isEqualTo(5);
+    }
+
+    @Test
+    public void isCellEditable() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            assertThat(tableModel.isCellEditable(i, 0)).isFalse();
+            assertThat(tableModel.isCellEditable(i, 1)).isTrue();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setValueAtThrowsExceptionForSectionRow() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        tableModel.setValueAt("x", 0, 0);
+    }
+
+    @Test
+    public void setValueAt() throws Exception {
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(Multimaps.index(beans, TestBean::getGroup));
+
+        tableModel.setValueAt("x", 1, 1);
+
+        assertThat(beans.get(1).getValue()).isEqualTo("x");
     }
 
     @Test
@@ -191,7 +316,7 @@ public class BeanListMultimapTableModelTest {
                 new TestBean(group, "bean1a", "x"),
                 new TestBean(group2, "bean2b", "x"),
                 new TestBean(group, "bean1b", "x"),
-                new TestBean(group2, "bean2a", "x")), GET_GROUP));
+                new TestBean(group2, "bean2a", "x")), TestBean::getGroup));
 
         System.setProperty("swing.defaultlaf", "com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
         SwingUtilities.invokeAndWait(() -> {
@@ -203,8 +328,8 @@ public class BeanListMultimapTableModelTest {
     }
 
     private void assertBeanRow(BeanListMultimapTableModel<TestGroup, TestBean> tableModel, int index, TestBean bean) {
-        assertThat(tableModel.getValueAt(index, 0)).isEqualTo(bean.beanName);
-        assertThat(tableModel.getValueAt(index, 1)).isEqualTo(bean.beanValue);
+        assertThat(tableModel.getValueAt(index, 0)).isEqualTo(bean.name);
+        assertThat(tableModel.getValueAt(index, 1)).isEqualTo(bean.value);
         assertThat(tableModel.getSectionName(index)).isEqualTo(bean.group.groupName);
         assertThat(tableModel.isSectionRow(index)).isFalse();
     }
@@ -219,7 +344,7 @@ public class BeanListMultimapTableModelTest {
     private BeanListMultimapTableModel<TestGroup, TestBean> newTableModel() {
         BeanListMultimapTableModel<TestGroup, TestBean> model = new BeanListMultimapTableModel<>(
                 Arrays.asList(BEAN_NAME_ADAPTER, BEAN_VALUE_ADAPTER),
-                Collections.singleton(dataProvider), GET_GROUP_NAME);
+                Collections.singleton(dataProvider), TestGroup::getGroupName);
         model.addTableModelListener(modelListener);
         return model;
     }
@@ -230,25 +355,37 @@ public class BeanListMultimapTableModelTest {
         private TestGroup(String groupName) {
             this.groupName = groupName;
         }
+
+        public String getGroupName() {
+            return groupName;
+        }
     }
 
     private static class TestBean {
         private TestGroup group;
-        private final String beanName;
-        private final String beanValue;
+        private final String name;
+        private String value;
 
-        public TestBean(TestGroup group, String beanName, String beanValue) {
+        public TestBean(TestGroup group, String name, String value) {
             this.group = group;
-            this.beanName = beanName;
-            this.beanValue = beanValue;
+            this.name = name;
+            this.value = value;
+        }
+
+        public TestGroup getGroup() {
+            return group;
         }
 
         public String getName() {
-            return beanName;
+            return name;
         }
 
         public String getValue() {
-            return beanValue;
+            return value;
+        }
+
+        public void setValue(String beanValue) {
+            this.value = beanValue;
         }
     }
 }
