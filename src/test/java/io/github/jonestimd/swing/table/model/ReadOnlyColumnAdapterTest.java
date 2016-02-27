@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,24 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
-import io.github.jonestimd.swing.table.PropertyAdapter;
+import java.util.ResourceBundle;
 
-public abstract class AbstractPropertyAdapter<T> implements PropertyAdapter<T> {
-    private final String name;
-    private final String label;
+import org.junit.Test;
 
-    protected AbstractPropertyAdapter(String name, String label) {
-        this.name = name;
-        this.label = label;
-    }
+public class ReadOnlyColumnAdapterTest {
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("test-resources");
+    private final ReadOnlyColumnAdapter<Object, String> adapter =
+        new ReadOnlyColumnAdapter<Object, String>(BUNDLE, "readOnlyColumnAdapterTest.", "column1", String.class) {
+            @Override
+            public String getValue(Object o) {
+                return null;
+            }
+        };
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getLabel() {
-        return label;
+    @Test(expected = UnsupportedOperationException.class)
+    public void setValueThrowsUnsupportedOperationException() throws Exception {
+        adapter.setValue(null, null);
     }
 }

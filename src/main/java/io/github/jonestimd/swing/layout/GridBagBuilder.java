@@ -39,7 +39,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import io.github.jonestimd.collection.MapBuilder;
-import io.github.jonestimd.swing.LabelFactory;
+import io.github.jonestimd.swing.LabelBuilder;
 
 import static java.awt.GridBagConstraints.*;
 
@@ -121,7 +121,7 @@ public class GridBagBuilder {
     public <T extends JComponent> T append(String labelKey, T field) {
         GridBagFormula constraints = getConstraints(field.getClass());
         relatedGap();
-        container.add(new LabelFactory().mnemonicAndName(bundle.getString(resourcePrefix + labelKey)).forComponent(field).get(),
+        container.add(new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix + labelKey)).forComponent(field).get(),
                 constraints.getLabelConstraints().setConstraints(gbc));
         nextCell();
         return append(field, constraints);

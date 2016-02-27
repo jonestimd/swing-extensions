@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import static org.fest.assertions.Assertions.*;
 
-public class LabelFactoryTest {
+public class LabelBuilderTest {
     @BeforeClass
     public static void setLookAndFeel() throws Exception {
         UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
@@ -38,7 +38,7 @@ public class LabelFactoryTest {
 
     @Test
     public void mnemonicAndNameSetsMnemonicAndText() throws Exception {
-        JLabel label = new LabelFactory().mnemonicAndName("FField Name").get();
+        JLabel label = new LabelBuilder().mnemonicAndName("FField Name").get();
 
         assertThat(label.getDisplayedMnemonic()).isEqualTo('F');
         assertThat(label.getText()).isEqualTo("Field Name");
@@ -46,7 +46,7 @@ public class LabelFactoryTest {
 
     @Test
     public void mnemonicAndNameDoesNotSetMnemonicToUnderscore() throws Exception {
-        JLabel label = new LabelFactory().mnemonicAndName("_Field Name").get();
+        JLabel label = new LabelBuilder().mnemonicAndName("_Field Name").get();
 
         assertThat(label.getDisplayedMnemonic()).isEqualTo(0);
         assertThat(label.getText()).isEqualTo("Field Name");
@@ -56,14 +56,14 @@ public class LabelFactoryTest {
     public void forComponentSetsLabelComponent() throws Exception {
         JTextField field = new JTextField();
 
-        JLabel label = new LabelFactory().forComponent(field).get();
+        JLabel label = new LabelBuilder().forComponent(field).get();
 
         assertThat(label.getLabelFor()).isSameAs(field);
     }
 
     @Test
     public void boldUsesBoldFont() throws Exception {
-        JLabel label = new LabelFactory().name("Field").bold().get();
+        JLabel label = new LabelBuilder().name("Field").bold().get();
 
         assertThat(label.getFont().isBold()).isTrue();
     }

@@ -17,35 +17,43 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-package io.github.jonestimd.swing.table;
+package io.github.jonestimd.swing.table.model;
 
-import java.beans.PropertyChangeEvent;
 import java.text.Format;
+import java.util.function.Supplier;
 
-import io.github.jonestimd.beans.ObservableBean;
+import io.github.jonestimd.swing.table.PropertyAdapter;
 
-/**
- * Interface for mapping a bound bean property to a UI element.
- * @see ObservableBean
- */
-public interface PropertyAdapter<T> {
-    /**
-     * @return the property name used in {@link PropertyChangeEvent}s.
-     */
-    String getName();
+public class FunctionPropertyAdapter<T> implements PropertyAdapter<T> {
+    private final String name;
+    private final String label;
+    private final Supplier<T> getter;
+    private final Supplier<Format> formatFactory;
 
-    /**
-     * @return the label for the UI element.
-     */
-    String getLabel();
+    public FunctionPropertyAdapter(String name, String label, Supplier<T> getter, Supplier<Format> formatFactory) {
+        this.name = name;
+        this.label = label;
+        this.getter = getter;
+        this.formatFactory = formatFactory;
+    }
 
-    /**
-     * @return the property value.
-     */
-    T getValue();
+    @Override
+    public String getName() {
+        return name;
+    }
 
-    /**
-     * @return a formatter for converting the value to a {@link String}.
-     */
-    Format getFormat();
+    @Override
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public T getValue() {
+        return getter.get();
+    }
+
+    @Override
+    public Format getFormat() {
+        return formatFactory.get();
+    }
 }

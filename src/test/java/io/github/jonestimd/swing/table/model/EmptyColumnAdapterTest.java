@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,47 +21,46 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
-/**
- * No-op adapter for filler columns in a {@link MixedRowTableModel}.
- */
-public class EmptyColumnAdapter<T> implements ColumnAdapter<T, String> {
-    private String identifier;
+import org.junit.Test;
 
-    public EmptyColumnAdapter(String identifier) {
-        this.identifier = identifier;
+import static org.fest.assertions.Assertions.*;
+
+public class EmptyColumnAdapterTest {
+    private static final String IDENTIFIER = "dummy1";
+    private final EmptyColumnAdapter<?> adapter = new EmptyColumnAdapter<>(IDENTIFIER);
+
+    @Test
+    public void getColumnIdReturnsId() throws Exception {
+        assertThat(adapter.getColumnId()).isEqualTo(IDENTIFIER);
     }
 
-    @Override
-    public String getColumnId() {
-        return identifier;
+    @Test
+    public void getResourceReturnsNull() throws Exception {
+        assertThat(adapter.getResource(null, "x")).isNull();
     }
 
-    @Override
-    public String getResource(String resourceId, String defaultValue) {
-        return null;
+    @Test
+    public void getNameReturnsBlank() throws Exception {
+        assertThat(adapter.getName()).isEqualTo(" ");
     }
 
-    @Override
-    public String getName() {
-        return " ";
+    @Test
+    public void getTypeReturnsString() throws Exception {
+        assertThat(adapter.getType()).isEqualTo(String.class);
     }
 
-    @Override
-    public Class<String> getType() {
-        return String.class;
+    @Test
+    public void getValueReturnsNull() throws Exception {
+        assertThat(adapter.getValue(null)).isNull();
     }
 
-    @Override
-    public String getValue(T row) {
-        return null;
+    @Test
+    public void isEditableReturnsFalse() throws Exception {
+        assertThat(adapter.isEditable(null)).isFalse();
     }
 
-    @Override
-    public boolean isEditable(T row) {
-        return false;
-    }
-
-    @Override
-    public void setValue(T row, String value) {
+    @Test
+    public void setValueDoesNothing() throws Exception {
+        adapter.setValue(null, null);
     }
 }

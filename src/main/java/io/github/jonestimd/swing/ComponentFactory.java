@@ -165,7 +165,7 @@ public class ComponentFactory {
     }
 
     public static JComponent newTableSummaryPanel(String mnemonicAndName, JComponent summary) {
-        JLabel label = new LabelFactory().mnemonicAndName(mnemonicAndName).bold().get();
+        JLabel label = new LabelBuilder().mnemonicAndName(mnemonicAndName).bold().get();
         JComponent summaryPanel = new ButtonBarFactory().alignRight().add(label, summary).get();
         summaryPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, UIManager.getInt("ScrollBar.width")));
         return summaryPanel;

@@ -23,7 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 
-import io.github.jonestimd.swing.LabelFactory;
+import io.github.jonestimd.swing.LabelBuilder;
 import io.github.jonestimd.swing.component.AutosizeTextField;
 import io.github.jonestimd.swing.component.ComponentBinder;
 
@@ -31,20 +31,20 @@ public class TableSummaryPanel extends Box {
     private static final int LABEL_GAP = 5;
     private static final int SUMMARY_GAP = 10;
 
+    public TableSummaryPanel(TableSummary tableSummary) {
+        this();
+        addSummaries(tableSummary);
+    }
+
     public TableSummaryPanel() {
         super(BoxLayout.X_AXIS);
         setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         setVisible(false);
     }
 
-    public TableSummaryPanel(TableSummary tableSummary) {
-        this();
-        addSummaries(tableSummary);
-    }
-
     public void addSummaries(TableSummary tableSummary) {
         for (PropertyAdapter property : tableSummary.getSummaryProperties()) {
-            add(new LabelFactory().name(property.getLabel()).bold().get());
+            add(new LabelBuilder().name(property.getLabel()).bold().get());
             add(Box.createHorizontalStrut(LABEL_GAP));
             add(createSummaryField(tableSummary, property));
             add(Box.createHorizontalStrut(SUMMARY_GAP));

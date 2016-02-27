@@ -24,7 +24,7 @@ import java.awt.Font;
 
 import javax.swing.JLabel;
 
-public class LabelFactory {
+public class LabelBuilder {
     private final JLabel label = new JLabel();
 
     /**
@@ -32,29 +32,29 @@ public class LabelFactory {
      * indicates the mnemonic and the rest of the string indicates the label text.  If the value starts with
      * {@code '_'} then the label will not have a mnemonic.
      */
-    public LabelFactory mnemonicAndName(String mnemonicAndName) {
+    public LabelBuilder mnemonicAndName(String mnemonicAndName) {
         if (mnemonicAndName.charAt(0) != '_') {
             mnemonic(mnemonicAndName.charAt(0));
         }
         return name(mnemonicAndName.substring(1));
     }
 
-    public LabelFactory name(String name) {
+    public LabelBuilder name(String name) {
         label.setText(name);
         return this;
     }
 
-    public LabelFactory mnemonic(char mnemonic) {
+    public LabelBuilder mnemonic(char mnemonic) {
         label.setDisplayedMnemonic(mnemonic);
         return this;
     }
 
-    public LabelFactory forComponent(Component component) {
+    public LabelBuilder forComponent(Component component) {
         label.setLabelFor(component);
         return this;
     }
 
-    public LabelFactory bold() {
+    public LabelBuilder bold() {
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         return this;
     }
