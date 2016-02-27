@@ -2,7 +2,6 @@ package io.github.jonestimd.swing.table.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.event.TableModelEvent;
@@ -17,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
+import static java.util.Collections.*;
 import static org.fest.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -37,11 +37,10 @@ public class BeanListTableModelTest {
     private BeanListTableModel<Object> model;
 
     @Before
-    @SuppressWarnings("unchecked")
     public void createModel() {
         when(columnAdapter.getColumnId()).thenReturn(COLUMN_ID);
-        doReturn(Arrays.asList(providerColumnAdapter)).when(dataProvider).getColumnAdapters();
-        model = new BeanListTableModel<Object>(Arrays.asList(columnAdapter), Arrays.asList(dataProvider));
+        doReturn(singletonList(providerColumnAdapter)).when(dataProvider).getColumnAdapters();
+        model = new BeanListTableModel<>(singletonList(columnAdapter), singletonList(dataProvider));
         model.addTableModelListener(tableModelListener);
         verify(dataProvider).addStateChangeListener(stateListenerCaptor.capture());
     }
@@ -77,7 +76,7 @@ public class BeanListTableModelTest {
 
     @Test
     public void setBeansUpdatesDataProvider() throws Exception {
-        List<Object> beans = Arrays.asList(new Object());
+        List<Object> beans = singletonList(new Object());
 
         model.setBeans(beans);
 

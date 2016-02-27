@@ -2,6 +2,7 @@ package io.github.jonestimd.swing.table.model;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -12,8 +13,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.fest.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class BufferedHeaderDetailTableModelTest {
@@ -21,6 +21,18 @@ public class BufferedHeaderDetailTableModelTest {
     private int nextId = 1;
     private TableModelListener listener = mock(TableModelListener.class);
     private TestSummaryColumnAdapter summaryColumnAdapter = new TestSummaryColumnAdapter();
+
+    private final DetailAdapter<TestSummaryBean> detailAdapter = new SingleTypeDetailAdapter<TestSummaryBean>() {
+        public List<?> getDetails(TestSummaryBean bean, int subRowTypeIndex) {
+            return bean.details;
+        }
+
+        @Override
+        public int appendDetail(TestSummaryBean bean) {
+            bean.details.add(new TestDetailBean());
+            return bean.details.size();
+        }
+    };
 
     @Test
     public void testSetBeans() throws Exception {
@@ -45,15 +57,29 @@ public class BufferedHeaderDetailTableModelTest {
         beans.get(1).details.get(0).id = -1;
 
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(0, 0));
-        assertEquals("ID less than 0", model.validateAt(4, 0));
+        assertThat(model.validateAt(0, 0)).isEqualTo("error value");
+        assertThat(model.validateAt(4, 0)).isEqualTo("ID less than 0");
+        assertThat(model.isNoErrors()).isFalse();
 
         model.setBeans(Arrays.asList(
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
 
-        assertNull(model.validateAt(0, 0));
-        assertNull(model.validateAt(4, 0));
+        assertThat(model.validateAt(0, 0)).isNull();
+        assertThat(model.validateAt(4, 0)).isNull();
+        assertThat(model.isNoErrors()).isTrue();
+    }
+
+    @Test
+    public void validateAtIgnoresUnvalidatedColumns() throws Exception {
+        ColumnAdapter<TestSummaryBean, String> summaryAdapter = new TestColumnAdapter<>("Name", String.class, TestSummaryBean::getName);
+        ColumnAdapter<TestDetailBean, Integer> detailAdapter = new TestColumnAdapter<>("Id", Integer.class, TestDetailBean::getId);
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = new BufferedHeaderDetailTableModel<>(this.detailAdapter,
+                singletonList(summaryAdapter), singletonList(singletonList(detailAdapter)));
+        model.addBean(new TestSummaryBean(new TestDetailBean()));
+
+        assertThat(model.validateAt(0, 0, "don't care")).isNull();
+        assertThat(model.validateAt(1, 0, -99)).isNull();
     }
 
     @Test
@@ -64,7 +90,7 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
 
-        assertEquals(6, model.getRowCount());
+        assertThat(model.getRowCount()).isEqualTo(6);
     }
 
     @Test
@@ -75,12 +101,12 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
 
-        assertEquals(0, model.getGroupNumber(0));
-        assertEquals(0, model.getGroupNumber(1));
-        assertEquals(0, model.getGroupNumber(2));
-        assertEquals(1, model.getGroupNumber(3));
-        assertEquals(1, model.getGroupNumber(4));
-        assertEquals(1, model.getGroupNumber(5));
+        assertThat(model.getGroupNumber(0)).isEqualTo(0);
+        assertThat(model.getGroupNumber(1)).isEqualTo(0);
+        assertThat(model.getGroupNumber(2)).isEqualTo(0);
+        assertThat(model.getGroupNumber(3)).isEqualTo(1);
+        assertThat(model.getGroupNumber(4)).isEqualTo(1);
+        assertThat(model.getGroupNumber(5)).isEqualTo(1);
     }
 
     @Test
@@ -91,12 +117,12 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
 
-        assertEquals(String.class, model.getCellClass(0, 0));
-        assertEquals(Integer.class, model.getCellClass(1, 0));
-        assertEquals(Integer.class, model.getCellClass(2, 0));
-        assertEquals(String.class, model.getCellClass(3, 0));
-        assertEquals(Integer.class, model.getCellClass(4, 0));
-        assertEquals(Integer.class, model.getCellClass(5, 0));
+        assertThat(model.getCellClass(0, 0)).isEqualTo(String.class);
+        assertThat(model.getCellClass(1, 0)).isEqualTo(Integer.class);
+        assertThat(model.getCellClass(2, 0)).isEqualTo(Integer.class);
+        assertThat(model.getCellClass(3, 0)).isEqualTo(String.class);
+        assertThat(model.getCellClass(4, 0)).isEqualTo(Integer.class);
+        assertThat(model.getCellClass(5, 0)).isEqualTo(Integer.class);
     }
 
     @Test
@@ -107,12 +133,12 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
 
-        assertEquals(beans.get(0).name, model.getValueAt(0, 0));
-        assertEquals(beans.get(0).details.get(0).id, model.getValueAt(1, 0));
-        assertEquals(beans.get(0).details.get(1).id, model.getValueAt(2, 0));
-        assertEquals(beans.get(1).name, model.getValueAt(3, 0));
-        assertEquals(beans.get(1).details.get(0).id, model.getValueAt(4, 0));
-        assertEquals(beans.get(1).details.get(1).id, model.getValueAt(5, 0));
+        assertThat(model.getValueAt(0, 0)).isEqualTo(beans.get(0).name);
+        assertThat(model.getValueAt(1, 0)).isEqualTo(beans.get(0).details.get(0).id);
+        assertThat(model.getValueAt(2, 0)).isEqualTo(beans.get(0).details.get(1).id);
+        assertThat(model.getValueAt(3, 0)).isEqualTo(beans.get(1).name);
+        assertThat(model.getValueAt(4, 0)).isEqualTo(beans.get(1).details.get(0).id);
+        assertThat(model.getValueAt(5, 0)).isEqualTo(beans.get(1).details.get(1).id);
     }
 
     @Test
@@ -146,6 +172,8 @@ public class BufferedHeaderDetailTableModelTest {
         beans.get(0).editable = true;
         beans.get(1).editable = true;
         model.setBeans(beans);
+        assertThat(model.isChanged(beans.get(0))).isFalse();
+        assertThat(model.isChangedAt(0, 0)).isFalse();
         model.addTableModelListener(listener);
 
         model.setValueAt("new name", 0, 0);
@@ -164,11 +192,32 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 5, 5, 0));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 3, 3, 0));
         verifyNoMoreInteractions(listener);
-        assertEquals("new name", beans.get(0).name);
-        assertEquals(98, beans.get(0).details.get(0).id.intValue());
-        assertEquals(-1, beans.get(0).details.get(1).id.intValue());
-        assertEquals("ID less than 0", model.validateAt(2, 0));
-        assertEquals(99, beans.get(1).details.get(1).id.intValue());
+        assertThat(beans.get(0).name).isEqualTo("new name");
+        assertThat(beans.get(0).details.get(0).id.intValue()).isEqualTo(98);
+        assertThat(beans.get(0).details.get(1).id.intValue()).isEqualTo(-1);
+        assertThat(model.validateAt(2, 0)).isEqualTo("ID less than 0");
+        assertThat(beans.get(1).details.get(1).id.intValue()).isEqualTo(99);
+        assertThat(model.isChanged(beans.get(0))).isTrue();
+        assertThat(model.isChangedAt(0, 0)).isTrue();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void setValueAtThrowsUnsupportedOperationException() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
+
+        model.setValueAt("not an integer", 1, 0);
+    }
+
+    @Test
+    public void setValueAtIgnoresSameValue() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        TestSummaryBean bean = new TestSummaryBean(new TestDetailBean());
+        model.setBeans(Lists.newArrayList(bean));
+
+        model.setValueAt(bean.name, 0, 0);
+
+        assertThat(model.isChangedAt(0, 0)).isFalse();
     }
 
     @Test
@@ -192,16 +241,16 @@ public class BufferedHeaderDetailTableModelTest {
     public void testGetSubRowColumnClass() throws Exception {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
 
-        assertEquals(String.class, model.getColumnClass(0, 0));
-        assertEquals(Integer.class, model.getColumnClass(1, 0));
+        assertThat(model.getColumnClass(0, 0)).isEqualTo(String.class);
+        assertThat(model.getColumnClass(1, 0)).isEqualTo(Integer.class);
     }
 
     @Test
     public void testGetSubRowColumnName() throws Exception {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
 
-        assertEquals("Summary Name", model.getColumnName(0, 0));
-        assertEquals("Detail Id", model.getColumnName(1, 0));
+        assertThat(model.getColumnName(0, 0)).isEqualTo("Summary Name");
+        assertThat(model.getColumnName(1, 0)).isEqualTo("Detail Id");
     }
 
     @Test
@@ -219,8 +268,8 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 6, 8, -1));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 6, 8, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(9, model.getRowCount());
-        assertEquals("error value", model.validateAt(6, 0));
+        assertThat(model.getRowCount()).isEqualTo(9);
+        assertThat(model.validateAt(6, 0)).isEqualTo("error value");
     }
 
     @Test
@@ -230,7 +279,7 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(3, 0));
+        assertThat(model.validateAt(3, 0)).isEqualTo("error value");
         model.addTableModelListener(listener);
 
         TestSummaryBean bean = new TestSummaryBean(new TestDetailBean(), new TestDetailBean(), new TestDetailBean());
@@ -240,12 +289,12 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 3, 6, -1));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 3, 6, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(10, model.getRowCount());
-        assertEquals(beans.get(0).name, model.getValueAt(0, 0));
-        assertEquals(bean.name, model.getValueAt(3, 0));
-        assertEquals(beans.get(1).name, model.getValueAt(7, 0));
-        assertNull(model.validateAt(6, 0));
-        assertEquals("error value", model.validateAt(7, 0));
+        assertThat(model.getRowCount()).isEqualTo(10);
+        assertThat(model.getValueAt(0, 0)).isEqualTo(beans.get(0).name);
+        assertThat(model.getValueAt(3, 0)).isEqualTo(bean.name);
+        assertThat(model.getValueAt(7, 0)).isEqualTo(beans.get(1).name);
+        assertThat(model.validateAt(6, 0)).isNull();
+        assertThat(model.validateAt(7, 0)).isEqualTo("error value");
     }
 
     @Test
@@ -262,8 +311,8 @@ public class BufferedHeaderDetailTableModelTest {
 
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 3, 5, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(6, model.getRowCount());
-        assertEquals(bean.name, model.getValueAt(3, 0));
+        assertThat(model.getRowCount()).isEqualTo(6);
+        assertThat(model.getValueAt(3, 0)).isEqualTo(bean.name);
     }
 
     @Test
@@ -274,7 +323,7 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(6, 0));
+        assertThat(model.validateAt(6, 0)).isEqualTo("error value");
         model.addTableModelListener(listener);
 
         TestSummaryBean bean = new TestSummaryBean(new TestDetailBean(), new TestDetailBean(), new TestDetailBean());
@@ -284,10 +333,10 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 6, 6, -1));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 3, 6, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(10, model.getRowCount());
-        assertEquals(bean.name, model.getValueAt(3, 0));
-        assertNull(model.validateAt(6, 0));
-        assertEquals("error value", model.validateAt(7, 0));
+        assertThat(model.getRowCount()).isEqualTo(10);
+        assertThat(model.getValueAt(3, 0)).isEqualTo(bean.name);
+        assertThat(model.validateAt(6, 0)).isNull();
+        assertThat(model.validateAt(7, 0)).isEqualTo("error value");
     }
 
     @Test
@@ -298,7 +347,7 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(7, 0));
+        assertThat(model.validateAt(7, 0)).isEqualTo("error value");
         model.addTableModelListener(listener);
 
         TestSummaryBean bean = new TestSummaryBean(new TestDetailBean());
@@ -308,10 +357,10 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 5, 6, -1));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 3, 4, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(8, model.getRowCount());
-        assertEquals(bean.name, model.getValueAt(3, 0));
-        assertNull(model.validateAt(7, 0));
-        assertEquals("error value", model.validateAt(5, 0));
+        assertThat(model.getRowCount()).isEqualTo(8);
+        assertThat(model.getValueAt(3, 0)).isEqualTo(bean.name);
+        assertThat(model.validateAt(7, 0)).isNull();
+        assertThat(model.validateAt(5, 0)).isEqualTo("error value");
     }
 
     @Test
@@ -322,15 +371,15 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(7, 0));
+        assertThat(model.validateAt(7, 0)).isEqualTo("error value");
         model.addTableModelListener(listener);
 
         model.removeBean(beans.get(1));
 
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 3, 6, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(6, model.getRowCount());
-        assertEquals("error value", model.validateAt(3, 0));
+        assertThat(model.getRowCount()).isEqualTo(6);
+        assertThat(model.validateAt(3, 0)).isEqualTo("error value");
     }
 
     @Test
@@ -344,7 +393,7 @@ public class BufferedHeaderDetailTableModelTest {
 
         model.removeBean(new TestSummaryBean());
 
-        assertEquals(6, model.getRowCount());
+        assertThat(model.getRowCount()).isEqualTo(6);
         verifyZeroInteractions(listener);
     }
 
@@ -356,7 +405,7 @@ public class BufferedHeaderDetailTableModelTest {
             new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean(), new TestDetailBean()),
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()));
         model.setBeans(beans);
-        assertEquals("error value", model.validateAt(3, 0));
+        assertThat(model.validateAt(3, 0)).isEqualTo("error value");
         model.addTableModelListener(listener);
 
         model.removeAll(beans.subList(1, 3));
@@ -365,9 +414,9 @@ public class BufferedHeaderDetailTableModelTest {
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 3, 6, -1));
         inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 3, 5, -1));
         verifyNoMoreInteractions(listener);
-        assertEquals(3, model.getRowCount());
-        assertEquals(beans.get(0).name, model.getValueAt(0, 0));
-        assertNull(model.validateAt(3, 0));
+        assertThat(model.getRowCount()).isEqualTo(3);
+        assertThat(model.getValueAt(0, 0)).isEqualTo(beans.get(0).name);
+        assertThat(model.validateAt(3, 0)).isNull();
     }
 
     @Test
@@ -478,6 +527,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.isPendingDelete(3)).isFalse();
         assertThat(model.isPendingDelete(4)).isFalse();
         assertThat(model.isPendingDelete(5)).isFalse();
+        assertThat(model.isPendingDelete(model.getBean(0))).isTrue();
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 2, -1));
         verifyNoMoreInteractions(listener);
     }
@@ -523,6 +573,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.isPendingDelete(3)).isFalse();
         assertThat(model.isPendingDelete(4)).isFalse();
         assertThat(model.isPendingDelete(5)).isFalse();
+        assertThat(model.isChanged(beans.get(0))).isFalse();
         assertThat(model.getValueAt(2, 0)).isEqualTo(lastDetailId);
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, newSubRow, newSubRow, -1));
     }
@@ -548,6 +599,9 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.isPendingDelete(3)).isFalse();
         assertThat(model.isPendingDelete(4)).isFalse();
         assertThat(model.isPendingDelete(5)).isFalse();
+        model.getBeans().forEach(bean -> assertThat(model.isPendingDelete(bean)).isFalse());
+        assertThat(model.isChanged(beans.get(0))).isTrue();
+        assertThat(model.isChangedAt(1, 0)).isTrue();
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1));
         verifyNoMoreInteractions(listener);
     }
@@ -562,14 +616,138 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(newModel().getDetailColumnIndex(0, detailColumnAdapter)).isEqualTo(0);
     }
 
+    @Test
+    public void undoChangedAtRevertsUpdate() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
+        Object originalValue = model.getValueAt(1, 0);
+        model.setValueAt(-99, 1, 0);
+
+        model.undoChangedAt(1, 0);
+
+        assertThat(model.getValueAt(1, 0)).isEqualTo(originalValue);
+    }
+
+    @Test
+    public void undoDeleteSubrow() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
+        model.queueDelete(1);
+
+        model.undoDelete(1);
+
+        assertThat(model.isPendingDelete(1)).isFalse();
+    }
+
+    @Test
+    public void getPendingUpdatesReturnsSummaries() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        List<TestSummaryBean> beans = Lists.newArrayList(new TestSummaryBean(new TestDetailBean()), new TestSummaryBean(new TestDetailBean()));
+        model.setBeans(beans);
+        model.setValueAt(99, 1, 0);
+        model.setValueAt("y", 2, 0);
+
+        List<TestSummaryBean> updates = model.getPendingUpdates().collect(Collectors.toList());
+
+        assertThat(updates).containsOnly(beans.toArray());
+    }
+
+    @Test
+    public void revertChange() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
+        Object originalValue = model.getValueAt(0, 0);
+        model.setValueAt("summary X", 0, 0);
+
+        model.revert();
+
+        assertThat(model.getValueAt(0, 0)).isEqualTo(originalValue);
+    }
+
+    @Test
+    public void queueDeleteRevertsAdd() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        model.queueAdd(new TestSummaryBean(new TestDetailBean()));
+
+        assertThat(model.queueDelete(3)).isFalse();
+
+        assertThat(model.getRowCount()).isEqualTo(3);
+        assertThat(model.getPendingAdds()).isEmpty();
+        assertThat(model.getPendingDeletes()).isEmpty();
+    }
+
+    @Test
+    public void revertDelete() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        model.queueDelete(1);
+
+        model.revert();
+
+        assertThat(model.getPendingDeletes()).isEmpty();
+        assertThat(model.getRowCount()).isEqualTo(3);
+    }
+
+    @Test
+    public void revertAddSummary() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        model.queueAdd(new TestSummaryBean(new TestDetailBean()));
+
+        model.revert();
+
+        assertThat(model.getPendingAdds()).isEmpty();
+        assertThat(model.getRowCount()).isEqualTo(3);
+    }
+
+    @Test
+    public void revertAddDetail() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        model.queueAppendSubRow(1);
+
+        model.revert();
+
+        assertThat(model.getPendingAdds()).isEmpty();
+        assertThat(model.getRowCount()).isEqualTo(3);
+    }
+
+    @Test
+    public void commit() throws Exception {
+        final TestSummaryBean added = new TestSummaryBean(new TestDetailBean());
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        model.queueDelete(1);
+        model.queueAdd(added);
+        model.setValueAt("new header", 0, 0);
+
+        model.commit();
+
+        assertThat(model.isChanged()).isFalse();
+        model.getBeans().forEach(bean -> assertThat(model.isChanged(bean)).isFalse());
+        assertThat(model.getBean(1)).isSameAs(added);
+        assertThat(model.isChangedAt(0, 0)).isFalse();
+        assertThat(model.getValueAt(0, 0)).isEqualTo("new header");
+        assertThat(model.getBean(0).details.size()).isEqualTo(1);
+    }
+
     private BufferedHeaderDetailTableModel<TestSummaryBean> newModel() {
-        return new BufferedHeaderDetailTableModel<>(new TestDetailAdapter(),
+        return new BufferedHeaderDetailTableModel<>(detailAdapter,
             singletonList(summaryColumnAdapter),
             singletonList(singletonList(detailColumnAdapter)));
     }
 
     private class TestDetailBean {
         private Integer id = nextId++;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
     }
 
     private class TestSummaryBean {
@@ -585,35 +763,19 @@ public class BufferedHeaderDetailTableModelTest {
             this.name = name;
             this.details = Lists.newArrayList(details);
         }
-    }
-
-    private class TestDetailColumnAdapter implements ColumnAdapter<TestDetailBean, Integer>, BeanPropertyValidator<TestDetailBean, Integer> {
-        public String getColumnId() {
-            return "detailId";
-        }
-
-        public String getResource(String resourceId, String defaultValue) {
-            return null;
-        }
 
         public String getName() {
-            return "Detail Id";
+            return name;
         }
 
-        public Class<Integer> getType() {
-            return Integer.class;
+        public void setName(String name) {
+            this.name = name;
         }
+    }
 
-        public Integer getValue(TestDetailBean row) {
-            return row.id;
-        }
-
-        public boolean isEditable(TestDetailBean row) {
-            return true;
-        }
-
-        public void setValue(TestDetailBean row, Integer value) {
-            row.id = value;
+    private class TestDetailColumnAdapter extends TestColumnAdapter<TestDetailBean, Integer> implements BeanPropertyValidator<TestDetailBean, Integer> {
+        public TestDetailColumnAdapter() {
+            super("Detail Id", "detailId", Integer.class, TestDetailBean::getId, TestDetailBean::setId);
         }
 
         public String validate(int selectedIndex, Integer propertyValue, List<? extends TestDetailBean> beans) {
@@ -621,49 +783,17 @@ public class BufferedHeaderDetailTableModelTest {
         }
     }
 
-    private class TestSummaryColumnAdapter implements ColumnAdapter<TestSummaryBean, String>, BeanPropertyValidator<TestSummaryBean, String> {
-        public String getColumnId() {
-            return "summaryName";
-        }
-
-        public String getResource(String resourceId, String defaultValue) {
-            return null;
-        }
-
-        public String getName() {
-            return "Summary Name";
-        }
-
-        public Class<String> getType() {
-            return String.class;
-        }
-
-        public String getValue(TestSummaryBean row) {
-            return row.name;
+    private class TestSummaryColumnAdapter extends TestColumnAdapter<TestSummaryBean, String> implements BeanPropertyValidator<TestSummaryBean, String> {
+        public TestSummaryColumnAdapter() {
+            super("Summary Name", "summaryName", String.class, TestSummaryBean::getName, TestSummaryBean::setName);
         }
 
         public boolean isEditable(TestSummaryBean row) {
             return row.editable;
         }
 
-        public void setValue(TestSummaryBean row, String value) {
-            row.name = value;
-        }
-
         public String validate(int selectedIndex, String propertyValue, List<? extends TestSummaryBean> beans) {
             return "error value".equals(propertyValue) ? "error value" : null;
-        }
-    }
-
-    private class TestDetailAdapter extends SingleTypeDetailAdapter<TestSummaryBean> {
-        public List<?> getDetails(TestSummaryBean bean, int subRowTypeIndex) {
-            return bean.details;
-        }
-
-        @Override
-        public int appendDetail(TestSummaryBean bean) {
-            bean.details.add(new TestDetailBean());
-            return bean.details.size();
         }
     }
 }

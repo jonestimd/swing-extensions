@@ -55,7 +55,7 @@ public class BufferedBeanListTableModel<T> extends BeanListTableModel<T> impleme
         }
     };
 
-    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public BufferedBeanListTableModel(ColumnAdapter<? super T, ?>... columnAdapters) {
         super(Arrays.asList(columnAdapters));
     }

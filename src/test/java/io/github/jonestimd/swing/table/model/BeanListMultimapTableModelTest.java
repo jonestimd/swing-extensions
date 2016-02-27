@@ -30,18 +30,8 @@ import static org.mockito.Mockito.*;
 public class BeanListMultimapTableModelTest {
     private static final com.google.common.base.Function<TestBean, TestGroup> GET_GROUP = input -> input.group;
     private static final Function<TestGroup, String> GET_GROUP_NAME = input -> input.groupName;
-    private static final ColumnAdapter<TestBean, String> BEAN_NAME_ADAPTER = new TestColumnAdapter("Name") {
-        @Override
-        public String getValue(TestBean testBean) {
-            return testBean.beanName;
-        }
-    };
-    private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter("Value") {
-        @Override
-        public String getValue(TestBean testBean) {
-            return testBean.beanValue;
-        }
-    };
+    private static final ColumnAdapter<TestBean, String> BEAN_NAME_ADAPTER = new TestColumnAdapter<>("Name", String.class, TestBean::getName);
+    private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter<>("Value", String.class, TestBean::getValue);
     @Mock
     private TableDataProvider<TestBean> dataProvider;
     @Mock
@@ -247,48 +237,18 @@ public class BeanListMultimapTableModelTest {
         private final String beanName;
         private final String beanValue;
 
-        private TestBean(TestGroup group, String beanName, String beanValue) {
+        public TestBean(TestGroup group, String beanName, String beanValue) {
             this.group = group;
             this.beanName = beanName;
             this.beanValue = beanValue;
         }
-    }
 
-    private static abstract class TestColumnAdapter implements ColumnAdapter<TestBean, String> {
-        private final String columnId;
-
-        protected TestColumnAdapter(String columnId) {
-            this.columnId = columnId;
-        }
-
-        @Override
-        public String getColumnId() {
-            return columnId;
-        }
-
-        @Override
-        public String getResource(String name, String defaultValue) {
-            return defaultValue;
-        }
-
-        @Override
         public String getName() {
-            return columnId;
+            return beanName;
         }
 
-        @Override
-        public Class<String> getType() {
-            return String.class;
-        }
-
-        @Override
-        public boolean isEditable(TestBean row) {
-            return false;
-        }
-
-        @Override
-        public void setValue(TestBean testBean, String s) {
-            throw new UnsupportedOperationException();
+        public String getValue() {
+            return beanValue;
         }
     }
 }

@@ -17,26 +17,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class BufferedBeanListTableModelTest {
-    private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER1 = new TestColumnAdapter("column1") {
-        public String getValue(TestBean row) {
-            return row.column1;
-        }
-
-        public void setValue(TestBean row, String value) {
-            row.column1 = value;
-        }
-    };
-    private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER2 = new TestColumnAdapter("column2") {
-        public String getValue(TestBean row) {
-            return row.column2;
-        }
-
-        public void setValue(TestBean row, String value) {
-            row.column2 = value;
-        }
-    };
+    private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER1 = new TestColumnAdapter<>("column1", String.class, TestBean::getColumn1, TestBean::setColumn1);
+    private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER2 = new TestColumnAdapter<>("column2", String.class, TestBean::getColumn2, TestBean::setColumn2);
     private TableModelListener listener = mock(TableModelListener.class);
-    @SuppressWarnings("unchecked")
     private BufferedBeanListTableModel<TestBean> model = new BufferedBeanListTableModel<>(COLUMN_ADAPTER1, COLUMN_ADAPTER2);
 
     @Before
@@ -343,33 +326,21 @@ public class BufferedBeanListTableModelTest {
     public static class TestBean {
         private String column1;
         private String column2;
-    }
 
-    private static abstract class TestColumnAdapter implements ColumnAdapter<TestBean, String> {
-        private String name;
-
-        private TestColumnAdapter(String name) {
-            this.name = name;
+        public String getColumn1() {
+            return column1;
         }
 
-        public String getColumnId() {
-            return name;
+        public void setColumn1(String column1) {
+            this.column1 = column1;
         }
 
-        public String getResource(String resourceId, String defaultValue) {
-            return null;
+        public String getColumn2() {
+            return column2;
         }
 
-        public String getName() {
-            return name;
-        }
-
-        public Class<String> getType() {
-            return String.class;
-        }
-
-        public boolean isEditable(TestBean row) {
-            return true;
+        public void setColumn2(String column2) {
+            this.column2 = column2;
         }
     }
 }

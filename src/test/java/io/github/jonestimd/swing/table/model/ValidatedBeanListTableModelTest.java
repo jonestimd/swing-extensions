@@ -10,12 +10,13 @@ import io.github.jonestimd.swing.validation.BeanPropertyValidator;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import static java.util.Collections.*;
 import static org.fest.assertions.Assertions.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ValidatedBeanListTableModelTest {
-    private ValidatedBeanListTableModel<TestBean> model = new ValidatedBeanListTableModel<>(Arrays.asList(new TestColumnAdapter()));
+    private ValidatedBeanListTableModel<TestBean> model = new ValidatedBeanListTableModel<>(singletonList(new TestBeanColumnAdapter()));
     private TableModelListener listener = mock(TableModelListener.class);
     private ArgumentCaptor<TableModelEvent> eventCaptor = ArgumentCaptor.forClass(TableModelEvent.class);
 
@@ -183,35 +184,19 @@ public class ValidatedBeanListTableModelTest {
         public TestBean(String column1) {
             this.column1 = column1;
         }
+
+        public String getColumn1() {
+            return column1;
+        }
+
+        public void setColumn1(String column1) {
+            this.column1 = column1;
+        }
     }
 
-    private static class TestColumnAdapter implements ColumnAdapter<TestBean,String>, BeanPropertyValidator<TestBean, String> {
-        public String getColumnId() {
-            return "column1";
-        }
-
-        public String getResource(String resourceId, String defaultValue) {
-            return null;
-        }
-
-        public String getName() {
-            return "column1";
-        }
-
-        public Class<String> getType() {
-            return String.class;
-        }
-
-        public boolean isEditable(TestBean row) {
-            return false;
-        }
-
-        public String getValue(TestBean bean) {
-            return bean.column1;
-        }
-
-        public void setValue(TestBean bean, String value) {
-            bean.column1 = value;
+    private static class TestBeanColumnAdapter extends TestColumnAdapter<TestBean,String> implements BeanPropertyValidator<TestBean, String> {
+        public TestBeanColumnAdapter() {
+            super("column1", String.class, TestBean::getColumn1, TestBean::setColumn1);
         }
 
         public String validate(int selectedIndex, String propertyValue, List<? extends TestBean> beans) {
