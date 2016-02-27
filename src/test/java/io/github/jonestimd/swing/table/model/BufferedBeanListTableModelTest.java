@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -29,18 +30,22 @@ public class BufferedBeanListTableModelTest {
 
     @Test
     public void testSetValue() throws Exception {
-        model.setBeans(singletonList(new TestBean()));
+        final TestBean bean = new TestBean();
+        model.setBeans(Lists.newArrayList(bean, new TestBean()));
         assertThat(model.isChanged()).isFalse();
+        assertThat(model.getChangedRows().collect(Collectors.toList())).isEmpty();
 
         model.setValueAt("value1", 0, 0);
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(0, 1)).isFalse();
+        assertThat(model.getPendingUpdates().collect(Collectors.toList())).containsExactly(bean);
 
         model.setValueAt("value2", 0, 1);
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(0, 1)).isTrue();
+        assertThat(model.getPendingUpdates().collect(Collectors.toList())).containsExactly(bean);
 
         assertEquals("value1", model.getValueAt(0, 0));
         assertEquals("value2", model.getValueAt(0, 1));
@@ -115,15 +120,18 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChanged()).isFalse();
 
         model.setValueAt("value1", 0, 0);
+        assertThat(model.getPendingUpdates().collect(Collectors.toList())).containsExactly(model.getBean(0));
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(0, 1)).isFalse();
 
         model.queueAdd(new TestBean());
+        assertThat(model.getPendingAdds()).containsExactly(model.getBean(2));
         assertThat(model.isChangedAt(2, 0)).isTrue();
         assertThat(model.isChangedAt(2, 1)).isTrue();
 
         model.queueDelete(model.getRow(1));
+        assertThat(model.getPendingDeletes()).containsExactly(model.getBean(1));
         assertThat(model.isChangedAt(1, 0)).isTrue();
         assertThat(model.isChangedAt(1, 1)).isTrue();
 
@@ -131,6 +139,9 @@ public class BufferedBeanListTableModelTest {
         assertThat(beans).hasSize(3);
         assertThat(beans.containsAll(model.getBeans())).isTrue();
         model.commit();
+        assertThat(model.getPendingAdds()).isEmpty();
+        assertThat(model.getPendingDeletes()).isEmpty();
+        assertThat(model.getPendingUpdates().collect(Collectors.toList())).isEmpty();
         assertThat(model.getBeans()).hasSize(2);
         assertThat(model.getBeans()).containsOnly(beans.get(0), beans.get(1));
         assertThat(model.isChanged()).isFalse();
@@ -194,6 +205,7 @@ public class BufferedBeanListTableModelTest {
         model.setBeans(singletonList(new TestBean()));
 
         model.queueAdd(new TestBean());
+        assertThat(model.getPendingAdds()).containsExactly(model.getBean(1));
         assertThat(model.isPendingAdd(1)).isTrue();
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isFalse();
@@ -202,6 +214,7 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(1, 1)).isTrue();
 
         model.queueAdd(0, new TestBean());
+        assertThat(model.getPendingAdds()).containsExactly(model.getBean(2), model.getBean(0));
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(0, 1)).isTrue();
@@ -215,10 +228,11 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(0, 0)).isTrue();
 
         List<TestBean> beans = model.getChangedRows().collect(Collectors.toList());
-        model.commit();
         assertEquals(2, beans.size());
         assertThat(beans.contains(model.getBeans().get(0))).isTrue();
         assertThat(beans.contains(model.getBeans().get(2))).isTrue();
+        model.commit();
+        assertThat(model.getPendingAdds()).isEmpty();
         assertThat(model.isChanged()).isFalse();
         assertThat(model.isChangedAt(0, 0)).isFalse();
         assertThat(model.isChangedAt(0, 1)).isFalse();
@@ -296,13 +310,13 @@ public class BufferedBeanListTableModelTest {
     }
 
     @Test
-    public void testCancelDelete() throws Exception {
+    public void undoDelete() throws Exception {
         TestBean bean = new TestBean();
         model.setBeans(Arrays.asList(bean, new TestBean()));
         model.queueDelete(bean);
         assertThat(model.isCellEditable(0, 0)).isFalse();
 
-        model.cancelDelete(bean);
+        model.undoDelete(0);
 
         assertThat(model.isChanged()).isFalse();
         assertThat(model.isCellEditable(0, 0)).isTrue();
@@ -314,13 +328,25 @@ public class BufferedBeanListTableModelTest {
     }
 
     @Test
-    public void testCancelDeleteDoesNothingIfNotPendingDelete() throws Exception {
+    public void undoDeleteDoesNothingIfNotPendingDelete() throws Exception {
         model.setBeans(singletonList(new TestBean()));
 
-        model.cancelDelete(new TestBean());
+        model.undoDelete(0);
 
         verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
         verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void undoChangeAtRevertsChange() throws Exception {
+        model.setBeans(singletonList(new TestBean()));
+        model.setValueAt("x", 0, 0);
+        assertThat(model.isChangedAt(0, 0)).isTrue();
+
+        model.undoChangedAt(0, 0);
+
+        assertThat(model.isChangedAt(0, 0)).isFalse();
+        assertThat(model.getValueAt(0, 0)).isNull();
     }
 
     public static class TestBean {

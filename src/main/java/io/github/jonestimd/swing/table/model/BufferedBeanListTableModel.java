@@ -26,13 +26,13 @@ import java.util.stream.Stream;
 
 /**
  * This class overrides {@link BeanListTableModel} to add change tracking.  Changes to cells are queued
- * by {@link #setValueAt(Object, int, int)}. The following methods are used to queue pending changes for rows:
+ * by {@link #setValueAt(Object, int, int)}. The following methods are used to update pending changes for rows:
  * <ul>
  * <li>{@link #queueAdd(Object)}</li>
- * <li>{@link #queueAdd(int, Object)}</li>
- * <li>{@link #cancelAdd(Object)}</li>
+ * <li>{@link #queueAdd(int, Object)} (cancelled by {@link #queueDelete(Object)}</li>
  * <li>{@link #queueDelete(Object)}</li>
- * <li>{@link #cancelDelete(Object)}</li>
+ * <li>{@link #undoChangedAt(int, int)}</li>
+ * <li>{@link #undoDelete(int)}</li>
  * </ul>
  * The {@link #commit()} method should be called after all pending changes have been saved.
  * The {@link #revert()} method is used to revert all pending changes.
@@ -175,13 +175,5 @@ public class BufferedBeanListTableModel<T> extends BeanListTableModel<T> impleme
         int index = indexOf(bean);
         fireTableRowsUpdated(index, index);
         return true;
-    }
-
-    public void cancelDelete(T bean) {
-        if (changeTracker.isPendingDelete(bean)) {
-            changeTracker.resetItem(bean);
-            int index = indexOf(bean);
-            fireTableRowsUpdated(index, index);
-        }
     }
 }

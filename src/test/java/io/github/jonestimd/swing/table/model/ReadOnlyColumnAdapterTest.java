@@ -25,6 +25,8 @@ import java.util.ResourceBundle;
 
 import org.junit.Test;
 
+import static org.fest.assertions.Assertions.*;
+
 public class ReadOnlyColumnAdapterTest {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("test-resources");
     private final ReadOnlyColumnAdapter<Object, String> adapter =
@@ -38,5 +40,10 @@ public class ReadOnlyColumnAdapterTest {
     @Test(expected = UnsupportedOperationException.class)
     public void setValueThrowsUnsupportedOperationException() throws Exception {
         adapter.setValue(null, null);
+    }
+
+    @Test
+    public void isEditableReturnsFalse() throws Exception {
+        assertThat(adapter.isEditable(null)).isFalse();
     }
 }
