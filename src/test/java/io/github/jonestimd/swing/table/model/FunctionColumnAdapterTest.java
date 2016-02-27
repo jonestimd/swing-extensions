@@ -65,4 +65,11 @@ public class FunctionColumnAdapterTest {
 
         verify(setter).accept(this, value);
     }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void nullSetterThrowsUnsupportedOperationException() throws Exception {
+        adapter = new FunctionColumnAdapter<>(BUNDLE, "functionColumnAdapterTest.", "column1", String.class, getter, null);
+
+        adapter.setValue(this, "x");
+    }
 }
