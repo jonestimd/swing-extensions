@@ -32,7 +32,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class MixedRowTableColumn extends TableColumn {
-    private List<TableColumn> subColumns = new ArrayList<TableColumn>();
+    private List<TableColumn> subColumns = new ArrayList<>();
 
     public MixedRowTableColumn(TableColumn column) {
         super(column.getModelIndex());

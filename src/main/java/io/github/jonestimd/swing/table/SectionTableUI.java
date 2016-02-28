@@ -46,15 +46,8 @@ public class SectionTableUI extends BasicTableUI {
 
         JTableHeader header = table.getTableHeader();
         if (bounds.intersects(clip) && (header == null || header.getDraggedColumn() == null)) {
-            boolean ltr = table.getComponentOrientation().isLeftToRight();
-
             Point upperLeft = clip.getLocation();
-            if (!ltr) {
-                upperLeft.x++;
-            }
-
-            Point lowerRight = new Point(clip.x + clip.width - (ltr ? 1 : 0),
-                    clip.y + clip.height);
+            Point lowerRight = new Point(clip.x + clip.width, clip.y + clip.height);
 
             int rowMin = Math.max(table.rowAtPoint(upperLeft), 0);
             int rowMax = table.rowAtPoint(lowerRight);
