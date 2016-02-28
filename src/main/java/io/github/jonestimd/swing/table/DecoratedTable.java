@@ -68,7 +68,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     private List<TableDecorator> decorators = new ArrayList<>();
     private Color evenBackground;
     private Color oddBackground;
-    private int headerRows = 1;
+    private int headerRows;
 
     public DecoratedTable(Model dm) {
         super(dm);
@@ -83,10 +83,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     @Override
     public void setUI(TableUI ui) {
         evenBackground = ComponentDefaults.getColor("Table.alternateRowColor");
-        oddBackground = new Color(ComponentDefaults.getColor("Table.background").getRGB());
-        if (evenBackground == null) {
-            evenBackground = oddBackground;
-        }
+        oddBackground = ComponentDefaults.getColor("Table.background");
         super.setUI(ui);
     }
 
