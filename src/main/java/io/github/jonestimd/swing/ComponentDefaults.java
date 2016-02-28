@@ -25,13 +25,15 @@ import java.util.ResourceBundle;
 import javax.swing.UIManager;
 
 public class ComponentDefaults {
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(UIDefaultsBundle.class.getName());
-
     public static Color getColor(String key) {
         Color color = UIManager.getColor(key);
         if (color == null) {
-            color = (Color) BUNDLE.getObject(key);
+            color = (Color) bundle().getObject(key);
         }
         return color;
+    }
+
+    private static ResourceBundle bundle() {
+        return ResourceBundle.getBundle(UIDefaultsBundle.class.getName());
     }
 }
