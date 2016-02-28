@@ -33,8 +33,17 @@ import io.github.jonestimd.swing.table.model.ChangeBufferTableModel;
 public class UnsavedChangeDecorator implements TableDecorator {
     private static final Map<TextAttribute, ?> STRIKETHRU_ATTRS =
             Collections.singletonMap(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-    private Color pendingChangeBackground = Color.CYAN;
-    private Color pendingDeleteBackground = Color.PINK;
+    private final Color pendingChangeBackground;
+    private final Color pendingDeleteBackground;
+
+    public UnsavedChangeDecorator() {
+        this(Color.CYAN, Color.PINK);
+    }
+
+    public UnsavedChangeDecorator(Color pendingChangeBackground, Color pendingDeleteBackground) {
+        this.pendingChangeBackground = pendingChangeBackground;
+        this.pendingDeleteBackground = pendingDeleteBackground;
+    }
 
     public <B, M extends BeanTableModel<B>> void prepareRenderer(DecoratedTable<B, M> table, JComponent renderer, int modelRow, int modelColumn) {
         if (((ChangeBufferTableModel<?>) table.getModel()).isPendingDelete(modelRow)) {
@@ -54,9 +63,5 @@ public class UnsavedChangeDecorator implements TableDecorator {
             components1[i] *= components2[i];
         }
         return new Color(colorSpace, components1, 1f);
-    }
-
-    public void setPendingChangeBackground(Color changedBackground) {
-        this.pendingChangeBackground = changedBackground;
     }
 }

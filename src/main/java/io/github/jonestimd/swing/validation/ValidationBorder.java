@@ -50,6 +50,10 @@ public class ValidationBorder implements Border {
         return false;
     }
 
+    public boolean isValid() {
+        return valid;
+    }
+
     public void setValid(boolean valid) {
         this.valid = valid;
     }
