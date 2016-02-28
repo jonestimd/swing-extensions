@@ -60,6 +60,10 @@ public class DialogActionTest {
 
         waitForThreads(threads);
         assertThat(loaded).isTrue();
+        long end = System.currentTimeMillis() + 10000L;
+        while (!(saved && setResultOnUI) && System.currentTimeMillis() <= end) {
+            Thread.yield();
+        }
         assertThat(saved).isTrue();
         assertThat(setResultOnUI).isTrue();
     }
