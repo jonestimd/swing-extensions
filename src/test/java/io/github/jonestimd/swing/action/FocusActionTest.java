@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,27 +24,30 @@ package io.github.jonestimd.swing.action;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
-public class FocusAction extends AbstractAction {
-    protected enum KeyAction { FocusFilter }
+import io.github.jonestimd.swing.action.FocusAction.KeyAction;
+import org.junit.Test;
 
-    private final JComponent component;
+import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
-    public FocusAction(JComponent component) {
-        this.component = component;
-    }
+public class FocusActionTest {
+    private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
+    @Test
+    public void actionPerformed() throws Exception {
+        final JTable table = new JTable();
+        final JComponent component = mock(JComponent.class);
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        component.requestFocusInWindow();
-    }
+        FocusAction.install(component, table, bundle, "focusActionTest.key");
+        Action action = table.getActionMap().get(KeyAction.FocusFilter);
+        action.actionPerformed(new ActionEvent(table, -1, null));
 
-    public static void install(JComponent focusField, JTable table, ResourceBundle bundle, String accelleratorKey) {
-        table.getActionMap().put(KeyAction.FocusFilter, new FocusAction(focusField));
-        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(bundle.getString(accelleratorKey)), KeyAction.FocusFilter);
+        verify(component).requestFocusInWindow();
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(bundle.getString("focusActionTest.key"));
+        assertThat(table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(keyStroke)).isSameAs(KeyAction.FocusFilter);
     }
 }
