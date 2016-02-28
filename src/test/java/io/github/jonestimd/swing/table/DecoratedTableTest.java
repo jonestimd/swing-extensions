@@ -310,7 +310,7 @@ public class DecoratedTableTest {
         verifyNoMoreInteractions(renderer1);
         verify((JComponent) renderer2).setBackground(evenBackground);
         verify((JComponent) renderer2).setBackground(oddBackground);
-        verify((JComponent) renderer2, times(2)).setForeground(new Color(51, 51, 51));
+        verify((JComponent) renderer2, times(2)).setForeground(table.getForeground());
         verify(renderer2, times(2)).getTableCellRendererComponent(same(table), anyString(), anyBoolean(), anyBoolean(), anyInt(), eq(0));
         verifyNoMoreInteractions(renderer2);
     }
