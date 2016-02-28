@@ -4,6 +4,7 @@ import java.awt.Component;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -16,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import sun.swing.table.DefaultTableCellHeaderRenderer;
 
 import static org.fest.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -120,7 +120,7 @@ public class MixedRowTableColumnTest {
     @Test
     @SuppressWarnings("unchecked")
     public void showsIconOnFirstHeaderRow() throws Exception {
-        final DefaultTableCellHeaderRenderer renderer = newDefaultTableCellHeaderRenderer();
+        final JLabel renderer = newDefaultTableCellHeaderRenderer();
         MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
         mixedColumn.addSubColumn(new TableColumn(-1));
         when(headerRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(renderer);
@@ -134,7 +134,7 @@ public class MixedRowTableColumnTest {
     @Test
     @SuppressWarnings("unchecked")
     public void doesNotShowIconOnHeaderSubrows() throws Exception {
-        final DefaultTableCellHeaderRenderer renderer = newDefaultTableCellHeaderRenderer();
+        final JLabel renderer = newDefaultTableCellHeaderRenderer();
         MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
         mixedColumn.addSubColumn(new TableColumn(-1));
         when(headerRenderer.getTableCellRendererComponent(table, SUB_HEADER, false, false, 1, 0)).thenReturn(renderer);
@@ -145,8 +145,8 @@ public class MixedRowTableColumnTest {
         assertThat(renderer.getIcon()).isNull();
     }
 
-    private DefaultTableCellHeaderRenderer newDefaultTableCellHeaderRenderer() {
-        final DefaultTableCellHeaderRenderer renderer = new DefaultTableCellHeaderRenderer();
+    private JLabel newDefaultTableCellHeaderRenderer() {
+        final JLabel renderer = new JLabel();
         renderer.setIcon(new ImageIcon());
         return renderer;
     }

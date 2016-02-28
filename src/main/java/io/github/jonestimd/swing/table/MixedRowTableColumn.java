@@ -83,7 +83,7 @@ public class MixedRowTableColumn extends TableColumn {
                 value = " ";
             }
             Component component = tableRenderer.getTableCellRendererComponent(table, value, isSelected, cellHasFocus, index, column);
-            if (index > 0 && component.getClass().getName().equals("sun.swing.table.DefaultTableCellHeaderRenderer")) {
+            if (index > 0 && component instanceof JLabel) {
                 ((JLabel) component).setIcon(null);
             }
             return component;
