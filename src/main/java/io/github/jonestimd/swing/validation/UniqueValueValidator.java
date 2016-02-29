@@ -20,16 +20,42 @@
 package io.github.jonestimd.swing.validation;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class UniqueValueValidator<T> implements BeanPropertyValidator<T, String> {
+/**
+ * Validate a property of a bean for uniqueness within a list of beans of the same type.
+ * @param <T> the class of the beans
+ */
+public class UniqueValueValidator<T> implements BeanPropertyValidator<T, String> {
+    private static final BiFunction<Object, Object, Boolean> NO_GROUPING = (o1, o2) -> true;
 
     private final String requiredMessage;
     private final String uniqueMessage;
     private final Function<? super T, String> beanAdapter;
+    private final BiFunction<? super T, ? super T, Boolean> isSameGroup;
 
+    /**
+     * Construct a validator that uses all beans in the list for validating uniqueness.
+     * @param beanAdapter the function for getting the property value from a bean
+     * @param requiredMessage the error message to use when the property is not set
+     * @param uniqueMessage the error message to use when the property value is not unique
+     */
     public UniqueValueValidator(Function<? super T, String> beanAdapter, String requiredMessage, String uniqueMessage) {
+        this(beanAdapter, NO_GROUPING, requiredMessage, uniqueMessage);
+    }
+
+    /**
+     * Construct a validator that uses all beans in the list for validating uniqueness.
+     * @param beanAdapter the function for getting the property value from a bean
+     * @param isSameGroup a function for testing if 2 beans are in the same group for uniqueness
+     * @param requiredMessage the error message to use when the property is not set
+     * @param uniqueMessage the error message to use when the property value is not unique
+     */
+    public UniqueValueValidator(Function<? super T, String> beanAdapter, BiFunction<? super T, ? super T, Boolean> isSameGroup,
+                                String requiredMessage, String uniqueMessage) {
         this.beanAdapter = beanAdapter;
+        this.isSameGroup = isSameGroup;
         this.requiredMessage = requiredMessage;
         this.uniqueMessage = uniqueMessage;
     }
@@ -50,12 +76,10 @@ public abstract class UniqueValueValidator<T> implements BeanPropertyValidator<T
 
     private boolean isDuplicate(T selectedItem, String value, Iterable<? extends T> items) {
         for (T item : items) {
-            if (item != selectedItem && isSameGroup(item, selectedItem) && value.equalsIgnoreCase(beanAdapter.apply(item))) {
+            if (item != selectedItem && isSameGroup.apply(item, selectedItem) && value.equalsIgnoreCase(beanAdapter.apply(item))) {
                 return true;
             }
         }
         return false;
     }
-
-    protected abstract boolean isSameGroup(T item, T selectedItem);
 }

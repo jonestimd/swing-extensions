@@ -24,10 +24,7 @@ import java.awt.Component;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
@@ -36,6 +33,9 @@ import javax.swing.border.LineBorder;
 
 import io.github.jonestimd.swing.ComponentTreeUtils;
 
+/**
+ * A cell editor that uses a {@link ValidatedTextField}.
+ */
 public class ValidatingTextCellEditor extends DefaultCellEditor {
     private final ValidatedTextField textComponent;
     private final ComponentListener resizeListener;
@@ -54,17 +54,11 @@ public class ValidatingTextCellEditor extends DefaultCellEditor {
             }
         };
         updateViewport(table);
-        table.addHierarchyListener(new HierarchyListener() {
-            public void hierarchyChanged(HierarchyEvent e) {
-                updateViewport(table);
-            }
-        });
+        table.addHierarchyListener(e -> updateViewport(table));
         // TODO when is this listener needed?
-        table.addPropertyChangeListener("tableCellEditor", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (isCancelEvent(event)) {
-                    cancelCellEditing();
-                }
+        table.addPropertyChangeListener("tableCellEditor", event -> {
+            if (isCancelEvent(event)) {
+                cancelCellEditing();
             }
         });
     }
