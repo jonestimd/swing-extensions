@@ -40,7 +40,7 @@ import io.github.jonestimd.swing.table.model.BeanListTableModel;
  * with a table model that overrides {@link AbstractTableModel#getColumnClass(int)} because that method  always returns
  * {@code Object.class}.  The column cell renderer is used with the value specified below to determine the width.</p>
  * <table>
- *   <tr align="left"><th align="left">Column Class</th><th align="left">Renderer Value</th><th align="left">Fixed Width</th></tr>
+ *   <tr><th align="left">Column Class</th><th align="left">Renderer Value</th><th align="left">Fixed Width</th></tr>
  *   <tr><td>{@code Boolean}</td><td>Column header</td><td>{@code true}</td></tr>
  *   <tr><td>{@code Number}</td><td>Configuration prototype</td><td>{@code true}</td></tr>
  *   <tr><td>{@code Enum}</td><td>Longest {@code toString()} value</td><td>{@code true}</td></tr>

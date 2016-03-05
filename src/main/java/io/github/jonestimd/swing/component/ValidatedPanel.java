@@ -38,7 +38,7 @@ import io.github.jonestimd.swing.validation.ValidatedComponent;
 import io.github.jonestimd.swing.window.ConfirmCloseAdapter;
 
 /**
- * This component displays a {@code form} and validation messages for {@link ValidatedComponent}s contained in
+ * A component that displays a {@code form} and validation messages for {@link ValidatedComponent}s contained in
  * the {@code form}.  This component uses a {@link BorderLayout} with the {@code form} in the center position
  * and the validation messages in the south position.  {@link ValidatedComponent}s can be added to the {@code form}
  * at any time and their validation messages will automatically be displayed.

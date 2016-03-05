@@ -29,6 +29,9 @@ import javax.swing.RootPaneContainer;
  * A panel that adds actions to the menu bar of a {@link JFrame} or {@link JDialog}.
  */
 public abstract class MenuActionPanel extends JPanel {
+    /**
+     * Overridden to find the ancestor {@link RootPaneContainer} and add items to its menu bar.
+     */
     public void addNotify() {
         super.addNotify();
         RootPaneContainer window = (RootPaneContainer) getTopLevelAncestor();
@@ -40,5 +43,9 @@ public abstract class MenuActionPanel extends JPanel {
         initializeMenu(menuBar);
     }
 
+    /**
+     * Override to add items to the frame's menu bar.
+     * @param menuBar the frame's menu bar
+     */
     protected abstract void initializeMenu(JMenuBar menuBar);
 }

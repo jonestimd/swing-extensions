@@ -19,7 +19,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
+
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
@@ -87,5 +92,16 @@ public class TableFactory {
 
     public static TableCellEditor createEnumCellEditor(Class<? extends Enum<?>> enumType) { // TODO use TranslatingComboBoxCellEditor
         return new ComboBoxCellEditor(new JComboBox<>(enumType.getEnumConstants()));
+    }
+
+    public static void addDoubleClickHandler(JTable table, Consumer<MouseEvent> handler) {
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent event) {
+                super.mouseClicked(event);
+                if (event.getButton() == MouseEvent.BUTTON1 && event.getClickCount() == 2) {
+                    handler.accept(event);
+                }
+            }
+        });
     }
 }

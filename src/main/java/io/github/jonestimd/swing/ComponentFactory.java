@@ -104,10 +104,22 @@ public class ComponentFactory {
         return toolbar;
     }
 
+    /**
+     * Creates a toggle button for a toolbar. Sets the button's tooltip text using the button's text and accelerator.
+     * @param action the button action (should have text and an icon)
+     * @return the new button
+     * @see Action#ACCELERATOR_KEY
+     */
     public static JToggleButton newToolbarToggleButton(Action action) {
         return initToolbarButton(action, new JToggleButton(action));
     }
 
+    /**
+     * Creates a button for a toolbar. Sets the button's tooltip text using the action's text and accelerator key.
+     * @param action the button action (should have text and an icon)
+     * @return a new non-focusable button with {@code null} text
+     * @see Action#ACCELERATOR_KEY
+     */
     public static JButton newToolbarButton(Action action) {
         return initToolbarButton(action, new JButton(action));
     }
