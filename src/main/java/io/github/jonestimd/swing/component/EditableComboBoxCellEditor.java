@@ -28,19 +28,19 @@ import io.github.jonestimd.swing.validation.Validator;
 
 /**
  * Provides a cell editor ({@link BeanListComboBox}) for selecting from a list of beans or creating a new item.
- * @param <T> list item class
+ * @param <T> the list item class
  */
 public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>> extends BeanListComboBoxCellEditor<T> {
     private BeanListComboBoxEditor<T> editor;
 
     @SuppressWarnings("unchecked")
-    protected EditableComboBoxCellEditor(Format format, Validator<String> validator) {
-        this(format, validator, new FormatPrefixSelector(format));
+    protected EditableComboBoxCellEditor(Format format, Validator<String> validator, String loadingMessage) {
+        this(format, validator, new FormatPrefixSelector(format), loadingMessage);
     }
 
     @SuppressWarnings("unchecked")
-    protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector prefixSelector) {
-        super(new BeanListComboBox<T>(format, validator, Collections.<T>emptyList(), prefixSelector));
+    protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector prefixSelector, String loadingMessage) {
+        super(new BeanListComboBox<T>(format, validator, Collections.<T>emptyList(), prefixSelector), loadingMessage);
         editor = (BeanListComboBoxEditor<T>) getComboBox().getEditor();
         editor.getEditorComponent().setBorder(null);
         editor.getEditorComponent().addFocusListener(new FocusAdapter() {

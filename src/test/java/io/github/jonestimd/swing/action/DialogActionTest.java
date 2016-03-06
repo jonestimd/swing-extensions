@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import io.github.jonestimd.AsyncTest;
 import org.junit.Test;
 
 import static org.fest.assertions.Assertions.*;
@@ -45,7 +46,7 @@ public class DialogActionTest {
 
         SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
 
-        waitForThreads(threads);
+        AsyncTest.waitForThreadCount(threads);
         assertThat(loaded).isTrue();
         assertThat(saved).isFalse();
         assertThat(setResultOnUI).isFalse();
@@ -58,20 +59,11 @@ public class DialogActionTest {
 
         SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
 
-        waitForThreads(threads);
+        AsyncTest.waitForThreadCount(threads);
         assertThat(loaded).isTrue();
-        long end = System.currentTimeMillis() + 10000L;
-        while (!(saved && setResultOnUI) && System.currentTimeMillis() <= end) {
-            Thread.yield();
-        }
+        AsyncTest.timeout(10000L, () -> saved && setResultOnUI);
         assertThat(saved).isTrue();
         assertThat(setResultOnUI).isTrue();
-    }
-
-    private void waitForThreads(int threads) {
-        while (Thread.currentThread().getThreadGroup().activeCount() > threads) {
-            Thread.yield();
-        }
     }
 
     private class TestAction extends DialogAction {

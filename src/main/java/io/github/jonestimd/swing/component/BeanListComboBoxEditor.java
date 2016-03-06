@@ -134,10 +134,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         return -1;
     }
 
-    public void setNewItem(T anObject) {
-        super.setItem(itemToString(anObject));
-    }
-
     protected String itemToString(Object item) {
         return item == null ? null : format.format(item);
     }

@@ -46,6 +46,7 @@ import io.github.jonestimd.swing.StatusIndicator;
  */
 public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>> extends ComboBoxCellEditor {
     private static final Logger logger = Logger.getLogger(BeanListComboBoxCellEditor.class.getName());
+    private final String loadingMessage;
     private StatusIndicator fallbackStatusIndicator = new LoggerStatusIndicator(logger);
     private boolean loading;
     private List<T> items;
@@ -53,15 +54,16 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     /**
      * Create a combo box cell editor for an optional field.
      */
-    public BeanListComboBoxCellEditor(Format format) {
-        this(new BeanListComboBox<T>(format));
+    protected BeanListComboBoxCellEditor(Format format, String loadingMessage) {
+        this(new BeanListComboBox<T>(format), loadingMessage);
     }
 
     /**
      * Create a combo box cell editor for an optional field.
      */
-    protected BeanListComboBoxCellEditor(BeanListComboBox<T> comboBox) {
+    protected BeanListComboBoxCellEditor(BeanListComboBox<T> comboBox, String loadingMessage) {
         super(comboBox);
+        this.loadingMessage = loadingMessage;
         getComboBox().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("pressed ENTER"), "ignore");
         getComboBoxModel().addElement(null);
     }
@@ -88,10 +90,6 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
 
     protected BeanListModel<T> getComboBoxModel() {
         return getComboBox().getModel();
-    }
-
-    protected T getListItem(int index) {
-        return getComboBoxModel().getElementAt(index);
     }
 
     public void setListItems(List<T> items) {
@@ -139,12 +137,11 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         }
     }
 
-    protected abstract String getLoadingMessage();
     protected abstract List<T> getComboBoxValues();
 
     private class LoadComboBoxTask implements BackgroundTask<List<T>> {
         public String getStatusMessage() {
-            return getLoadingMessage();
+            return loadingMessage;
         }
 
         public List<T> performTask() {

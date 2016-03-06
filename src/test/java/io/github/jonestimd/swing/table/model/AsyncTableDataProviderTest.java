@@ -4,12 +4,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import io.github.jonestimd.AsyncTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,11 +22,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncTableDataProviderTest {
-    private static final Runnable NO_OP = new Runnable() {
-        @Override
-        public void run() {
-        }
-    };
     private final Runnable submit = new Runnable() {
         @Override
         public void run() {
@@ -36,7 +32,7 @@ public class AsyncTableDataProviderTest {
     private PropertyChangeListener stateChangeListener;
     private TestTableDataProvider dataProvider;
     private Collection<String> expectedQuery;
-    private List<String> expectedResult = new ArrayList<String>();
+    private List<String> expectedResult = new ArrayList<>();
     private List<String> queryResult;
     private volatile boolean queryDelay = false;
 
@@ -48,7 +44,7 @@ public class AsyncTableDataProviderTest {
 
     @Test
     public void submitWhenNotPending() throws Exception {
-        expectedQuery = Arrays.asList("query");
+        expectedQuery = Collections.singletonList("query");
 
         SwingUtilities.invokeAndWait(submit);
         waitForQuery();
@@ -59,7 +55,7 @@ public class AsyncTableDataProviderTest {
 
     @Test
     public void submitWhenPending() throws Exception {
-        expectedQuery = Arrays.asList("query");
+        expectedQuery = Collections.singletonList("query");
         queryDelay = true;
 
         SwingUtilities.invokeAndWait(submit);
@@ -72,10 +68,8 @@ public class AsyncTableDataProviderTest {
     }
 
     private void waitForQuery() throws InterruptedException, InvocationTargetException {
-        while (dataProvider.activeQueries() > 0) {
-            Thread.yield();
-        }
-        SwingUtilities.invokeAndWait(NO_OP);
+        AsyncTest.timeout(10000L, () -> dataProvider.activeQueries() == 0);
+        SwingUtilities.invokeAndWait(() -> {});
     }
 
     private class TestTableDataProvider extends AsyncTableDataProvider<String, Collection<String>, List<String>> {
