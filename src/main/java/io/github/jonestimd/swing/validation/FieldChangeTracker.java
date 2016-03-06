@@ -55,7 +55,8 @@ import javax.swing.text.JTextComponent;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 
 public class FieldChangeTracker { // TODO separate change tracker from validation tracker
-    private static final Predicate<Container> NO_CHILD_TRACKING = container -> !(container instanceof JList || container instanceof JTable);
+    private static final Predicate<Container> NO_CHILD_TRACKING = container ->
+            !(container instanceof JList || container instanceof JTable || container instanceof JComboBox);
     private final Logger logger = Logger.getLogger(FieldChangeHandler.class.getName());
 
     public static void install(FieldChangeHandler handler, Container container) {
@@ -75,7 +76,7 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
                 trackFieldChanges((Container) component);
             }
             else {
-                addComponenListener(component);
+                addComponentListener(component);
             }
         }
     };
@@ -85,11 +86,11 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
     }
 
     public void trackFieldChanges(Container container) {
-        ComponentTreeUtils.visitComponentTree(container, this::addComponenListener, NO_CHILD_TRACKING);
+        ComponentTreeUtils.visitComponentTree(container, this::addComponentListener, NO_CHILD_TRACKING);
         changeHandler.fieldsChanged(false, validationMessages.values());
     }
 
-    protected void addComponenListener(Component component) {
+    protected void addComponentListener(Component component) {
         if (component instanceof ValidatedComponent) {
             ValidatedComponent validatedComponent = (ValidatedComponent) component;
             validatedComponent.addValidationListener(validationHandler);

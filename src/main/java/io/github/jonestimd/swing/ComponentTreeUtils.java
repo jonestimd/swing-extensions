@@ -46,13 +46,15 @@ public class ComponentTreeUtils {
         if (type.isInstance(rootComponent)) {
             visitor.visit(type.cast(rootComponent));
         }
-        Component[] children = getComponents(rootComponent);
-        for (Component child : children) {
-            if (child instanceof Container && descend.test((Container) child)) {
-                visitComponentTree((Container) child, type, visitor, descend);
-            }
-            else if (type.isInstance(child)) {
-                visitor.visit(type.cast(child));
+        if (descend.test(rootComponent)) {
+            Component[] children = getComponents(rootComponent);
+            for (Component child : children) {
+                if (child instanceof Container) {
+                    visitComponentTree((Container) child, type, visitor, descend);
+                }
+                else if (type.isInstance(child)) {
+                    visitor.visit(type.cast(child));
+                }
             }
         }
     }

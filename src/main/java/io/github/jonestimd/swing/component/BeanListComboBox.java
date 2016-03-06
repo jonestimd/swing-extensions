@@ -36,22 +36,30 @@ import io.github.jonestimd.swing.validation.ValidationBorder;
 import io.github.jonestimd.swing.validation.Validator;
 
 /**
- * Extends {@link JComboBox} to display a list of beans.  Also handles a null item in the list and keyboard
- * selection when this combo box is not editable.
+ * Extends {@link JComboBox} to display a list of beans using a {@link Format} to render the list items.  Also handles
+ * keyboard selection when the combo box is not editable.  The list of items may include a {@code null} when a
+ * selection is not required.  When the combo box is editable the {@link Format} should also support parsing the
+ * input text to create a new bean.
  * @param <T> list item class
+ * @see BeanListComboBoxEditor
  */
 public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedComponent {
     private String requiredMessage;
     private String validationMessages;
 
     /**
-     * Create a normal (non-editable) combo box.
+     * Create a non-editable combo box.
      * @param format display format for the items
      */
     public BeanListComboBox(Format format) {
         this(format, Collections.<T>emptyList());
     }
 
+    /**
+     * Create a non-editable combo box for a required value.
+     * @param format display format for the items
+     * @param requiredMessage the message to display when no value is selected
+     */
     public BeanListComboBox(Format format, String requiredMessage) {
         this(format, Collections.emptyList());
         this.requiredMessage = requiredMessage;
@@ -60,13 +68,13 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     }
 
     /**
-     * Create a normal (non-editable) combo box.
+     * Create a non-editable combo box.
      * @param format display format for the items
      * @param items  the list of items
      */
     public BeanListComboBox(Format format, Collection<T> items) {
         this(items, format);
-        setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<T>(format)));
+        setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
     }
 
     /**
@@ -88,7 +96,9 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<T> items, PrefixSelector<T> prefixSelector) {
         this(items, format);
-        setEditor(new BeanListComboBoxEditor<>(this, format, validator, prefixSelector));
+        BeanListComboBoxEditor<T> editor = new BeanListComboBoxEditor<>(this, format, validator, prefixSelector);
+        editor.getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
+        setEditor(editor);
         setEditable(true);
     }
 
@@ -127,14 +137,12 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     protected void selectedItemChanged() {
         if (selectedItemReminder == null) {
             fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
-                    selectedItemReminder,
-                    ItemEvent.DESELECTED));
+                    selectedItemReminder, ItemEvent.DESELECTED));
         }
         super.selectedItemChanged();
         if (selectedItemReminder == null) {
             fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
-                    selectedItemReminder,
-                    ItemEvent.SELECTED));
+                    selectedItemReminder, ItemEvent.SELECTED));
         }
     }
 
@@ -170,6 +178,9 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
 
     @Override
     public String getValidationMessages() {
+        if (isEditable() && getEditor().getEditorComponent() instanceof ValidatedComponent) {
+            return ((ValidatedComponent) getEditor().getEditorComponent()).getValidationMessages();
+        }
         return validationMessages;
     }
 
