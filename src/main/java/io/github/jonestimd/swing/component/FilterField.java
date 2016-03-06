@@ -20,20 +20,14 @@
 package io.github.jonestimd.swing.component;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-import javax.swing.JFrame;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
 import javax.swing.event.CaretEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
@@ -44,10 +38,28 @@ import javax.swing.text.StyleConstants;
 
 import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.filter.BasicFilterParser;
+import io.github.jonestimd.swing.filter.FilterParser;
 import io.github.jonestimd.swing.filter.FilterSource;
+import io.github.jonestimd.swing.table.sort.BeanModelRowSorter;
 import io.github.jonestimd.util.Streams;
 
+/**
+ * A text pane that allows the user to enter a filter expression.  When the text changes it is parsed by a
+ * {@link FilterParser}.  When the text is successfully parsed a property change event is fired for the parsed
+ * predicate.  When parsing fails the fields background color is changed to the specified {@code errorBackground}.
+ * Operators are typed using the {@code Ctrl} key and are displayed with a bold font. When the caret is at a parenthesis
+ * the matching parenthesis is highlighted.  This component supports the following operators.
+ * <ul>
+ *   <li>grouping: ()</li>
+ *   <li>not: !</li>
+ *   <li>and: &amp;</li>
+ *   <li>or: | (displayed as &#x2502;)</li>
+ * </ul>
+ * <p>This component can be used with a {@link BeanModelRowSorter} to filter the rows displayed in a table.</p>
+ * @param <T> the parameter type of the parsed predicate
+ */
 public class FilterField<T> extends JTextPane implements FilterSource {
+    /** Property name for predicate property change events. */
     public static final String PREDICATE_PROPERTY = "FilterField.predicate";
     private static final String OPERATORS = "()&|!";
     private static final String SYMBOLS = "()&\u2502!";
@@ -56,14 +68,27 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     private final HighlightPainter highlightPainter = new DefaultHighlightPainter(Color.CYAN);
     private Object highlightKey;
 
-    private final BasicFilterParser<T> filterParser;
+    private final FilterParser<T> filterParser;
     private final Color normalBackground;
     private final Color errorBackground;
-    private final List<String> terms = new ArrayList<>();
     private Predicate<T> predicate;
 
+    /**
+     * Construct a filter field using {@link BasicFilterParser}.
+     * @param predicateFactory a function for creating a predicate for a single term
+     * @param errorBackground the background color to use when parsing fails
+     */
     public FilterField(Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
-        this.filterParser = new BasicFilterParser<>(predicateFactory, terms::add);
+        this(new BasicFilterParser<>(predicateFactory), errorBackground);
+    }
+
+    /**
+     * Construct a filter field using the specified {@code filterParser}.
+     * @param filterParser the filter parser
+     * @param errorBackground the background color to use when parsing fails
+     */
+    public FilterField(FilterParser<T> filterParser, Color errorBackground) {
+        this.filterParser = filterParser;
         this.normalBackground = getBackground();
         this.errorBackground = errorBackground;
         StyleConstants.setBold(boldStyle, true);
@@ -93,7 +118,6 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     }
 
     private void updateFilter() {
-        terms.clear();
         setToolTipText(null);
         try {
             predicate = getText().trim().isEmpty() ? null : filterParser.parse(FilterField.this);
@@ -101,7 +125,6 @@ public class FilterField<T> extends JTextPane implements FilterSource {
             setBackground(normalBackground);
         } catch (Exception ex) {
             predicate = null;
-            terms.clear();
             setToolTipText(ex.getMessage());
             setBackground(errorBackground);
             firePropertyChange(PREDICATE_PROPERTY, null, null);
@@ -128,6 +151,7 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         }
     }
 
+    @Override
     public boolean isOperator(int index) {
         return StyleConstants.isBold(getStyledDocument().getCharacterElement(index).getAttributes());
     }
@@ -155,28 +179,17 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         attributes.addAttributes(style);
     }
 
+    /**
+     * Get the predicate for the current filter text.
+     */
     public Predicate<T> getFilter() {
         return predicate;
     }
 
+    /**
+     * Get the list of filter terms.  Useful for highlighting matches.
+     */
     public List<String> getTerms() {
-        return terms;
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-            SwingUtilities.invokeAndWait(() -> {
-                FilterField<?> filterField = new FilterField<String>(term -> term::contains, Color.PINK);
-                JFrame frame = new JFrame("Filter FIeld");
-                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-                frame.setPreferredSize(new Dimension(400, 100));
-                frame.getContentPane().add(filterField);
-                frame.pack();
-                frame.setVisible(true);
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return filterParser.getTerms();
     }
 }

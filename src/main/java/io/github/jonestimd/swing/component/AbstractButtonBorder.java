@@ -51,8 +51,8 @@ import javax.swing.border.LineBorder;
 import io.github.jonestimd.swing.action.ActionAdapter;
 
 /**
- * Abstract class for a border that displays a popup window on mouse click events.  The target area for the mouse clicks
- * can be placed on the left or right side of the contained component and subclasses should implement
+ * Abstract class for a border that displays a popup window on mouse click events.  The target area for the mouse
+ * clicks can be placed on the left or right side of the contained component and subclasses should implement
  * {@link #paintBorder(Component, Graphics, int, int, int, int, int)} to draw the "button" in the target area.
  * The default "button" area is a square having the same height as the contained component.
  * @param <C> the class of the contained component

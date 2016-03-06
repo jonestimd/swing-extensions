@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,20 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.filter;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 /**
- * Interface for a component that provides text to be parsed by a {@link FilterParser}.  The {@link #isOperator(int)}
- * method is used to determine where to divide the filter text into terms and what logical operators are contained
- * in the filter text.
+ * Interface for parsing the text of a {@link FilterSource} and creating a {@link Predicate}.
+ * @param <T> the parameter type of the generated predicate.
  */
-public interface FilterSource {
+public interface FilterParser<T> {
     /**
-     * @return the raw filter text.
+     * Parse the filter text.
+     * @return a predicate matching the parsed filter text
      */
-    String getText();
+    Predicate<T> parse(FilterSource source);
 
     /**
-     * @param index an index into the raw filter text
-     * @return true if the character at {@code index} is an operator or false if it is part of a filter term
+     * Get the individual terms of the parsed predicate.
      */
-    boolean isOperator(int index);
+    List<String> getTerms();
 }

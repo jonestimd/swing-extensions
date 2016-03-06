@@ -19,28 +19,42 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.filter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Not thread safe.
+ * A {@link FilterParser} that generates a compound predicate from the filter text.  The filter text may contain terms
+ * separated by logical operators.  The following logical operators are supported.  The operators are listed in the
+ * order of precedence (highest first).
+ * <ul>
+ *   <li>grouping: ()</li>
+ *   <li>not: !</li>
+ *   <li>and: &amp;</li>
+ *   <li>or: | or &#x2502;</li>
+ * </ul>
+ * <strong>Note:</strong>  This class is not thread safe.  It is intended for use on the Swing event thread.
  */
-public class BasicFilterParser<T> {
+public class BasicFilterParser<T> implements FilterParser<T> {
     private final Function<String, Predicate<T>> predicateFactory;
     private final StringBuilder buffer = new StringBuilder();
-    private final Consumer<String> termSink;
     private List<Operation<T>> stack = new LinkedList<>();
     private Predicate<T> groupTerm;
+    private final List<String> terms = new ArrayList<>();
 
-    public BasicFilterParser(Function<String, Predicate<T>> predicateFactory, Consumer<String> termSink) {
+    /**
+     * Construct a parser.
+     * @param predicateFactory a function for creating a predicate for a single term
+     */
+    public BasicFilterParser(Function<String, Predicate<T>> predicateFactory) {
         this.predicateFactory = predicateFactory;
-        this.termSink = termSink;
     }
 
     public Predicate<T> parse(FilterSource source) {
+        terms.clear();
         buffer.setLength(0);
         stack.clear();
         groupTerm = null;
@@ -87,15 +101,15 @@ public class BasicFilterParser<T> {
             }
             term = operation.apply(term);
         }
-        throw new IllegalStateException("unexpected ')'");
+        throw newParseException("unexpected ')'");
     }
 
     private Predicate<T> getTerm() {
         String value = buffer.toString().trim();
         if (! value.isEmpty()) {
-            if (groupTerm != null) throw new IllegalStateException("missing operator");
+            if (groupTerm != null) throw newParseException("missing operator");
             buffer.setLength(0);
-            termSink.accept(value);
+            terms.add(value);
             return predicateFactory.apply(value);
         }
         if (groupTerm != null) {
@@ -103,7 +117,12 @@ public class BasicFilterParser<T> {
             groupTerm = null;
             return term;
         }
-        throw new IllegalStateException("missing term");
+        throw newParseException("missing term");
+    }
+
+    private IllegalStateException newParseException(String s) {
+        terms.clear();
+        return new IllegalStateException(s);
     }
 
     private void squashStack(Predicate<T> leftTerm, Operator operator) {
@@ -113,5 +132,10 @@ public class BasicFilterParser<T> {
 
     private Predicate<T> pop(Predicate<T> term) {
         return stack.remove(0).apply(term);
+    }
+
+    @Override
+    public List<String> getTerms() {
+        return Collections.unmodifiableList(terms);
     }
 }
