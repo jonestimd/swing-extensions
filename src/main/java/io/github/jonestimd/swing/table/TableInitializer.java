@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.function.Supplier;
 
 import javax.swing.JTable;
@@ -49,17 +46,15 @@ import io.github.jonestimd.swing.table.model.ValidatedTableModel;
 public class TableInitializer {
     public static final String UNDO_CHANGE_ACTION_KEY = "com.jonestim.swing.table.undoChange";
 
-    private final ResourceBundle bundle;
     private final Map<Class<?>, TableCellRenderer> tableCellRenderers;
     private final Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors;
     private final Map<String, TableCellRenderer> columnRenderers;
     private final Map<String, Supplier<TableCellEditor>> columnEditors;
 
-    public TableInitializer(ResourceBundle bundle, Map<Class<?>, TableCellRenderer> tableCellRenderers,
+    public TableInitializer(Map<Class<?>, TableCellRenderer> tableCellRenderers,
                             Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors,
                             Map<String, TableCellRenderer> columnRenderers,
                             Map<String, Supplier<TableCellEditor>> columnEditors) {
-        this.bundle = bundle;
         this.tableCellRenderers = tableCellRenderers;
         this.tableCellEditors = tableCellEditors;
         this.columnRenderers = columnRenderers;
@@ -70,17 +65,14 @@ public class TableInitializer {
         if (columnId instanceof ColumnAdapter) {
             return ((ColumnAdapter<?,?>) columnId).getResource(resourceId, null);
         }
-        try {
-            return bundle.getString(columnId + resourceId);
-        } catch (MissingResourceException ex) {
-            return null;
-        }
+        return null;
     }
 
     public <B, M extends BeanTableModel<B>, T extends DecoratedTable<B, M>> T initialize(final T table) {
         applyDefaultRenders(table);
         applyDefaultEditors(table);
-        table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.addColumnModelListener(new TableColumnModelListener() {
             public void columnSelectionChanged(ListSelectionEvent e) {
             }
 
@@ -98,7 +90,6 @@ public class TableInitializer {
                 initializeColumn(source.getColumn(e.getToIndex()));
             }
         });
-        TableColumnModel columnModel = table.getColumnModel();
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
             initializeColumn(columnModel.getColumn(i));
         }
@@ -147,8 +138,10 @@ public class TableInitializer {
     }
 
     protected void applyDefaultEditor(JTable table, Class<?> columnClass) {
-        Optional.ofNullable(tableCellEditors.get(columnClass))
-                .ifPresent(supplier -> table.setDefaultEditor(columnClass, supplier.get()));
+        Supplier<TableCellEditor> supplier = tableCellEditors.get(columnClass);
+        if (supplier != null) {
+            table.setDefaultEditor(columnClass, supplier.get());
+        }
     }
 
     protected void initializeColumn(TableColumn column) {
@@ -171,6 +164,8 @@ public class TableInitializer {
 
     protected TableCellEditor getColumnEditor(Object columnId) {
         String editorName = getColumnResource(columnId, ".editor");
-        return editorName == null || columnEditors == null ? null : columnEditors.get(editorName).get();
+        if (editorName == null || columnEditors == null) return null;
+        Supplier<TableCellEditor> supplier = columnEditors.get(editorName);
+        return supplier == null ? null : supplier.get();
     }
 }
