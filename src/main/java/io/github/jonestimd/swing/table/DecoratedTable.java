@@ -65,7 +65,7 @@ import io.github.jonestimd.swing.table.model.ColumnIdentifier;
  * </ul>
  */
 public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JTable {
-    private List<TableDecorator> decorators = new ArrayList<>();
+    private final List<TableDecorator> decorators = new ArrayList<>();
     private Color evenBackground;
     private Color oddBackground;
     private int headerRows;
@@ -248,6 +248,10 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     @SuppressWarnings("unchecked")
     public Model getModel() {
         return (Model) super.getModel();
+    }
+
+    public List<TableDecorator> getDecorators() {
+        return decorators;
     }
 
     public void setDecorators(List<TableDecorator> decorators) {

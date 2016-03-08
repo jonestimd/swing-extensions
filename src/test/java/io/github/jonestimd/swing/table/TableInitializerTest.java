@@ -21,10 +21,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 import java.util.function.Supplier;
 
 import javax.swing.table.TableCellEditor;
@@ -155,7 +153,7 @@ public class TableInitializerTest {
 
         initializer.initialize(table);
 
-        assertThat(getTableDecorators(table).get(0)).isInstanceOf(UnsavedChangeDecorator.class);
+        assertThat(table.getDecorators().get(0)).isInstanceOf(UnsavedChangeDecorator.class);
     }
 
     @Test
@@ -166,14 +164,7 @@ public class TableInitializerTest {
 
         initializer.initialize(table);
 
-        assertThat(getTableDecorators(table).get(0)).isInstanceOf(UnsavedChangeDecorator.class);
-        assertThat(getTableDecorators(table).get(1)).isInstanceOf(ValidationDecorator.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<TableDecorator> getTableDecorators(DecoratedTable<Object, BeanListTableModel<Object>> table) throws NoSuchFieldException, IllegalAccessException {
-        Field field = DecoratedTable.class.getDeclaredField("decorators");
-        field.setAccessible(true);
-        return (List<TableDecorator>) field.get(table);
+        assertThat(table.getDecorators().get(0)).isInstanceOf(UnsavedChangeDecorator.class);
+        assertThat(table.getDecorators().get(1)).isInstanceOf(ValidationDecorator.class);
     }
 }
