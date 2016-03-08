@@ -49,6 +49,11 @@ public class ComponentResources extends ListResourceBundle {
             { "calendar.tooltip.month.previous", "Previous month" },
             { "calendar.tooltip.year.next", "Next year" },
             { "calendar.tooltip.year.previous", "Previous year" },
+            { "calendarPanel.selected.border", Color.red },
+            { "calendarPanel.month.background", new Color(255,255,224) },
+            { "calendarPanel.month.foreground", Color.black },
+            { "calendarPanel.month.adjacent.background", new Color(223,223,192) },
+            { "calendarPanel.month.adjacent.foreground", Color.darkGray }
         };
     }
 }

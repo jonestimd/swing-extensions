@@ -33,6 +33,7 @@ import java.text.DateFormatSymbols;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -52,7 +53,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-import static io.github.jonestimd.swing.ComponentFactory.*;
+import io.github.jonestimd.swing.ComponentFactory;
 
 /**
  * A panel that displays a calendar for selecting a date.  The calendar shows a single month and indicates the current
@@ -70,8 +71,11 @@ public class CalendarPanel extends Box {
 
     private Calendar navigationCalendar = Calendar.getInstance();
     private Date selectedDate;
-    private Color monthBackground = new Color(0xffffe0); // TODO use resource bundle
-    private Color adjacentBackground = new Color(0xdfdfc0); // TODO use resource bundle
+    private final Color monthForeground;
+    private final Color monthBackground;
+    private final Color adjacentForeground;
+    private final Color adjacentBackground;
+    private final Border selectedBorder;
     private JLabel yearLabel = createYearLabel();
     private JComboBox monthComboBox = createMonthComboBox();
     private final Action selectAction = new AbstractAction() {
@@ -101,16 +105,25 @@ public class CalendarPanel extends Box {
     private JTable calendarTable;
 
     public CalendarPanel(Date initialValue) {
+        this(ComponentFactory.DEFAULT_BUNDLE, initialValue);
+    }
+
+    public CalendarPanel(ResourceBundle bundle, Date initialValue) {
         super(BoxLayout.Y_AXIS);
+        monthForeground = (Color) bundle.getObject("calendarPanel.month.foreground");
+        monthBackground = (Color) bundle.getObject("calendarPanel.month.background");
+        adjacentForeground = (Color) bundle.getObject("calendarPanel.month.adjacent.foreground");
+        adjacentBackground = (Color) bundle.getObject("calendarPanel.month.adjacent.background");
+        selectedBorder = BorderFactory.createLineBorder((Color) bundle.getObject("calendarPanel.selected.border"));
         setBackground(monthBackground);
         setOpaque(true);
 
         Box navigationPanel = Box.createHorizontalBox();
         add(navigationPanel);
-        navigationPanel.add(createPreviousNextPanel(monthComboBox, new MonthHandler(), "calendar.tooltip.month"));
-        navigationPanel.add(createPreviousNextPanel(yearLabel, new YearHandler(), "calendar.tooltip.year"));
+        navigationPanel.add(createPreviousNextPanel(bundle, monthComboBox, new MonthHandler(), "calendar.tooltip.month"));
+        navigationPanel.add(createPreviousNextPanel(bundle, yearLabel, new YearHandler(), "calendar.tooltip.year"));
 
-        createTable();
+        createTable(bundle);
         add(calendarTable.getTableHeader());
         add(calendarTable);
         setDate(initialValue);
@@ -125,10 +138,10 @@ public class CalendarPanel extends Box {
         calendarTable.requestFocus();
     }
 
-    private PreviousNextPanel createPreviousNextPanel(Component valueComponent,
+    private PreviousNextPanel createPreviousNextPanel(ResourceBundle bundle, Component valueComponent,
             PreviousNextListener handler, String resourcePrefix) {
         PreviousNextPanel previousNextPanel = new PreviousNextPanel(valueComponent,
-                DEFAULT_BUNDLE.getString(resourcePrefix + ".previous"), DEFAULT_BUNDLE.getString(resourcePrefix + ".next"));
+                bundle.getString(resourcePrefix + ".previous"), bundle.getString(resourcePrefix + ".next"));
         previousNextPanel.addPreviousNextListener(handler);
         return previousNextPanel;
     }
@@ -148,7 +161,7 @@ public class CalendarPanel extends Box {
         return comboBox;
     }
 
-    private void createTable() {
+    private void createTable(ResourceBundle bundle) {
         tableModel = new CalendarTableModel();
         calendarTable = new JTable(tableModel);
         calendarTable.getTableHeader().setReorderingAllowed(false);
@@ -156,7 +169,7 @@ public class CalendarPanel extends Box {
         calendarTable.setCellSelectionEnabled(true);
         calendarTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         calendarTable.setDefaultRenderer(Date.class, new CellRenderer());
-        calendarTable.setToolTipText(DEFAULT_BUNDLE.getString("calendar.tooltip"));
+        calendarTable.setToolTipText(bundle.getString("calendar.tooltip"));
         calendarTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 setDate(tableModel.getSelectedDate());
@@ -276,18 +289,16 @@ public class CalendarPanel extends Box {
     }
 
     private class CellRenderer extends DefaultTableCellRenderer {
-        private Border selectedBorder = BorderFactory.createLineBorder(Color.RED);
         private Calendar calendar = Calendar.getInstance();
 
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             calendar.setTime((Date) value);
             if (calendar.get(Calendar.MONTH) == navigationCalendar.get(Calendar.MONTH)) {
-                setForeground(table.getForeground());
+                setForeground(monthForeground);
                 setBackground(monthBackground);
             }
             else {
-                setForeground(Color.DARK_GRAY);
+                setForeground(adjacentForeground);
                 setBackground(adjacentBackground);
             }
             super.getTableCellRendererComponent(table, String.format("%te", value), isSelected, hasFocus, row, column);
