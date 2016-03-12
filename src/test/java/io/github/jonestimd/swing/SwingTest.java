@@ -18,13 +18,11 @@ public abstract class SwingTest {
 
     @BeforeClass
     public static void showFrame() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                frame.setContentPane(new JPanel());
-                frame.pack();
-                frame.setVisible(true);
-                frame.toFront();
-            }
+        SwingUtilities.invokeAndWait(() -> {
+            frame.setContentPane(new JPanel());
+            frame.pack();
+            frame.setVisible(true);
+            frame.toFront();
         });
     }
 
@@ -34,21 +32,15 @@ public abstract class SwingTest {
     }
 
     @After
-    public void removeComopnents() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                frame.getContentPane().removeAll();
-            }
-        });
+    public void removeComponents() throws Exception {
+        SwingUtilities.invokeAndWait(() -> frame.getContentPane().removeAll());
     }
 
     protected void showComponent(final Component component) throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                frame.getContentPane().add(component);
-                frame.pack();
-                component.requestFocus();
-            }
+        SwingUtilities.invokeAndWait(() -> {
+            frame.getContentPane().add(component);
+            frame.pack();
+            component.requestFocus();
         });
     }
 
@@ -57,10 +49,8 @@ public abstract class SwingTest {
     }
 
     protected void invokeAction(final Component source, final Action action) throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                action.actionPerformed(new ActionEvent(source, -1, (String) action.getValue(Action.ACTION_COMMAND_KEY)));
-            }
+        SwingUtilities.invokeAndWait(() -> {
+            action.actionPerformed(new ActionEvent(source, -1, (String) action.getValue(Action.ACTION_COMMAND_KEY)));
         });
     }
 }
