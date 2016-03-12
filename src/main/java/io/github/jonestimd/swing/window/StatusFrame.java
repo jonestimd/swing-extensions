@@ -28,7 +28,6 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
@@ -41,6 +40,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -56,13 +56,17 @@ import io.github.jonestimd.swing.component.AlphaPanel;
  * It also uses {@link SettingsPersister} to store state when the window is closed.
  */
 public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChangesIndicator {
-    public static final String SMALL_ICON_RESOURCE_KEY = "application.smallIconImage";
-    public static final String LARGE_ICON_RESOURCE_KEY = "application.largeIconImage";
+    public static final float GLASS_PANE_ALPHA = 0.5f;
+    public static final String SMALL_ICON_RESOURCE_KEY = ".smallIconImage";
+    public static final String LARGE_ICON_RESOURCE_KEY = ".largeIconImage";
     private static final String STATE_SUFFIX = ".state";
     private static final String HEIGHT_SUFFIX = ".height";
     private static final String WIDTH_SUFFIX = ".width";
+    public static final int DEFAULT_WIDTH = 800;
+    public static final int DEFAULT_HEIGHT = 600;
 
     protected final Logger logger = Logger.getLogger(StatusFrame.class.getName());
+    private final ResourceBundle bundle;
     private JLabel statusMessageLabel = new JLabel();
     private String resourcePrefix;
     private String baseTitle;
@@ -70,6 +74,7 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
 
     public StatusFrame(ResourceBundle bundle, String resourcePrefix) {
         super(bundle.getString(resourcePrefix + ".title"));
+        this.bundle = bundle;
         this.baseTitle = getTitle();
         this.resourcePrefix = resourcePrefix;
         setIcons(bundle, SMALL_ICON_RESOURCE_KEY, LARGE_ICON_RESOURCE_KEY);
@@ -89,8 +94,8 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     private void setIcons(ResourceBundle bundle, String ... resourceKeys) {
         List<Image> icons = new ArrayList<>();
         for (String resourceKey : resourceKeys) {
-            if (bundle.containsKey(resourceKey)) {
-                icons.add(Toolkit.getDefaultToolkit().getImage(getClass().getResource(bundle.getString(resourceKey))));
+            if (bundle.containsKey(resourcePrefix + resourceKey)) {
+                icons.add(Toolkit.getDefaultToolkit().getImage(getClass().getResource(bundle.getString(resourcePrefix + resourceKey))));
             }
         }
         if (! icons.isEmpty()) {
@@ -99,21 +104,20 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     }
 
     private void createGlassPane() {
-        AlphaPanel glassPane = new AlphaPanel(new GridBagLayout(), 0.5f);
+        AlphaPanel glassPane = new AlphaPanel(new GridBagLayout(), GLASS_PANE_ALPHA) {
+            @Override
+            protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+                super.processKeyBinding(ks, e, condition, pressed);
+                // block keyboard events when glass pane is visible
+                return true;
+            }
+        };
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.CENTER;
         glassPane.add(statusMessageLabel, gbc);
         // block mouse events when glass pane is visible
         MouseAdapter mouseAdapter = new MouseAdapter() {};
         glassPane.addMouseListener(mouseAdapter);
-        glassPane.addMouseMotionListener(mouseAdapter);
-        glassPane.addMouseWheelListener(mouseAdapter);
-        // block keyboard events when glass pane is visible
-        glassPane.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent e) {
-                e.consume();
-            }
-        });
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         setGlassPane(glassPane);
     }
@@ -135,14 +139,21 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     }
 
     private void restoreSize() {
-        int width = Integer.getInteger(getPropertyName(WIDTH_SUFFIX), 800);
-        int height = Integer.getInteger(getPropertyName(HEIGHT_SUFFIX), 600);
-        if (width > 0 && height > 0) {
-            setSize(new Dimension(width, height));
-        }
+        int width = getInt(getPropertyName(WIDTH_SUFFIX), DEFAULT_WIDTH);
+        int height = getInt(getPropertyName(HEIGHT_SUFFIX), DEFAULT_HEIGHT);
+        setSize(new Dimension(width, height));
         int state = Integer.getInteger(getPropertyName(STATE_SUFFIX), 0);
         if ((state & MAXIMIZED_BOTH) == MAXIMIZED_BOTH) {
             setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+        }
+    }
+
+    private int getInt(String property, int defaultValue) {
+        try {
+            Integer value = Integer.getInteger(property, Integer.parseInt(bundle.getString(property)));
+            return value < 0 ? defaultValue : value;
+        } catch (Exception ex) {
+            return defaultValue;
         }
     }
 
@@ -156,10 +167,8 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     @Override
     public void dispose() {
         System.setProperty(getPropertyName(STATE_SUFFIX), Integer.toString(getExtendedState()));
-        if ((getExtendedState() & MAXIMIZED_BOTH) != MAXIMIZED_BOTH) {
-            System.setProperty(getPropertyName(WIDTH_SUFFIX), Integer.toString(getWidth()));
-            System.setProperty(getPropertyName(HEIGHT_SUFFIX), Integer.toString(getHeight()));
-        }
+        System.setProperty(getPropertyName(WIDTH_SUFFIX), Integer.toString(getWidth()));
+        System.setProperty(getPropertyName(HEIGHT_SUFFIX), Integer.toString(getHeight()));
         ComponentTreeUtils.visitComponentTree(getContentPane(), JComponent.class, SettingsPersister::saveSettings);
         super.dispose();
     }

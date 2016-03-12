@@ -1,0 +1,323 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 Timothy D. Jones
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+package io.github.jonestimd.swing.window;
+
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+
+import io.github.jonestimd.AsyncTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import sun.awt.image.URLImageSource;
+
+import static java.lang.System.*;
+import static org.fest.assertions.Assertions.*;
+
+public class StatusFrameTest {
+    private static final String RESOURCE_PREFIX = "StatusFrameTest";
+    private static final String HEIGHT_RESOURCE = RESOURCE_PREFIX + ".height";
+    private static final String WIDTH_RESOURCE = RESOURCE_PREFIX + ".width";
+    private static final String STATE_RESOURCE = RESOURCE_PREFIX + ".state";
+    private static final Integer RESTORE_WIDTH = 300;
+    private static final Integer RESTORE_HEIGHT = 250;
+    private static final long SWING_TIMEOUT = 500L;
+    private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
+
+    private StatusFrame frame;
+
+    @Before
+    public void clearProperties() throws Exception {
+        System.getProperties().remove(STATE_RESOURCE);
+        System.getProperties().remove(WIDTH_RESOURCE);
+        System.getProperties().remove(HEIGHT_RESOURCE);
+    }
+
+    @After
+    public void disposeFrame() {
+        frame.setVisible(false);
+        frame.dispose();
+    }
+
+    @Test
+    public void savesSizeToSystemProperties() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+        Dimension size = frame.getSize();
+        int state = frame.getExtendedState();
+
+        SwingUtilities.invokeAndWait(() -> {
+            frame.setVisible(false);
+            frame.dispose();
+        });
+
+        assertThat(System.getProperty(STATE_RESOURCE)).isEqualTo(Integer.toString(state));
+        assertThat(System.getProperty(WIDTH_RESOURCE)).isEqualTo(Integer.toString(size.width));
+        assertThat(System.getProperty(HEIGHT_RESOURCE)).isEqualTo(Integer.toString(size.height));
+    }
+
+    @Test
+    public void usesDefaultSize() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX + ".defaultSize");
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(0);
+        assertThat(frame.getWidth()).isEqualTo(StatusFrame.DEFAULT_WIDTH);
+        assertThat(frame.getHeight()).isEqualTo(StatusFrame.DEFAULT_HEIGHT);
+    }
+
+    @Test
+    public void restoresSizeFromResourceBundle() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(0);
+        assertThat(frame.getWidth()).isEqualTo(Integer.parseInt(bundle.getString(WIDTH_RESOURCE)));
+        assertThat(frame.getHeight()).isEqualTo(Integer.parseInt(bundle.getString(HEIGHT_RESOURCE)));
+    }
+
+    @Test
+    public void restoresSizeFromSystemProperties() throws Exception {
+        System.setProperty(STATE_RESOURCE, "0");
+        System.setProperty(WIDTH_RESOURCE, RESTORE_WIDTH.toString());
+        System.setProperty(HEIGHT_RESOURCE, RESTORE_HEIGHT.toString());
+        createStatusFrame(RESOURCE_PREFIX);
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(0);
+        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
+        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+    }
+
+    @Test
+    public void ignoresInvalidWidthFromSystemProperties() throws Exception {
+        System.setProperty(STATE_RESOURCE, "0");
+        System.setProperty(WIDTH_RESOURCE, "-300");
+        System.setProperty(HEIGHT_RESOURCE, RESTORE_HEIGHT.toString());
+        createStatusFrame(RESOURCE_PREFIX);
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(0);
+        assertThat(frame.getWidth()).isEqualTo(StatusFrame.DEFAULT_WIDTH);
+        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+    }
+
+    @Test
+    public void ignoresInvalidHeightFromSystemProperties() throws Exception {
+        System.setProperty(STATE_RESOURCE, "0");
+        System.setProperty(WIDTH_RESOURCE, RESTORE_WIDTH.toString());
+        System.setProperty(HEIGHT_RESOURCE, "-250");
+        createStatusFrame(RESOURCE_PREFIX);
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(0);
+        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
+        assertThat(frame.getHeight()).isEqualTo(StatusFrame.DEFAULT_HEIGHT);
+    }
+
+    @Test
+    public void savesMaximizedStateToSystemProperties() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+        SwingUtilities.invokeAndWait(() -> {
+            frame.setVisible(true);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        });
+        int state = frame.getExtendedState();
+        Dimension size = frame.getSize();
+
+        SwingUtilities.invokeAndWait(() -> {
+            frame.setVisible(false);
+            frame.dispose();
+        });
+
+        assertThat(System.getProperty(STATE_RESOURCE)).isEqualTo(Integer.toString(state));
+        assertThat(System.getProperty(WIDTH_RESOURCE)).isEqualTo(Integer.toString(size.width));
+        assertThat(System.getProperty(HEIGHT_RESOURCE)).isEqualTo(Integer.toString(size.height));
+    }
+
+    @Test
+    public void restoresMaximizedStateFromSystemProperties() throws Exception {
+        System.setProperty(STATE_RESOURCE, Integer.toString(JFrame.MAXIMIZED_BOTH));
+        System.setProperty(WIDTH_RESOURCE, RESTORE_WIDTH.toString());
+        System.setProperty(HEIGHT_RESOURCE, RESTORE_HEIGHT.toString());
+        createStatusFrame(RESOURCE_PREFIX);
+
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        assertThat(frame.getExtendedState()).isEqualTo(JFrame.MAXIMIZED_BOTH);
+        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
+        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+    }
+
+    @Test
+    public void noFocusAfterDisableUI() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+
+        SwingUtilities.invokeAndWait(() -> frame.disableUI("wait..."));
+        AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
+        SwingUtilities.invokeAndWait(frame::enableUI);
+
+        AsyncTest.timeout(SWING_TIMEOUT, () -> ! frame.getGlassPane().isFocusOwner());
+    }
+
+    @Test
+    public void setsWaitCursorOnGlassPane() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+
+        assertThat(frame.getGlassPane().getCursor()).isEqualTo(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    @Test
+    public void setsApplicatonIcons() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX + ".icons");
+
+        assertThat(frame.getIconImages()).hasSize(2);
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("small-icon.png");
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("large-icon.png");
+    }
+
+    private URL getUrl(URLImageSource source) throws Exception {
+        Field field = URLImageSource.class.getDeclaredField("url");
+        field.setAccessible(true);
+        return (URL) field.get(source);
+    }
+
+    @Test
+    public void disableUIBlocksKeyboardInput() throws Exception {
+        TestAction action = createFrameWithMenuBar();
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+        SwingUtilities.invokeAndWait(() -> frame.disableUI("wait..."));
+        AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
+
+        SwingUtilities.invokeAndWait(() -> {
+            KeyEvent event = new KeyEvent(frame.getGlassPane(), KeyEvent.KEY_PRESSED, currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, KeyEvent.VK_A, KeyEvent.CHAR_UNDEFINED);
+            SwingUtilities.processKeyBindings(event);
+        });
+
+        assertThat(action.actionPerformed).isFalse();
+    }
+
+    @Test
+    public void disableUIBlocksMouseInput() throws Exception {
+        createFrameWithMenuBar();
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+        SwingUtilities.invokeAndWait(() -> frame.disableUI("wait..."));
+        AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
+
+        SwingUtilities.invokeAndWait(() -> {
+            Point frameLoc = frame.getLocationOnScreen();
+            Point menuLoc = frame.getJMenuBar().getLocationOnScreen();
+            Point location = new Point(menuLoc.x - frameLoc.x, menuLoc.y - frameLoc.y);
+            MouseEvent event = new MouseEvent(frame, MouseEvent.MOUSE_PRESSED, currentTimeMillis(), MouseEvent.BUTTON1_DOWN_MASK, location.x, location.y, 1, false, MouseEvent.BUTTON1);
+            frame.dispatchEvent(event);
+        });
+
+        assertThat(frame.getJMenuBar().getMenu(0).isPopupMenuVisible()).isFalse();
+    }
+
+    private TestAction createFrameWithMenuBar() {
+        createStatusFrame(RESOURCE_PREFIX);
+        TestAction action = new TestAction();
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("Menu");
+        menu.add(action);
+        menuBar.add(menu);
+        frame.setJMenuBar(menuBar);
+        return action;
+    }
+
+    @Test
+    public void enableUIRestoresFocusOwner() throws Exception {
+        JTextField field = new JTextField();
+        createStatusFrame(RESOURCE_PREFIX, new JTextField(), field);
+        SwingUtilities.invokeAndWait(() -> {
+            frame.setVisible(true);
+            field.requestFocusInWindow();
+        });
+        AsyncTest.timeout(SWING_TIMEOUT, field::isFocusOwner);
+
+        SwingUtilities.invokeAndWait(() -> frame.disableUI("wait..."));
+        AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
+        SwingUtilities.invokeAndWait(frame::enableUI);
+
+        AsyncTest.timeout(SWING_TIMEOUT, field::isFocusOwner);
+    }
+
+    @Test
+    public void setUnsavedChangesAddsIndicatorToTitle() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+        frame.setTitle("Frame title");
+
+        frame.setUnsavedChanges(true);
+        assertThat(frame.getTitle()).matches(".* \\*$");
+
+        frame.setUnsavedChanges(false);
+        assertThat(frame.getTitle()).doesNotMatch(".* \\*$");
+    }
+
+    private void createStatusFrame(String resourcePrefix, Component... fields) {
+        JPanel panel = new JPanel();
+        for (Component field : fields) {
+            panel.add(field);
+        }
+        frame = new StatusFrame(bundle, resourcePrefix);
+        frame.getContentPane().add(panel);
+    }
+
+    private class TestAction extends AbstractAction {
+        private boolean actionPerformed = false;
+
+        public TestAction() {
+            super("Action");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('A', KeyEvent.CTRL_MASK));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            actionPerformed = true;
+        }
+    }
+}
