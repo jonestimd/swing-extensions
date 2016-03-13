@@ -38,8 +38,13 @@ import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.action.CancelAction;
 import io.github.jonestimd.swing.action.MnemonicAction;
 import io.github.jonestimd.swing.layout.GridBagBuilder;
+import io.github.jonestimd.swing.validation.FieldChangeTracker;
+import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
 
-public abstract class FormDialog extends MessageDialog {
+/**
+ * A dialog with save and cancel buttons and a validation status area.
+ */
+public class FormDialog extends MessageDialog {
     protected static final int BUTTON_BAR_BORDER = 10;
     protected final JPanel formPanel = new JPanel();
     private final CancelAction cancelAction = CancelAction.install(this);
@@ -52,13 +57,13 @@ public abstract class FormDialog extends MessageDialog {
     /**
      * Create a document modal dialog.
      */
-    protected FormDialog(Window owner, String title, ResourceBundle bundle) {
+    public FormDialog(Window owner, String title, ResourceBundle bundle) {
         this(owner, title, ModalityType.DOCUMENT_MODAL, bundle);
     }
 
-    protected FormDialog(Window owner, String title, ModalityType modalityType, ResourceBundle bundle) {
+    public FormDialog(Window owner, String title, ModalityType modalityType, ResourceBundle bundle) {
         super(owner, title, modalityType);
-        this.saveAction = new MnemonicAction(bundle.getString("action.save.mnemonicAndName")) {
+        this.saveAction = new MnemonicAction(ComponentFactory.getString(bundle, "action.save.mnemonicAndName")) {
             public void actionPerformed(ActionEvent e) {
                 onSave();
             }
@@ -74,6 +79,7 @@ public abstract class FormDialog extends MessageDialog {
         builder.append(statusArea);
         statusScrollPane = ComponentTreeUtils.findAncestor(statusArea, JScrollPane.class);
         statusScrollPane.setVisible(false);
+        FieldChangeTracker.install(this::fieldsChanged, getFormPanel());
     }
 
     protected int getStatusHeight() {
@@ -84,6 +90,9 @@ public abstract class FormDialog extends MessageDialog {
         return formPanel;
     }
 
+    /**
+     * Add a button to the button bar.
+     */
     protected void addButton(Action action) {
         buttonBar.add(new JButton(action), buttonBar.getComponentCount()-1);
         buttonBar.add(Box.createHorizontalStrut(ButtonBarFactory.BUTTON_GAP), buttonBar.getComponentCount()-1);
@@ -93,10 +102,16 @@ public abstract class FormDialog extends MessageDialog {
         saveAction.setEnabled(enabled);
     }
 
+    /**
+     * Dispose the dialog when the save button is clicked.
+     */
     protected void onSave() {
         dispose();
     }
 
+    /**
+     * Overridden to reset the cancel action.
+     */
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
@@ -106,10 +121,24 @@ public abstract class FormDialog extends MessageDialog {
         super.setVisible(visible);
     }
 
+    /**
+     * @return true if the dialog was cancelled
+     */
     public boolean isCancelled() {
         return cancelAction.isCancelled();
     }
 
+    /**
+     * Implementation of {@link FieldChangeHandler}.
+     */
+    protected void fieldsChanged(boolean changed, Collection<String> validationMessages) {
+        setSaveEnabled(changed && validationMessages.isEmpty());
+        setStatusText(validationMessages);
+    }
+
+    /**
+     * Set the messages in the validation status area.
+     */
     protected void setStatusText(Collection<String> messages) {
         int statusHeight = getStatusHeight();
         statusArea.setRows(messages.size());

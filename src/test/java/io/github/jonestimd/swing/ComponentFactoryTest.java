@@ -56,6 +56,16 @@ public class ComponentFactoryTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
 
     @Test
+    public void getStringReturnsValueFromInputBundle() throws Exception {
+        assertThat(new ComponentFactory(bundle).getString("menu1.mnemonicAndKey")).isEqualTo("MMenu");
+    }
+
+    @Test
+    public void getStringReturnsValueFromDefaultBundle() throws Exception {
+        assertThat(new ComponentFactory(bundle).getString("exceptionDialog.title")).isEqualTo("Unexpected Exception");
+    }
+
+    @Test
     public void createRadioButtonGroupSetsMnemonicAndName() throws Exception {
         JRadioButton[] group = ComponentFactory.newRadioButtonGroup(bundle,
                 "radio1.mnemonicAndName", "radio2.mnemonicAndName", "radio3.mnemonicAndName");
@@ -74,13 +84,25 @@ public class ComponentFactoryTest {
     }
 
     @Test
-    public void createValidationStatusArea() throws Exception {
+    public void createValidationStatusAreaWithDefaultColor() throws Exception {
         JTextArea statusArea = ComponentFactory.newValidationStatusArea(2, bundle);
 
         assertThat(statusArea.isEditable()).isFalse();
         assertThat(statusArea.getRows()).isEqualTo(2);
         assertThat(statusArea.getMaximumSize().width).isEqualTo(Integer.MAX_VALUE);
         assertThat(statusArea.getBackground()).isEqualTo(new Color(255, 255, 200));
+    }
+
+    @Test
+    public void createValidationStatusAreaWithCustomColor() throws Exception {
+        ResourceBundle bundle = ResourceBundle.getBundle("test-resources2");
+
+        JTextArea statusArea = ComponentFactory.newValidationStatusArea(2, bundle);
+
+        assertThat(statusArea.isEditable()).isFalse();
+        assertThat(statusArea.getRows()).isEqualTo(2);
+        assertThat(statusArea.getMaximumSize().width).isEqualTo(Integer.MAX_VALUE);
+        assertThat(statusArea.getBackground()).isEqualTo(new Color(254, 254, 199));
     }
 
     @Test

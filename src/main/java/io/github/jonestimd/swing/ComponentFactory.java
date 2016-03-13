@@ -22,6 +22,7 @@ package io.github.jonestimd.swing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -66,6 +67,31 @@ public class ComponentFactory {
         this.bundle = bundle;
     }
 
+    /**
+     * Get a string value from the resource bundle with fallback to {@link #DEFAULT_BUNDLE}.
+     * @param key the resource key
+     * @return the value from the resource bundle if it exists, otherwise the value from {@link #DEFAULT_BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public String getString(String key) {
+        return getString(bundle, key);
+    }
+
+    /**
+     * Get a string value from a resource bundle with fallback to {@link #DEFAULT_BUNDLE}.
+     * @param bundle the resource bundle
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #DEFAULT_BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public static String getString(ResourceBundle bundle, String key) {
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException ex) {
+            return DEFAULT_BUNDLE.getString(key);
+        }
+    }
+
     public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
         JRadioButton[] buttons = new JRadioButton[mnemonicAndNameKeys.length];
@@ -86,7 +112,11 @@ public class ComponentFactory {
         statusArea.setRows(rows);
         statusArea.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED), new EmptyBorder(2, 2, 2, 2)));
         statusArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, statusArea.getHeight()));
-        statusArea.setBackground(ColorFactory.createColor(bundle.getString(SwingResource.VALIDATION_MESSAGE_BACKGROUND.key())));
+        try {
+            statusArea.setBackground(ColorFactory.createColor(bundle.getString(SwingResource.VALIDATION_MESSAGE_BACKGROUND.key())));
+        } catch (MissingResourceException ex) {
+            statusArea.setBackground((Color) DEFAULT_BUNDLE.getObject(SwingResource.VALIDATION_MESSAGE_BACKGROUND.key()));
+        }
         return statusArea;
     }
 

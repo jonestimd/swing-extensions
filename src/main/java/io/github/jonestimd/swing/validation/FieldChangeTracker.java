@@ -247,6 +247,11 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
     }
 
     public interface FieldChangeHandler {
+        /**
+         * Notification of a change in a tracked input field.
+         * @param changed true if any input fields have been modified
+         * @param validationMessages the updated validation messages
+         */
         void fieldsChanged(boolean changed, Collection<String> validationMessages);
     }
 }

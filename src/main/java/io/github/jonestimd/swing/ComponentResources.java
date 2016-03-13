@@ -43,6 +43,8 @@ public class ComponentResources extends ListResourceBundle {
             { "confirm.unsavedChanges.option.confirm", "Discard Changes" },
             { "confirm.unsavedChanges.option.cancel", "Cancel" },
 
+            { "validation.message.background", new Color(255,255,200) },
+
             { "calendar.button.tooltip", "Select a date from the calendar" },
             { "calendar.tooltip", "Select a date" },
             { "calendar.tooltip.month.next", "Next month" },
