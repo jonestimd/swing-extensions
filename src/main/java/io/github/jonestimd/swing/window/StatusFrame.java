@@ -57,6 +57,7 @@ import io.github.jonestimd.swing.component.AlphaPanel;
  */
 public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChangesIndicator {
     public static final float GLASS_PANE_ALPHA = 0.5f;
+    public static final String APPLICATION_RESOURCE_PREFIX = "application";
     public static final String SMALL_ICON_RESOURCE_KEY = ".smallIconImage";
     public static final String LARGE_ICON_RESOURCE_KEY = ".largeIconImage";
     private static final String STATE_SUFFIX = ".state";
@@ -96,6 +97,9 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
         for (String resourceKey : resourceKeys) {
             if (bundle.containsKey(resourcePrefix + resourceKey)) {
                 icons.add(Toolkit.getDefaultToolkit().getImage(getClass().getResource(bundle.getString(resourcePrefix + resourceKey))));
+            }
+            else if (bundle.containsKey(APPLICATION_RESOURCE_PREFIX + resourceKey)) {
+                icons.add(Toolkit.getDefaultToolkit().getImage(getClass().getResource(bundle.getString(APPLICATION_RESOURCE_PREFIX + resourceKey))));
             }
         }
         if (! icons.isEmpty()) {

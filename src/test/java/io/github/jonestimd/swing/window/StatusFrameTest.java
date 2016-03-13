@@ -193,7 +193,7 @@ public class StatusFrameTest {
 
         SwingUtilities.invokeAndWait(() -> frame.setExtendedState(frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH));
         AsyncTest.timeout(SWING_TIMEOUT, () ->
-                Math.abs(frame.getWidth() - RESTORE_WIDTH) < 10 && Math.abs(frame.getHeight() - RESTORE_HEIGHT) < 10);
+                Math.abs(frame.getWidth() - RESTORE_WIDTH) < 50 && Math.abs(frame.getHeight() - RESTORE_HEIGHT) < 50);
     }
 
     @Test
@@ -216,12 +216,28 @@ public class StatusFrameTest {
     }
 
     @Test
-    public void setsApplicatonIcons() throws Exception {
+    public void noApplicationIcons() throws Exception {
+        frame = new StatusFrame(ResourceBundle.getBundle("test-resources2"), RESOURCE_PREFIX);
+
+        assertThat(frame.getIconImages()).hasSize(0);
+    }
+
+    @Test
+    public void setsApplicationIcons() throws Exception {
+        createStatusFrame(RESOURCE_PREFIX);
+
+        assertThat(frame.getIconImages()).hasSize(2);
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("/app-small-icon.png");
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("/app-large-icon.png");
+    }
+
+    @Test
+    public void setsFrameIcons() throws Exception {
         createStatusFrame(RESOURCE_PREFIX + ".icons");
 
         assertThat(frame.getIconImages()).hasSize(2);
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("small-icon.png");
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("large-icon.png");
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("/small-icon.png");
+        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("/large-icon.png");
     }
 
     private URL getUrl(URLImageSource source) throws Exception {
