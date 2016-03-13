@@ -129,6 +129,15 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     }
 
     @Override
+    public void setExtendedState(int state) {
+        if ((state & MAXIMIZED_BOTH) == MAXIMIZED_BOTH) {
+            System.setProperty(getPropertyName(WIDTH_SUFFIX), Integer.toString(getWidth()));
+            System.setProperty(getPropertyName(HEIGHT_SUFFIX), Integer.toString(getHeight()));
+        }
+        super.setExtendedState(state);
+    }
+
+    @Override
     public void setVisible(boolean visible) {
         if (visible) {
             pack();
@@ -150,8 +159,8 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
 
     private int getInt(String property, int defaultValue) {
         try {
-            Integer value = Integer.getInteger(property, Integer.parseInt(bundle.getString(property)));
-            return value < 0 ? defaultValue : value;
+            Integer value = Integer.getInteger(property, -1);
+            return value < 0 ? Integer.parseInt(bundle.getString(property)) : value;
         } catch (Exception ex) {
             return defaultValue;
         }
@@ -167,8 +176,10 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     @Override
     public void dispose() {
         System.setProperty(getPropertyName(STATE_SUFFIX), Integer.toString(getExtendedState()));
-        System.setProperty(getPropertyName(WIDTH_SUFFIX), Integer.toString(getWidth()));
-        System.setProperty(getPropertyName(HEIGHT_SUFFIX), Integer.toString(getHeight()));
+        if ((getExtendedState() & MAXIMIZED_BOTH) != MAXIMIZED_BOTH) {
+            System.setProperty(getPropertyName(WIDTH_SUFFIX), Integer.toString(getWidth()));
+            System.setProperty(getPropertyName(HEIGHT_SUFFIX), Integer.toString(getHeight()));
+        }
         ComponentTreeUtils.visitComponentTree(getContentPane(), JComponent.class, SettingsPersister::saveSettings);
         super.dispose();
     }

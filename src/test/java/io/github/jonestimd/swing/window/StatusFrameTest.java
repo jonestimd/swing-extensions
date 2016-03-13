@@ -111,8 +111,12 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(Integer.parseInt(bundle.getString(WIDTH_RESOURCE)));
-        assertThat(frame.getHeight()).isEqualTo(Integer.parseInt(bundle.getString(HEIGHT_RESOURCE)));
+        assertThat(frame.getWidth()).isEqualTo(getInt(WIDTH_RESOURCE));
+        assertThat(frame.getHeight()).isEqualTo(getInt(HEIGHT_RESOURCE));
+    }
+
+    private int getInt(String key) {
+        return Integer.parseInt(bundle.getString(key));
     }
 
     @Test
@@ -139,7 +143,7 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(StatusFrame.DEFAULT_WIDTH);
+        assertThat(frame.getWidth()).isEqualTo(getInt(WIDTH_RESOURCE));
         assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
     }
 
@@ -154,7 +158,7 @@ public class StatusFrameTest {
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
         assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
-        assertThat(frame.getHeight()).isEqualTo(StatusFrame.DEFAULT_HEIGHT);
+        assertThat(frame.getHeight()).isEqualTo(getInt(HEIGHT_RESOURCE));
     }
 
     @Test
@@ -162,7 +166,7 @@ public class StatusFrameTest {
         createStatusFrame(RESOURCE_PREFIX);
         SwingUtilities.invokeAndWait(() -> {
             frame.setVisible(true);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
         });
         int state = frame.getExtendedState();
         Dimension size = frame.getSize();
@@ -185,10 +189,11 @@ public class StatusFrameTest {
         createStatusFrame(RESOURCE_PREFIX);
 
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+        AsyncTest.timeout(SWING_TIMEOUT, () -> frame.getExtendedState() == JFrame.MAXIMIZED_BOTH);
 
-        assertThat(frame.getExtendedState()).isEqualTo(JFrame.MAXIMIZED_BOTH);
-        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
-        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+        SwingUtilities.invokeAndWait(() -> frame.setExtendedState(frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH));
+        AsyncTest.timeout(SWING_TIMEOUT, () ->
+                Math.abs(frame.getWidth() - RESTORE_WIDTH) < 10 && Math.abs(frame.getHeight() - RESTORE_HEIGHT) < 10);
     }
 
     @Test
@@ -200,7 +205,7 @@ public class StatusFrameTest {
         AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
         SwingUtilities.invokeAndWait(frame::enableUI);
 
-        AsyncTest.timeout(SWING_TIMEOUT, () -> ! frame.getGlassPane().isFocusOwner());
+        AsyncTest.timeout(SWING_TIMEOUT, () -> !frame.getGlassPane().isFocusOwner());
     }
 
     @Test
