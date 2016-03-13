@@ -28,6 +28,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.ImageProducer;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -46,7 +47,6 @@ import io.github.jonestimd.AsyncTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import sun.awt.image.URLImageSource;
 
 import static java.lang.System.*;
 import static org.fest.assertions.Assertions.*;
@@ -189,7 +189,7 @@ public class StatusFrameTest {
         createStatusFrame(RESOURCE_PREFIX);
 
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
-        AsyncTest.timeout(SWING_TIMEOUT, () -> frame.getExtendedState() == JFrame.MAXIMIZED_BOTH);
+        AsyncTest.timeout(SWING_TIMEOUT, () -> (frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH);
 
         SwingUtilities.invokeAndWait(() -> frame.setExtendedState(frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH));
         AsyncTest.timeout(SWING_TIMEOUT, () ->
@@ -227,8 +227,8 @@ public class StatusFrameTest {
         createStatusFrame(RESOURCE_PREFIX);
 
         assertThat(frame.getIconImages()).hasSize(2);
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("/app-small-icon.png");
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("/app-large-icon.png");
+        assertThat(getUrl(frame.getIconImages().get(0).getSource()).getFile()).endsWith("/app-small-icon.png");
+        assertThat(getUrl(frame.getIconImages().get(1).getSource()).getFile()).endsWith("/app-large-icon.png");
     }
 
     @Test
@@ -236,12 +236,12 @@ public class StatusFrameTest {
         createStatusFrame(RESOURCE_PREFIX + ".icons");
 
         assertThat(frame.getIconImages()).hasSize(2);
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(0).getSource()).getFile()).endsWith("/small-icon.png");
-        assertThat(getUrl((URLImageSource) frame.getIconImages().get(1).getSource()).getFile()).endsWith("/large-icon.png");
+        assertThat(getUrl(frame.getIconImages().get(0).getSource()).getFile()).endsWith("/small-icon.png");
+        assertThat(getUrl(frame.getIconImages().get(1).getSource()).getFile()).endsWith("/large-icon.png");
     }
 
-    private URL getUrl(URLImageSource source) throws Exception {
-        Field field = URLImageSource.class.getDeclaredField("url");
+    private URL getUrl(ImageProducer source) throws Exception {
+        Field field = source.getClass().getDeclaredField("url");
         field.setAccessible(true);
         return (URL) field.get(source);
     }
