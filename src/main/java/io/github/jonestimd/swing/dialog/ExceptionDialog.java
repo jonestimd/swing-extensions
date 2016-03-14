@@ -24,35 +24,39 @@ import java.awt.Window;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.action.CancelAction;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
 
+/**
+ * Display an exception with its stack trace.
+ */
 public class ExceptionDialog extends MessageDialog {
     private static final String RESOURCE_PREFIX = "exceptionDialog.";
 
+    /**
+     * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
+     */
     public ExceptionDialog(Window owner, Throwable exception) {
-        this(owner, null, exception);
+        this(owner, DEFAULT_BUNDLE, exception);
     }
 
-    public ExceptionDialog(Window owner, String messageLabel, Throwable exception) {
-        super(owner, ModalityType.APPLICATION_MODAL);
-        initialize(messageLabel == null ? DEFAULT_BUNDLE.getString("default.exception.label") : messageLabel, exception);
-        CancelAction.install(this);
-    }
-
-    private void initialize(String messageLabel, Throwable exception) {
-        setTitle(DEFAULT_BUNDLE.getString(RESOURCE_PREFIX + "title"));
+    /**
+     * Construct an exception dialog using the specified resource bundle with fallback to
+     * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
+     */
+    public ExceptionDialog(Window owner, ResourceBundle bundle, Throwable exception) {
+        super(owner, getString(bundle, "title"), ModalityType.APPLICATION_MODAL);
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(new JLabel(messageLabel), BorderLayout.NORTH);
-
-        JTextArea detailArea = new JTextArea(20, 50);
+        getContentPane().add(new JLabel(getString(bundle, "exception.label")), BorderLayout.NORTH);
+        JTextArea detailArea = new JTextArea(getInt(bundle, "exception.rows"), getInt(bundle, "exception.columns"));
         detailArea.setEditable(false);
         detailArea.setTabSize(4);
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -61,19 +65,26 @@ public class ExceptionDialog extends MessageDialog {
             detailArea.setText(buffer.toString("UTF-8"));
         }
         catch (UnsupportedEncodingException ex) {
-            detailArea.setText(DEFAULT_BUNDLE.getString(RESOURCE_PREFIX + "noStackTrace"));
+            detailArea.setText(getString(bundle, "noStackTrace"));
         }
         getContentPane().add(new JScrollPane(detailArea), BorderLayout.CENTER);
         pack();
+        CancelAction.install(this);
     }
 
-    public static void main(String args[]) {
-        JFrame frame = new JFrame();
-        frame.setBounds(50, 50, 100, 100);
-        frame.setVisible(true);
+    private static int getInt(ResourceBundle bundle, String key) {
+        try {
+            return Integer.parseInt(bundle.getObject(RESOURCE_PREFIX + key).toString());
+        } catch (Exception ex) {
+            return (int) DEFAULT_BUNDLE.getObject(RESOURCE_PREFIX + key);
+        }
+    }
 
-        ExceptionDialog dialog = new ExceptionDialog(frame, new Exception("Test message"));
-        dialog.setVisible(true);
-        System.exit(0);
+    private static String getString(ResourceBundle bundle, String key) {
+        try {
+            return bundle.getString(RESOURCE_PREFIX + key);
+        } catch (Exception ex) {
+            return DEFAULT_BUNDLE.getString(RESOURCE_PREFIX + key);
+        }
     }
 }

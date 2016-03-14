@@ -33,7 +33,9 @@ public class ComponentResources extends ListResourceBundle {
 
             { "exceptionDialog.title", "Unexpected Exception" },
             { "exceptionDialog.noStackTrace", "Stack trace is unavailable" },
-            { "default.exception.label", "Unexpectd exception:" },
+            { "exceptionDialog.exception.label", "Unexpected exception:" },
+            { "exceptionDialog.exception.columns", 50 },
+            { "exceptionDialog.exception.rows", 20 },
 
             { "action.save.mnemonicAndName", "SSave" },
             { "action.cancel.name", "Cancel" },
