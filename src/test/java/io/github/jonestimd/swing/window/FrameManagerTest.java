@@ -16,11 +16,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
+import com.google.common.collect.ImmutableMap;
+import io.github.jonestimd.mockito.ArgumentCaptorFactory;
+import io.github.jonestimd.swing.ClientProperty;
 import io.github.jonestimd.swing.ComponentFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -29,7 +33,9 @@ import static org.fest.assertions.Assertions.*;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.same;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FrameManagerTest {
@@ -45,12 +51,13 @@ public class FrameManagerTest {
     }
 
     private ResourceBundle bundle = ResourceBundle.getBundle(TestResources.class.getName());
+    private Map<Type,JPanel> singletonPanels = ImmutableMap.of(Type.SINGLETON1, new JPanel(), Type.SINGLETON2, new JPanel());
     @Mock
     private ComponentFactory componentFactory;
     @Mock
-    private Map<Type,JPanel> singletonPanels;
-    @Mock
     private Map<Type,PanelFactory<? extends ApplicationWindowEvent<Type>>> panelFactories;
+    @Mock
+    private PanelFactory<ApplicationWindowEvent<Type>> panelFactory;
     @Mock
     private Function<Window, Dialog> aboutDialogSupplier;
     @Mock
@@ -61,6 +68,72 @@ public class FrameManagerTest {
     @Before
     public void createFrameManager() {
         frameManager = new FrameManager<>(bundle, singletonPanels, panelFactories, aboutDialogSupplier, frameFactory);
+        doReturn(panelFactory).when(panelFactories).get(Type.MULTI);
+    }
+
+    @Test
+    public void onWindowEventCreatesSingletonWindow() throws Exception {
+        final String frameTitle = "Singleton Frame 1";
+        StatusFrame frame = mock(StatusFrame.class);
+        JMenu windowsMenu = trainGetJMenuBar(frame);
+        when(frame.getTitle()).thenReturn(frameTitle);
+        when(frameFactory.apply(bundle, Type.SINGLETON1.name())).thenReturn(frame);
+
+        frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.SINGLETON1));
+
+        assertThat(frameManager.getFrameCount()).isEqualTo(1);
+        verify(frame).addWindowListener(any());
+        verify(frame).addPropertyChangeListener(eq("title"), any());
+        verify(frame).setContentPane(singletonPanels.get(Type.SINGLETON1));
+        verify(frame).setVisible(true);
+        checkJMenuBar(frame, frameTitle, windowsMenu);
+    }
+
+    @Test
+    public void onWindowEventCreatesMultiFrameWindow() throws Exception {
+        final String frameTitle = "Singleton Frame 1";
+        final JPanel panel = new JPanel();
+        StatusFrame frame = mock(StatusFrame.class);
+        JMenu windowsMenu = trainGetJMenuBar(frame);
+        when(frame.getTitle()).thenReturn(frameTitle);
+        when(frameFactory.apply(bundle, Type.MULTI.name())).thenReturn(frame);
+        when(panelFactory.createPanel(any())).thenReturn(panel);
+
+        frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.MULTI));
+
+        assertThat(frameManager.getFrameCount()).isEqualTo(1);
+        verify(frame).addWindowListener(any());
+        verify(frame).addPropertyChangeListener(eq("title"), any());
+        verify(frame).setContentPane(panel);
+        verify(frame).setVisible(true);
+        checkJMenuBar(frame, frameTitle, windowsMenu);
+    }
+
+    private void checkJMenuBar(StatusFrame frame, String frameTitle, JMenu windowsMenu) {
+        ArgumentCaptor<JMenuBar> captor = ArgumentCaptorFactory.create();
+        verify(frame).setJMenuBar(captor.capture());
+        assertThat(windowsMenu.getItemCount()).isEqualTo(1);
+        assertThat(windowsMenu.getItem(0).getText()).isEqualTo(frameTitle);
+        assertThat(captor.getValue().getMenuCount()).isEqualTo(2);
+        checkMenu(captor.getValue().getMenu(0), "Windows");
+        checkMenu(captor.getValue().getMenu(1), "Help", "About");
+    }
+
+    private JMenu trainGetJMenuBar(StatusFrame frame) {
+        JMenu windowsMenu = new JMenu("Windows");
+        windowsMenu.putClientProperty(ClientProperty.MNEMONIC_AND_NAME_KEY, FrameManager.WINDOWS_MENU_KEY);
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(windowsMenu);
+        when(frame.getJMenuBar()).thenReturn(menuBar);
+        return windowsMenu;
+    }
+
+    private void checkMenu(JMenu menu, String text, String... items) {
+        assertThat(menu.getText()).isEqualTo(text);
+        assertThat(menu.getItemCount()).isEqualTo(items.length);
+        for (int i = 0; i < items.length; i++) {
+            assertThat(menu.getItem(i).getText()).isEqualToIgnoringCase(items[i]);
+        }
     }
 
     @Test
@@ -122,13 +195,11 @@ public class FrameManagerTest {
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         doNothing().when(frame).setVisible(anyBoolean());
         when(frameFactory.apply(bundle, "SINGLETON1")).thenReturn(frame);
-        JPanel contentPane = new JPanel();
-        when(singletonPanels.get(Type.SINGLETON1)).thenReturn(contentPane);
 
         assertThat(frameManager.showSingletonFrame(Type.SINGLETON1)).isSameAs(frame);
         assertThat(frameManager.showSingletonFrame(Type.SINGLETON1)).isSameAs(frame);
 
-        verify(frame).setContentPane(contentPane);
+        verify(frame).setContentPane(same(singletonPanels.get(Type.SINGLETON1)));
         verify(frame).setVisible(true);
         verify(frame).toFront();
         checkWindowsMenu(frame.getJMenuBar().getMenu(0), "frame1");
@@ -174,7 +245,7 @@ public class FrameManagerTest {
         @Override
         protected Object[][] getContents() {
             return new Object[][] {
-                { "menu.windows.mnemonicAndName", "Windows" },
+                { "menu.windows.mnemonicAndName", "WWindows" },
                 { "menu.help.mnemonicAndName", "HHelp" },
                 { "menu.help.about.mnemonicAndName", "AAbout" },
                 { "SINGLETON1.title", "Singleton1" },
