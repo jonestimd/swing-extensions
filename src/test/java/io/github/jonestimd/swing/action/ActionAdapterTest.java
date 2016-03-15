@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,31 +24,31 @@ package io.github.jonestimd.swing.action;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 
-/**
- * Converts an {@link ActionListener} to an {@link Action}.
- */
-public class ActionAdapter extends AbstractAction {
-    private ActionListener handler;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-    public static Action forMnemonicAndName(ActionListener handler, String mnemonicAndName) {
-        ActionAdapter action = new ActionAdapter(handler, mnemonicAndName.substring(1));
-        action.putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
-        return action;
-    }
+import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
-    public ActionAdapter(ActionListener handler) {
-        this.handler = handler;
-    }
+@RunWith(MockitoJUnitRunner.class)
+public class ActionAdapterTest {
+    @Mock
+    private ActionListener listener;
 
-    public ActionAdapter(ActionListener handler, String name) {
-        this(handler);
-        putValue(NAME, name);
-    }
 
-    public void actionPerformed(ActionEvent e) {
-        handler.actionPerformed(e);
+    @Test
+    public void actionPerformedCallsActionListener() throws Exception {
+        final ActionEvent event = new ActionEvent(this, 0, "command");
+        Action action = ActionAdapter.forMnemonicAndName(listener, "AAction");
+
+        action.actionPerformed(event);
+
+        verify(listener).actionPerformed(same(event));
+        assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'A');
+        assertThat(action.getValue(Action.NAME)).isEqualTo("Action");
     }
 }

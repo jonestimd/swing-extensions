@@ -51,8 +51,10 @@ import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.action.MnemonicAction;
 
 /**
- * This class manages the windows and {@code Windows} menu of an application.  Each window is created with a menu bar
- * containing a {@code Windows} and a {@code Help} menu.
+ * Manages an application's windows. This class creates window and initializes their menu bar with the {@code Windows}
+ * and {@code Help} menus.  This class updates the {@code Windows} menu whenever another window is opened or closed.
+ * Typically, an instance of this class is registered with a {@link WindowEventPublisher} and menu items for opening
+ * new windows are created using {@link FrameAction}.
  * @param <Key> The class defining the window types (typically an {@code enum})
  */
 public class FrameManager<Key extends WindowInfo> implements WindowEventListener<Key> {

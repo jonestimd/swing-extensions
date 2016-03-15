@@ -23,7 +23,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * This class is not thread-safe.  It is intendend for use only on the AWT event thread.
+ * Publishes {@link ApplicationWindowEvent}s to registered {@link WindowEventListener}s.
+ * <p>
+ * <strong>Note:</strong>  This class is not thread-safe.  It is intended for use only on the AWT event thread.
+ * @see FrameManager
+ * @see FrameAction
+ * @see WindowEventListener
  */
 public class WindowEventPublisher<E extends WindowInfo> {
     private List<WindowEventListener<E>> listeners = new LinkedList<>();
