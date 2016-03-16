@@ -66,7 +66,7 @@ public class TableFactory {
                 table.getColumn(columnIdentifier).setCellEditor(new ValidatingTextCellEditor(table, validationAdapter));
             }
             else if (Enum.class.isAssignableFrom(columnClass)) {
-                        table.getColumn(columnIdentifier).setCellEditor(createEnumCellEditor((Class<? extends Enum<?>>) columnClass));
+                table.getColumn(columnIdentifier).setCellEditor(createEnumCellEditor((Class<? extends Enum<?>>) columnClass));
             }
         }
         table.setCellSelectionEnabled(true);

@@ -35,7 +35,7 @@ import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.Validator;
 
 /**
- * Factory for initializing a {@link JTextField}.
+ * Builder for initializing a {@link JTextField}.
  * @param <T> the class of the text field
  */
 public class TextField<T extends JTextField> {
