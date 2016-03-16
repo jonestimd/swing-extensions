@@ -160,6 +160,19 @@ p img {
   border: none;
 }
 
+div.screenshot {
+  float: right;
+}
+
+div.screenshot img {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+  text-align: center;
+  border: none;
+}
+
 /* Code blocks */
 
 code, pre {

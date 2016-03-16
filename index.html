@@ -39,7 +39,7 @@
       <section>
         <h1><a id="custom-components" class="anchor" href="#custom-components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Components</h1>
         <h3>Date field with calendar popup</h3>
-        <p style="float: right;"><img src="screenshots/datefield.png" alt="DateField"/></p>
+        <div class="screenshot"><img src="screenshots/datefield.png" alt="DateField"/></div>
         <ul>
           <li>Configurable date format</li>
           <li>Localized (month/day names and first day of week)</li>
@@ -47,9 +47,9 @@
         </ul>
 
         <h3 style="clear: right;">Bean list combo box</h3>
-        <div style="float: right;">
+        <div class="screenshot">
           <p><img src="screenshots/empty-combobox.png" alt="empty BeanListComboBox"/></p>
-          <p><img src="screenshots/editable-combobox.png" alt="editable BeanListComboBox"/></p>
+          <img src="screenshots/editable-combobox.png" alt="editable BeanListComboBox"/>
         </div>
         <ul>
           <li>Renders list items using a <code>java.text.Format</code></li>
@@ -59,7 +59,7 @@
         </ul>
 
         <h3 style="clear: right;">Validated panel</h3>
-        <p style="float: right;"><img src="screenshots/validated-panel.png" alt="ValidatedPanel"></p>
+        <div class="screenshot"><img src="screenshots/validated-panel.png" alt="ValidatedPanel"></div>
         <ul>
           <li>Display validation messages for fields</li>
           <li>Display validation messages for table cells</li>
@@ -67,21 +67,29 @@
 
         <h3><a id="table-extensions" class="anchor" href="#table-extensions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table Extensions</h3>
         <ul>
-          <li>Bean list table model</li>
+          <li>Bean list table model
           <ul>
             <li>Table data as a list of Java beans</li>
             <li>Table columns correspond to bean properties</li>
             <li>Define column adapters to read/write bean properties</li>
             <li>Support for asynchronous data providers</li>
-          </ul>
+          </ul></li>
           <li>Input validation</li>
           <li>Highlight unsaved changes</li>
-          <li>Support for search/filter</li>
-          <li>Mixed row table</li>
+          <li>Support for search/filter
+          <ul>
+            <li>Complex search
+              <div class="screenshot"><img src="screenshots/filterfield.png" alt="complex FilterField"/></div></li>
+            <li style="clear: right;">Syntax highlighting
+              <div class="screenshot"><img src="screenshots/filterfield-highlight.png" alt="highlight matching () FilterField"/></div></li>
+            <li>Error feedback
+              <div class="screenshot"><img src="screenshots/filterfield-error.png" alt="invalid search FilterField"/></div></li>
+          </ul></li>
+          <li>Mixed row table
           <ul>
             <li>Header/detail table</li>
             <li>Section table</li>
-          </ul>
+          </ul></li>
         </ul>
       </section>
       <footer>
