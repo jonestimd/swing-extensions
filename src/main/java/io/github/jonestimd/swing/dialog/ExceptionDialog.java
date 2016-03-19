@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import com.google.common.base.MoreObjects;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.action.CancelAction;
 
@@ -39,24 +40,24 @@ import static io.github.jonestimd.swing.ComponentFactory.*;
  * Display an exception with its stack trace.
  */
 public class ExceptionDialog extends MessageDialog {
-    private static final String RESOURCE_PREFIX = "exceptionDialog.";
+    public static final String DEFAULT_RESOURCE_PREFIX = "exceptionDialog.";
 
     /**
      * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
      */
     public ExceptionDialog(Window owner, Throwable exception) {
-        this(owner, DEFAULT_BUNDLE, exception);
+        this(owner, DEFAULT_BUNDLE, DEFAULT_RESOURCE_PREFIX, exception);
     }
 
     /**
      * Construct an exception dialog using the specified resource bundle with fallback to
      * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
      */
-    public ExceptionDialog(Window owner, ResourceBundle bundle, Throwable exception) {
-        super(owner, getString(bundle, "title"), ModalityType.APPLICATION_MODAL);
+    public ExceptionDialog(Window owner, ResourceBundle bundle, String resourcePrefix, Throwable exception) {
+        super(owner, getString(bundle, resourcePrefix, "title"), ModalityType.APPLICATION_MODAL);
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(new JLabel(getString(bundle, "exception.label")), BorderLayout.NORTH);
-        JTextArea detailArea = new JTextArea(getInt(bundle, "exception.rows"), getInt(bundle, "exception.columns"));
+        getContentPane().add(new JLabel(getString(bundle, resourcePrefix, "exception.label")), BorderLayout.NORTH);
+        JTextArea detailArea = new JTextArea(getInt(bundle, resourcePrefix, "exception.rows"), getInt(bundle, resourcePrefix, "exception.columns"));
         detailArea.setEditable(false);
         detailArea.setTabSize(4);
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -65,26 +66,26 @@ public class ExceptionDialog extends MessageDialog {
             detailArea.setText(buffer.toString("UTF-8"));
         }
         catch (UnsupportedEncodingException ex) {
-            detailArea.setText(getString(bundle, "noStackTrace"));
+            detailArea.setText(getString(bundle, resourcePrefix, "noStackTrace"));
         }
         getContentPane().add(new JScrollPane(detailArea), BorderLayout.CENTER);
         pack();
         CancelAction.install(this);
     }
 
-    private static int getInt(ResourceBundle bundle, String key) {
+    private static int getInt(ResourceBundle bundle, String resourcePrefix, String key) {
         try {
-            return Integer.parseInt(bundle.getObject(RESOURCE_PREFIX + key).toString());
+            return Integer.parseInt(bundle.getObject(MoreObjects.firstNonNull(resourcePrefix, "") + key).toString());
         } catch (Exception ex) {
-            return (int) DEFAULT_BUNDLE.getObject(RESOURCE_PREFIX + key);
+            return (int) DEFAULT_BUNDLE.getObject(DEFAULT_RESOURCE_PREFIX + key);
         }
     }
 
-    private static String getString(ResourceBundle bundle, String key) {
+    private static String getString(ResourceBundle bundle, String resourcePrefix, String key) {
         try {
-            return bundle.getString(RESOURCE_PREFIX + key);
+            return bundle.getString(MoreObjects.firstNonNull(resourcePrefix, "") + key);
         } catch (Exception ex) {
-            return DEFAULT_BUNDLE.getString(RESOURCE_PREFIX + key);
+            return DEFAULT_BUNDLE.getString(DEFAULT_RESOURCE_PREFIX + key);
         }
     }
 }

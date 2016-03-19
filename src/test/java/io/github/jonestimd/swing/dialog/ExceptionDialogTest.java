@@ -33,7 +33,7 @@ public class ExceptionDialogTest {
 
     @Test
     public void nullBundle() throws Exception {
-        ExceptionDialog dialog = new ExceptionDialog(JOptionPane.getRootFrame(), null, new RuntimeException());
+        ExceptionDialog dialog = new ExceptionDialog(JOptionPane.getRootFrame(), null, "", new RuntimeException());
 
         assertThat(dialog.getTitle()).isEqualTo("Unexpected Exception");
         JLabel label = (JLabel) dialog.getContentPane().getComponent(0);
@@ -46,7 +46,7 @@ public class ExceptionDialogTest {
 
     @Test
     public void escapeClosesDialog() throws Exception {
-        ExceptionDialog dialog = new ExceptionDialog(JOptionPane.getRootFrame(), null, new RuntimeException());
+        ExceptionDialog dialog = new ExceptionDialog(JOptionPane.getRootFrame(), null, null, new RuntimeException());
 
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
 
