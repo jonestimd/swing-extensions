@@ -7,7 +7,7 @@ compileJava.sourceCompatibility = 1.8
 compileJava.targetCompatibility = 1.8
 
 group = 'io.github.jonestimd'
-version = '0.1-SNAPSHOT'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -84,7 +84,7 @@ uploadArchives {
                 name = rootProject.group + ':' + rootProject.name
                 packaging = 'jar'
                 description = 'Extensions for Java Swing'
-                url = 'https://github.com/jonestimd/swing-extensions'
+                url = 'https://jonestimd.github.io/swing-extensions'
 
                 scm {
                     connection = 'scm:git:https://github.com/jonestimd/swing-extensions.git'
