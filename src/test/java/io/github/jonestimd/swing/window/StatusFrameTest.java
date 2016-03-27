@@ -165,12 +165,10 @@ public class StatusFrameTest {
     @Test
     public void savesMaximizedStateToSystemProperties() throws Exception {
         createStatusFrame(RESOURCE_PREFIX);
-        SwingUtilities.invokeAndWait(() -> {
-            frame.setVisible(true);
-            frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-        });
-        int state = frame.getExtendedState();
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
         Dimension size = frame.getSize();
+        SwingUtilities.invokeAndWait(() -> frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH));
+        int state = frame.getExtendedState();
 
         SwingUtilities.invokeAndWait(() -> {
             frame.setVisible(false);
