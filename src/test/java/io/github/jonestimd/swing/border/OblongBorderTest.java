@@ -82,6 +82,6 @@ public class OblongBorderTest {
 
     @Test
     public void isBorderOpaqueReturnsTrue() throws Exception {
-        assertThat(new OblongBorder(2, Color.black).isBorderOpaque()).isTrue();
+        assertThat(new OblongBorder(2, Color.black).isBorderOpaque()).isFalse();
     }
 }

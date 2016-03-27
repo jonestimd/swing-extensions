@@ -64,6 +64,6 @@ public class OblongBorder implements Border {
 
     @Override
     public boolean isBorderOpaque() {
-        return true;
+        return false;
     }
 }
