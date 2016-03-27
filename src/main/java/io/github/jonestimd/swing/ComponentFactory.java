@@ -49,6 +49,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 
+import com.google.common.base.MoreObjects;
 import io.github.jonestimd.swing.border.OblongBorder;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
@@ -56,6 +57,8 @@ import io.github.jonestimd.swing.component.IconBorder.Side;
 
 public class ComponentFactory {
     public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
+    public static final char NO_MNEMONIC = ' ';
+    public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
 
     protected final ResourceBundle bundle;
 
@@ -98,7 +101,7 @@ public class ComponentFactory {
         for (int i = 0; i < mnemonicAndNameKeys.length; i++) {
             String mnemonicAndName = bundle.getString(mnemonicAndNameKeys[i]);
             buttons[i] = new JRadioButton(mnemonicAndName.substring(1));
-            if (mnemonicAndName.charAt(0) != ' ') {
+            if (mnemonicAndName.charAt(0) != NO_MNEMONIC) {
                 buttons[i].setMnemonic(mnemonicAndName.charAt(0));
             }
             group.add(buttons[i]);
@@ -161,7 +164,7 @@ public class ComponentFactory {
             tooltip.append(" (");
             if (accelerator.getModifiers() > 0) {
                 tooltip.append(KeyEvent.getKeyModifiersText(accelerator.getModifiers()));
-                tooltip.append('-');
+                tooltip.append(ACCELERATOR_DELIMITER);
             }
             if (accelerator.getKeyCode() != 0) {
                 tooltip.append(KeyEvent.getKeyText(accelerator.getKeyCode()));
@@ -180,7 +183,7 @@ public class ComponentFactory {
     public static JMenu newMenu(ResourceBundle bundle, String mnemonicAndNameKey) {
         String mnemonicAndName = bundle.getString(mnemonicAndNameKey);
         JMenu menu = new JMenu(mnemonicAndName.substring(1));
-        if (mnemonicAndName.charAt(0) != ' ') menu.setMnemonic(mnemonicAndName.charAt(0));
+        if (mnemonicAndName.charAt(0) != NO_MNEMONIC) menu.setMnemonic(mnemonicAndName.charAt(0));
         menu.putClientProperty(ClientProperty.MNEMONIC_AND_NAME_KEY, mnemonicAndNameKey);
         return menu;
     }
