@@ -34,13 +34,13 @@ public abstract class MnemonicAction extends AbstractAction {
     public MnemonicAction(String mnemonicAndName, Icon icon) {
         putValue(NAME, mnemonicAndName.substring(1));
         putValue(SMALL_ICON, icon);
-        putValue(MNEMONIC_KEY, Integer.valueOf(mnemonicAndName.charAt(0)));
+        putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
     }
 
     public MnemonicAction(ResourceBundle bundle, String keyPrefix) {
         String mnemonicAndName = bundle.getString(keyPrefix + ".mnemonicAndName");
         putValue(NAME, mnemonicAndName.substring(1));
-        putValue(MNEMONIC_KEY, Integer.valueOf(mnemonicAndName.charAt(0)));
+        putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
         if (bundle.containsKey(keyPrefix + ".iconImage")) {
             putValue(SMALL_ICON, new ImageIcon(getClass().getResource(bundle.getString(keyPrefix + ".iconImage"))));
         }
