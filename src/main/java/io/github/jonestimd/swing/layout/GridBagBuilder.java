@@ -131,7 +131,7 @@ public class GridBagBuilder {
         return append(field, getConstraints(field.getClass()));
     }
 
-    private <T extends JComponent> T append(T field, GridBagFormula formula) {
+    public  <T extends JComponent> T append(T field, GridBagFormula formula) {
         if (field instanceof JTextArea || field instanceof JTable || field instanceof JList) {
             container.add(new JScrollPane(field), formula.setConstraints(gbc));
         }

@@ -125,4 +125,18 @@ public class FormElementTest {
         assertThat(gbc.fill).isEqualTo(GridBagConstraints.BOTH);
         assertThat(gbc.insets.left).isEqualTo(0);
     }
+
+    @Test
+    public void panel() throws Exception {
+        GridBagConstraints gbc = FormElement.PANEL.setConstraints(new GridBagConstraints());
+
+        assertThat(FormElement.PANEL.getLabelConstraints()).isNull();
+        assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridwidth).isEqualTo(2);
+        assertThat(gbc.gridheight).isEqualTo(1);
+        assertThat(gbc.weightx).isEqualTo(1);
+        assertThat(gbc.weighty).isEqualTo(1);
+        assertThat(gbc.fill).isEqualTo(GridBagConstraints.BOTH);
+        assertThat(gbc.insets.left).isEqualTo(0);
+    }
 }

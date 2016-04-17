@@ -30,7 +30,8 @@ public enum FormElement implements GridBagFormula {
     TEXT_FIELD(LEFT_LABEL, GridBagConstraints.WEST, 1, 1, 1d, 0d, 0),
     TEXT_AREA(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 0.3d, 0),
     LIST(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0),
-    TABLE(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0);
+    TABLE(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0),
+    PANEL(null, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0);
 
     private final FormElement labelConstraints;
     private final int anchor;
