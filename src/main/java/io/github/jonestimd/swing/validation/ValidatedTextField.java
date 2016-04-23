@@ -61,11 +61,11 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     }
 
     public void addValidationListener(PropertyChangeListener listener) {
-        addPropertyChangeListener(VALIDATION_MESSAGES, listener);
+        validationSupport.addValidationListener(listener);
     }
 
     public void removeValidationListener(PropertyChangeListener listener) {
-        removePropertyChangeListener(VALIDATION_MESSAGES, listener);
+        validationSupport.removeValidationListener(listener);
     }
 
     public void setDocument(Document document) {
