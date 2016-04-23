@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 import javax.swing.Action;
@@ -42,6 +43,7 @@ import io.github.jonestimd.swing.layout.FormElement;
 import io.github.jonestimd.swing.layout.GridBagBuilder;
 import io.github.jonestimd.swing.validation.FieldChangeTracker;
 import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
+import io.github.jonestimd.swing.validation.ValidationTracker;
 
 /**
  * A dialog with save and cancel buttons and a validation status area.
@@ -55,6 +57,8 @@ public class FormDialog extends MessageDialog {
     private final Box buttonBar;
     private final JTextArea statusArea;
     private final JScrollPane statusScrollPane;
+    private boolean changed = false;
+    private Collection<String> validationMessages = Collections.emptyList();
 
     /**
      * Create a document modal dialog.
@@ -83,6 +87,7 @@ public class FormDialog extends MessageDialog {
         statusScrollPane = ComponentTreeUtils.findAncestor(statusArea, JScrollPane.class);
         statusScrollPane.setVisible(false);
         FieldChangeTracker.install(this::fieldsChanged, getFormPanel());
+        ValidationTracker.install(this::validationChanged, getFormPanel());
     }
 
     protected int getStatusHeight() {
@@ -134,7 +139,17 @@ public class FormDialog extends MessageDialog {
     /**
      * Implementation of {@link FieldChangeHandler}.
      */
-    protected void fieldsChanged(boolean changed, Collection<String> validationMessages) {
+    protected void fieldsChanged(boolean changed) {
+        this.changed = changed;
+        setSaveEnabled(changed && validationMessages.isEmpty());
+        setStatusText(validationMessages);
+    }
+
+    /**
+     * Implementation of {@link FieldChangeHandler}.
+     */
+    protected void validationChanged(Collection<String> validationMessages) {
+        this.validationMessages = validationMessages;
         setSaveEnabled(changed && validationMessages.isEmpty());
         setStatusText(validationMessages);
     }

@@ -1,6 +1,5 @@
 package io.github.jonestimd.swing.validation;
 
-import java.util.Collection;
 import java.util.Vector;
 
 import javax.swing.JCheckBox;
@@ -16,11 +15,9 @@ import org.junit.Test;
 import static org.fest.assertions.Assertions.*;
 
 public class FieldChangeTrackerTest {
-    public static final String REQUIRED_MESSAGE = "required";
     private final JPanel panel = new JPanel();
     private int changes = 0;
     private boolean changed;
-    private Collection<String> validationMessages;
 
     @Test
     public void trackChangesToTextField() throws Exception {
@@ -37,7 +34,7 @@ public class FieldChangeTrackerTest {
         panel.remove(field);
         field.setText("text");
 
-        assertThat(changes).isEqualTo(4);
+        assertThat(changes).isEqualTo(2);
     }
 
     @Test
@@ -55,7 +52,7 @@ public class FieldChangeTrackerTest {
         panel.remove(comboBox);
         comboBox.setSelectedIndex(1);
 
-        assertThat(changes).isEqualTo(4);
+        assertThat(changes).isEqualTo(2);
     }
 
     @Test
@@ -73,7 +70,7 @@ public class FieldChangeTrackerTest {
         panel.remove(checkBox);
         checkBox.setSelected(!checkBox.isSelected());
 
-        assertThat(changes).isEqualTo(4);
+        assertThat(changes).isEqualTo(2);
     }
 
     @Test
@@ -91,28 +88,7 @@ public class FieldChangeTrackerTest {
         panel.remove(list);
         list.setSelectedIndex(1);
 
-        assertThat(changes).isEqualTo(4);
-    }
-
-    @Test
-    public void trackValidationMessages() throws Exception {
-        ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
-        panel.add(field);
-        FieldChangeTracker.install(new Handler(), panel);
-        assertThat(validationMessages).containsOnly(REQUIRED_MESSAGE);
-        assertThat(changed).isFalse();
-
-        field.setText("something");
-        assertThat(validationMessages).isEmpty();
-        assertThat(changed).isTrue();
-
-        field.setText("");
-        assertThat(changed).isFalse();
-
-        panel.remove(field);
-        field.setText("something");
-
-        assertThat(changes).isEqualTo(6);
+        assertThat(changes).isEqualTo(2);
     }
 
     @Test
@@ -127,7 +103,7 @@ public class FieldChangeTrackerTest {
         field.setText("");
         assertThat(changed).isFalse();
 
-        assertThat(changes).isEqualTo(4);
+        assertThat(changes).isEqualTo(2);
     }
 
     @Test
@@ -147,15 +123,14 @@ public class FieldChangeTrackerTest {
         panel.remove(nested);
         field.setText("text");
 
-        assertThat(changes).isEqualTo(5);
+        assertThat(changes).isEqualTo(2);
     }
 
     private class Handler implements FieldChangeHandler {
         @Override
-        public void fieldsChanged(boolean changed, Collection<String> validationMessages) {
+        public void fieldsChanged(boolean changed) {
             changes++;
             FieldChangeTrackerTest.this.changed = changed;
-            FieldChangeTrackerTest.this.validationMessages = validationMessages;
         }
     }
 }

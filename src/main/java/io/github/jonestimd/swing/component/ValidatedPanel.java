@@ -32,9 +32,9 @@ import io.github.jonestimd.swing.ChangeBuffer;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.SwingResource;
 import io.github.jonestimd.swing.dialog.Dialogs;
-import io.github.jonestimd.swing.validation.FieldChangeTracker;
-import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
 import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidationTracker;
+import io.github.jonestimd.swing.validation.ValidationTracker.ValidationChangeHandler;
 import io.github.jonestimd.swing.window.ConfirmCloseAdapter;
 
 /**
@@ -45,7 +45,6 @@ import io.github.jonestimd.swing.window.ConfirmCloseAdapter;
  */
 public abstract class ValidatedPanel extends MenuActionPanel {
     private JTextArea statusArea;
-    private FieldChangeTracker changeTracker = new FieldChangeTracker(new ValidationHandler());
 
     /**
      * Construct a new validated panel.
@@ -60,7 +59,7 @@ public abstract class ValidatedPanel extends MenuActionPanel {
         setLayout(new BorderLayout());
         add(statusArea, BorderLayout.SOUTH);
         add(form, BorderLayout.CENTER);
-        changeTracker.trackFieldChanges(form);
+        ValidationTracker.install(new ValidationHandler(), form);
     }
 
     protected abstract ChangeBuffer getChangeBuffer();
@@ -82,8 +81,9 @@ public abstract class ValidatedPanel extends MenuActionPanel {
         return true;
     }
 
-    private class ValidationHandler implements FieldChangeHandler {
-        public void fieldsChanged(boolean changed, Collection<String> validationMessages) {
+    private class ValidationHandler implements ValidationChangeHandler {
+        @Override
+        public void validationChanged(Collection<String> validationMessages) {
             statusArea.setVisible(! validationMessages.isEmpty());
             statusArea.setText(String.join("\n", validationMessages));
         }

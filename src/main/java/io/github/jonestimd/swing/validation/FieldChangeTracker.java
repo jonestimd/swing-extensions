@@ -21,19 +21,13 @@ package io.github.jonestimd.swing.validation;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,16 +45,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import io.github.jonestimd.swing.ComponentTreeUtils;
-
-public class FieldChangeTracker { // TODO separate change tracker from validation tracker
-    private static final Predicate<Container> NO_CHILD_TRACKING = container ->
-            !(container instanceof JList || container instanceof JTable || container instanceof JComboBox);
+public class FieldChangeTracker extends ContainerTracker {
     private final Logger logger = Logger.getLogger(FieldChangeHandler.class.getName());
     private final Map<JTextComponent, TextFieldHandler> textFieldHandlers = new HashMap<>();
     private final Map<JComboBox, ComboBoxHandler> comboBoxHandlers = new HashMap<>();
     private final Map<JToggleButton, ButtonHandler> buttonHandlers = new HashMap<>();
-    private final Map<JTable, TableHandler> tableHandlers = new HashMap<>();
     private final Map<JList, ListHandler> listHandlers = new HashMap<>();
 
     public static void install(FieldChangeHandler handler, Container container) {
@@ -68,57 +57,15 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
     }
 
     private Set<Object> changedFields = new HashSet<>();
-    private Map<ValidatedComponent, String> validationMessages = new HashMap<>();
 
     private FieldChangeHandler changeHandler;
-    private ValidationHandler validationHandler = new ValidationHandler();
-    private ContainerListener containerListener = new ContainerListener() {
-        @Override
-        public void componentAdded(ContainerEvent event) {
-            Component component = event.getChild();
-            if (component instanceof Container) {
-                trackFieldChanges((Container) component);
-            }
-            else {
-                addComponentListener(component);
-            }
-        }
-
-        @Override
-        public void componentRemoved(ContainerEvent event) {
-            Component component = event.getChild();
-            if (component instanceof Container) {
-                untrackFieldChanges((Container) component);
-            }
-            else {
-                removeComponentListener(component);
-            }
-        }
-    };
 
     public FieldChangeTracker(FieldChangeHandler handler) {
         this.changeHandler = handler;
     }
 
-    public void trackFieldChanges(Container container) {
-        ComponentTreeUtils.visitComponentTree(container, this::addComponentListener, NO_CHILD_TRACKING);
-        changeHandler.fieldsChanged(false, validationMessages.values());
-    }
-
-    public void untrackFieldChanges(Container container) {
-        ComponentTreeUtils.visitComponentTree(container, this::removeComponentListener, NO_CHILD_TRACKING);
-        changeHandler.fieldsChanged(false, validationMessages.values());
-    }
-
-    protected void addComponentListener(Component component) {
-        if (component instanceof ValidatedComponent) {
-            ValidatedComponent validatedComponent = (ValidatedComponent) component;
-            validatedComponent.addValidationListener(validationHandler);
-            String messages = validatedComponent.getValidationMessages();
-            if (messages != null) {
-                validationMessages.put(validatedComponent, messages);
-            }
-        }
+    @Override
+    protected void componentAdded(Component component) {
         if (component instanceof JTextComponent) {
             new TextFieldHandler(((JTextComponent) component));
         }
@@ -128,27 +75,18 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
         else if (component instanceof JToggleButton) {
             new ButtonHandler((JToggleButton) component);
         }
-        else if (component instanceof JTable) {
-            TableHandler tableHandler = new TableHandler();
-            tableHandlers.put((JTable) component, tableHandler);
-            component.addPropertyChangeListener("tableCellEditor", tableHandler);
-        }
         else if (component instanceof JList) {
             ListHandler listHandler = new ListHandler((JList<?>) component);
             listHandlers.put((JList) component, listHandler);
             ((JList) component).addListSelectionListener(listHandler);
         }
-        else if (component instanceof Container) {
-            ((Container) component).addContainerListener(containerListener);
+        else if (!(component instanceof JTable)) {
+            super.componentAdded(component);
         }
     }
 
-    protected void removeComponentListener(Component component) {
-        if (component instanceof ValidatedComponent) {
-            ValidatedComponent validatedComponent = (ValidatedComponent) component;
-            validatedComponent.removeValidationListener(validationHandler);
-            validationMessages.remove(validatedComponent);
-        }
+    @Override
+    protected void componentRemoved(Component component) {
         if (component instanceof JTextComponent) {
             ((JTextComponent) component).getDocument().removeDocumentListener(textFieldHandlers.remove(component));
         }
@@ -158,14 +96,11 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
         else if (component instanceof JToggleButton) {
             ((JToggleButton) component).removeChangeListener(buttonHandlers.remove(component));
         }
-        else if (component instanceof JTable) {
-            component.removePropertyChangeListener("tableCellEditor", tableHandlers.remove(component));
-        }
         else if (component instanceof JList) {
             ((JList) component).removeListSelectionListener(listHandlers.get(component));
         }
-        else if (component instanceof Container) {
-            ((Container) component).removeContainerListener(containerListener);
+        else if (!(component instanceof JTable)) {
+            super.componentRemoved(component);
         }
     }
 
@@ -186,18 +121,8 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
             changedFields.add(source);
         }
         if (changedFields.size() != oldSize) {
-            changeHandler.fieldsChanged(! changedFields.isEmpty(), validationMessages.values());
+            changeHandler.fieldsChanged(! changedFields.isEmpty());
         }
-    }
-
-    private void updateValidationMessages(ValidatedComponent source, String messages) {
-        if (messages == null) {
-            validationMessages.remove(source);
-        }
-        else {
-            validationMessages.put(source, messages);
-        }
-        changeHandler.fieldsChanged(! changedFields.isEmpty(), validationMessages.values());
     }
 
     private class TextFieldHandler implements DocumentListener {
@@ -275,36 +200,11 @@ public class FieldChangeTracker { // TODO separate change tracker from validatio
         }
     }
 
-    private class TableHandler implements PropertyChangeListener {
-        private ValidatedComponent validatedEditor;
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            JTable table = (JTable) evt.getSource();
-            if (evt.getNewValue() != null && table.getEditorComponent() instanceof ValidatedComponent) {
-                validatedEditor = (ValidatedComponent) table.getEditorComponent();
-                updateValidationMessages(validatedEditor, validatedEditor.getValidationMessages());
-                validatedEditor.addValidationListener(validationHandler);
-            }
-            else if (validatedEditor != null) {
-                validatedEditor.removeValidationListener(validationHandler);
-                updateValidationMessages(validatedEditor, null);
-                validatedEditor = null;
-            }
-        }
-    }
-
-    private class ValidationHandler implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateValidationMessages((ValidatedComponent) evt.getSource(), (String) evt.getNewValue());
-        }
-    }
-
     public interface FieldChangeHandler {
         /**
          * Notification of a change in a tracked input field.
          * @param changed true if any input fields have been modified
-         * @param validationMessages the updated validation messages
          */
-        void fieldsChanged(boolean changed, Collection<String> validationMessages);
+        void fieldsChanged(boolean changed);
     }
 }
