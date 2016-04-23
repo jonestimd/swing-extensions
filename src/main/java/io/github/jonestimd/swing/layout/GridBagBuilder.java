@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -60,6 +61,7 @@ public class GridBagBuilder {
         .put(JComboBox.class, FormElement.TEXT_FIELD)
         .put(JTextField.class, FormElement.TEXT_FIELD)
         .put(JTextArea.class, FormElement.TEXT_AREA)
+        .put(JCheckBox.class, FormElement.CHECK_BOX)
         .put(JTable.class, FormElement.TABLE)
         .put(JList.class, FormElement.LIST)
         .put(JPanel.class, FormElement.BUTTON_GROUP)
@@ -151,7 +153,7 @@ public class GridBagBuilder {
         append(box, FormElement.BUTTON_GROUP);
     }
 
-    private void nextCell() {
+    public void nextCell() {
         gbc.gridx += gbc.gridwidth;
         if (gbc.gridx >= columns) {
             gbc.gridx = 0;

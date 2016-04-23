@@ -34,6 +34,8 @@ public class FormElementTest {
 
         assertThat(FormElement.TOP_LABEL.getLabelConstraints()).isNull();
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(0);
@@ -48,6 +50,8 @@ public class FormElementTest {
 
         assertThat(FormElement.LEFT_LABEL.getLabelConstraints()).isNull();
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.EAST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(1);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(0);
@@ -62,7 +66,25 @@ public class FormElementTest {
 
         assertThat(FormElement.BUTTON_GROUP.getLabelConstraints()).isSameAs(FormElement.TOP_LABEL);
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
+        assertThat(gbc.gridheight).isEqualTo(1);
+        assertThat(gbc.weightx).isEqualTo(1);
+        assertThat(gbc.weighty).isEqualTo(0);
+        assertThat(gbc.fill).isEqualTo(GridBagConstraints.HORIZONTAL);
+        assertThat(gbc.insets.left).isEqualTo(0);
+    }
+
+    @Test
+    public void checkBox() throws Exception {
+        GridBagConstraints gbc = FormElement.CHECK_BOX.setConstraints(new GridBagConstraints());
+
+        assertThat(FormElement.BUTTON_GROUP.getLabelConstraints()).isSameAs(FormElement.TOP_LABEL);
+        assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(1);
+        assertThat(gbc.gridy).isEqualTo(-1);
+        assertThat(gbc.gridwidth).isEqualTo(1);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);
         assertThat(gbc.weighty).isEqualTo(0);
@@ -76,6 +98,8 @@ public class FormElementTest {
 
         assertThat(FormElement.TEXT_FIELD.getLabelConstraints()).isSameAs(FormElement.LEFT_LABEL);
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(1);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);
@@ -90,6 +114,8 @@ public class FormElementTest {
 
         assertThat(FormElement.TEXT_AREA.getLabelConstraints()).isSameAs(FormElement.TOP_LABEL);
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);
@@ -104,6 +130,8 @@ public class FormElementTest {
 
         assertThat(FormElement.LIST.getLabelConstraints()).isSameAs(FormElement.TOP_LABEL);
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);
@@ -118,6 +146,8 @@ public class FormElementTest {
 
         assertThat(FormElement.TABLE.getLabelConstraints()).isSameAs(FormElement.TOP_LABEL);
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);
@@ -132,6 +162,8 @@ public class FormElementTest {
 
         assertThat(FormElement.PANEL.getLabelConstraints()).isNull();
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.WEST);
+        assertThat(gbc.gridx).isEqualTo(-1);
+        assertThat(gbc.gridy).isEqualTo(-1);
         assertThat(gbc.gridwidth).isEqualTo(2);
         assertThat(gbc.gridheight).isEqualTo(1);
         assertThat(gbc.weightx).isEqualTo(1);

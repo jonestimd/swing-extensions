@@ -27,6 +27,7 @@ public enum FormElement implements GridBagFormula {
     TOP_LABEL(null, GridBagConstraints.WEST, 2, 1, 0d, 0d, 0),
     LEFT_LABEL(null, GridBagConstraints.EAST, 1, 1, 0d, 0d, 5),
     BUTTON_GROUP(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 0d, 0),
+    CHECK_BOX(null, GridBagConstraints.WEST, 1, 1, 1d, 0d, 0),
     TEXT_FIELD(LEFT_LABEL, GridBagConstraints.WEST, 1, 1, 1d, 0d, 0),
     TEXT_AREA(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 0.3d, 0),
     LIST(TOP_LABEL, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0),
@@ -63,6 +64,9 @@ public enum FormElement implements GridBagFormula {
     }
 
     public GridBagConstraints setConstraints(GridBagConstraints gbc) {
+        if (labelConstraints == null && anchor == GridBagConstraints.WEST && width == 1) {
+            gbc.gridx = 1;
+        }
         gbc.anchor = anchor;
         gbc.gridwidth = width;
         gbc.gridheight = height;
