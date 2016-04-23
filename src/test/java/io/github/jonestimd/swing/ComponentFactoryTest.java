@@ -29,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -66,7 +67,7 @@ public class ComponentFactoryTest {
     }
 
     @Test
-    public void createRadioButtonGroupSetsMnemonicAndName() throws Exception {
+    public void newRadioButtonGroupSetsMnemonicAndName() throws Exception {
         JRadioButton[] group = ComponentFactory.newRadioButtonGroup(bundle,
                 "radio1.mnemonicAndName", "radio2.mnemonicAndName", "radio3.mnemonicAndName");
 
@@ -81,6 +82,14 @@ public class ComponentFactoryTest {
         assertThat(buttonGroup.getButtonCount()).isEqualTo(3);
         assertThat(((DefaultButtonModel) group[1].getModel()).getGroup()).isSameAs(buttonGroup);
         assertThat(((DefaultButtonModel) group[2].getModel()).getGroup()).isSameAs(buttonGroup);
+    }
+
+    @Test
+    public void newCheckBoxSetsMnemonicAndName() throws Exception {
+        JCheckBox checkBox = ComponentFactory.newCheckBox(bundle, "radio1.mnemonicAndName");
+
+        assertThat(checkBox.getText()).isEqualTo("Choice 1");
+        assertThat(checkBox.getMnemonic()).isEqualTo('1');
     }
 
     @Test

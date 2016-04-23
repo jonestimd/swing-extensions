@@ -33,6 +33,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -99,14 +100,23 @@ public class ComponentFactory {
         ButtonGroup group = new ButtonGroup();
         JRadioButton[] buttons = new JRadioButton[mnemonicAndNameKeys.length];
         for (int i = 0; i < mnemonicAndNameKeys.length; i++) {
-            String mnemonicAndName = bundle.getString(mnemonicAndNameKeys[i]);
-            buttons[i] = new JRadioButton(mnemonicAndName.substring(1));
-            if (mnemonicAndName.charAt(0) != NO_MNEMONIC) {
-                buttons[i].setMnemonic(mnemonicAndName.charAt(0));
-            }
+            buttons[i] = newToggleButton(JRadioButton::new, bundle, mnemonicAndNameKeys[i]);
             group.add(buttons[i]);
         }
         return buttons;
+    }
+
+    public static JCheckBox newCheckBox(ResourceBundle bundle, String mnemonicAndNameKey) {
+        return newToggleButton(JCheckBox::new, bundle, mnemonicAndNameKey);
+    }
+
+    private static <T extends JToggleButton> T newToggleButton(Function<String, T> buttonFactory, ResourceBundle bundle, String mnemonicAndNameKey) {
+        String mnemonicAndName = bundle.getString(mnemonicAndNameKey);
+        T button = buttonFactory.apply(mnemonicAndName.substring(1));
+        if (mnemonicAndName.charAt(0) != NO_MNEMONIC) {
+            button.setMnemonic(mnemonicAndName.charAt(0));
+        }
+        return button;
     }
 
     public static JTextArea newValidationStatusArea(int rows, ResourceBundle bundle) {
