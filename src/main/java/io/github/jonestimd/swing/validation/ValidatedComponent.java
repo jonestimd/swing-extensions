@@ -21,11 +21,8 @@ package io.github.jonestimd.swing.validation;
 
 import java.beans.PropertyChangeListener;
 
-
 public interface ValidatedComponent {
-    public static final String VALIDATION_MESSAGES = "validationMessages";
-
-    void validateValue();
+    String VALIDATION_MESSAGES = "validationMessages";
 
     String getValidationMessages();
 

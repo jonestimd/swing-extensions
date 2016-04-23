@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,36 +21,37 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.validation;
 
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import javax.swing.JComponent;
 
-public class ValidationTooltipBorder extends ValidationBorder {
-    private JComponent component;
-    private boolean mouseOverIndicator;
+public class ValidationSupport<T> {
+    private final PropertyChangeSupport changeSupport;
+    private final Validator<T> validator;
+    private String messages;
 
-    public ValidationTooltipBorder(JComponent component) {
-        this.component = component;
-        component.addMouseMotionListener(new MouseHandler());
+    public ValidationSupport(JComponent source, Validator<T> validator) {
+        this.changeSupport = new PropertyChangeSupport(source);
+        this.validator = validator;
     }
 
-    public boolean isMouseOverIndicator() {
-        return ! isValid() && mouseOverIndicator;
+    public String validateValue(T value) {
+        String oldValue = messages;
+        messages = validator.validate(value);
+        changeSupport.firePropertyChange(ValidatedComponent.VALIDATION_MESSAGES, oldValue, messages);
+        return messages;
     }
 
-    private void updateMouseOverIndicator(Point p) {
-        mouseOverIndicator = p.x > component.getWidth()-component.getInsets().right;
+    public String getMessages() {
+        return messages;
     }
 
-    private class MouseHandler implements MouseMotionListener {
-        public void mouseMoved(MouseEvent e) {
-            updateMouseOverIndicator(e.getPoint());
-        }
+    public void addValidationListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(ValidatedComponent.VALIDATION_MESSAGES, listener);
+    }
 
-        public void mouseDragged(MouseEvent e) {
-            updateMouseOverIndicator(e.getPoint());
-        }
+    public void removeValidationListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(ValidatedComponent.VALIDATION_MESSAGES, listener);
     }
 }

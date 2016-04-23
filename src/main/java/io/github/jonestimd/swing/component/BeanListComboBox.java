@@ -63,8 +63,8 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     public BeanListComboBox(Format format, String requiredMessage) {
         this(format, Collections.emptyList());
         this.requiredMessage = requiredMessage;
-        addItemListener(event -> validateValue());
-        validateValue();
+        addItemListener(this::validateValue);
+        validateValue(null);
     }
 
     /**
@@ -166,8 +166,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
         return -1;
     }
 
-    @Override
-    public void validateValue() {
+    protected void validateValue(ItemEvent event) {
         if (requiredMessage != null) {
             String oldValue = validationMessages;
             validationMessages = getSelectedItem() == null ? requiredMessage : null;

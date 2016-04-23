@@ -1,7 +1,9 @@
 package io.github.jonestimd.mockito;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.event.TableModelEvent;
@@ -38,6 +40,19 @@ public class Matchers {
                         actual.getColumn() == example.getColumn() &&
                         actual.getFirstRow() == example.getFirstRow() &&
                         actual.getLastRow() == example.getLastRow();
+            }
+        });
+    }
+
+    public static PropertyChangeEvent matches(final PropertyChangeEvent example) {
+        return Mockito.argThat(new ArgumentMatcher<PropertyChangeEvent>() {
+            @Override
+            public boolean matches(Object argument) {
+                PropertyChangeEvent actual = (PropertyChangeEvent) argument;
+                return actual.getSource() == example.getSource() &&
+                        actual.getPropertyName().equals(example.getPropertyName()) &&
+                        Objects.equals(actual.getOldValue(), example.getOldValue()) &&
+                        Objects.equals(actual.getNewValue(), example.getNewValue());
             }
         });
     }

@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +24,7 @@ package io.github.jonestimd.swing.validation;
 import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JTextField;
+import javax.swing.JPasswordField;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.DocumentListener;
@@ -30,12 +32,16 @@ import javax.swing.text.Document;
 
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
-public class ValidatedTextField extends JTextField implements ValidatedComponent {
+public class ValidatedPasswordField extends JPasswordField implements ValidatedComponent {
     private ValidationTooltipBorder validationBorder;
-    private final ValidationSupport<String> validationSupport;
+    private final ValidationSupport<char[]> validationSupport;
     private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
-    public ValidatedTextField(Validator<String> validator) {
+    public ValidatedPasswordField(String requiredMessage) {
+        this(value -> value.length == 0 ? requiredMessage : null);
+    }
+
+    public ValidatedPasswordField(Validator<char[]> validator) {
         this.validationSupport = new ValidationSupport<>(this, validator);
         this.validationBorder = new ValidationTooltipBorder(this);
         super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
@@ -43,6 +49,7 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         getDocument().addDocumentListener(validationHandler);
     }
 
+    @Override
     public void setBorder(Border border) {
         if (border == null) {
             super.setBorder(validationBorder);
@@ -53,21 +60,25 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     }
 
     public void validateValue() {
-        validationBorder.setValid(validationSupport.validateValue(getText()) == null);
+        validationBorder.setValid(validationSupport.validateValue(getPassword()) == null);
     }
 
+    @Override
     public String getValidationMessages() {
         return validationSupport.getMessages();
     }
 
+    @Override
     public void addValidationListener(PropertyChangeListener listener) {
-        addPropertyChangeListener(VALIDATION_MESSAGES, listener);
+        validationSupport.addValidationListener(listener);
     }
 
+    @Override
     public void removeValidationListener(PropertyChangeListener listener) {
-        removePropertyChangeListener(VALIDATION_MESSAGES, listener);
+        validationSupport.removeValidationListener(listener);
     }
 
+    @Override
     public void setDocument(Document document) {
         if (getDocument() != null) {
             getDocument().removeDocumentListener(validationHandler);
@@ -76,10 +87,12 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         document.addDocumentListener(validationHandler);
     }
 
+    @Override
     public Cursor getCursor() {
         return validationBorder.isMouseOverIndicator() ? Cursor.getDefaultCursor() : super.getCursor();
     }
 
+    @Override
     public String getToolTipText() {
         return validationBorder.isMouseOverIndicator() ? validationSupport.getMessages() : super.getToolTipText();
     }

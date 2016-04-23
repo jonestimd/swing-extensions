@@ -199,6 +199,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
             }
         }
 
+        @Override
         public void validateValue() {
             super.validateValue();
             if (getToolTipText() == null) {
