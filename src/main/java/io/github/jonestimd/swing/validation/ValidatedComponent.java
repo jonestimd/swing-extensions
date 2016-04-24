@@ -24,6 +24,8 @@ import java.beans.PropertyChangeListener;
 public interface ValidatedComponent {
     String VALIDATION_MESSAGES = "validationMessages";
 
+    void validateValue();
+
     String getValidationMessages();
 
     void addValidationListener(PropertyChangeListener listener);

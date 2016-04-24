@@ -52,6 +52,7 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         }
     }
 
+    @Override
     public void validateValue() {
         validationBorder.setValid(validationSupport.validateValue(getText()) == null);
     }

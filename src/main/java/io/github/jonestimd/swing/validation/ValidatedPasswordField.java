@@ -59,6 +59,7 @@ public class ValidatedPasswordField extends JPasswordField implements ValidatedC
         }
     }
 
+    @Override
     public void validateValue() {
         validationBorder.setValid(validationSupport.validateValue(getPassword()) == null);
     }

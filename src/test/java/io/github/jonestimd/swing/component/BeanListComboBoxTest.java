@@ -132,7 +132,7 @@ public class BeanListComboBoxTest {
         BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), Lists.newArrayList(null, new TestBean("aaa")));
         comboBox.addPropertyChangeListener(BeanListComboBox.VALIDATION_MESSAGES, listener);
 
-        comboBox.validateValue(null);
+        comboBox.validateValue();
 
         verifyZeroInteractions(listener);
     }
@@ -144,7 +144,7 @@ public class BeanListComboBoxTest {
         comboBox.setEditable(true);
         comboBox.addPropertyChangeListener(BeanListComboBox.VALIDATION_MESSAGES, listener);
 
-        comboBox.validateValue(null);
+        comboBox.validateValue();
 
         assertThat(comboBox.getValidationMessages()).isNull();
         verifyZeroInteractions(listener);
