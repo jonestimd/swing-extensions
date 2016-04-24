@@ -19,10 +19,48 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.validation;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.base.Strings;
+
 public interface Validator<T> {
     static <T> Validator<T> empty() {
         return bean -> null;
     }
 
     String validate(T value);
+
+    /**
+     * Apply another validation if this validation passes.
+     * @param other the other validator
+     * @return a new {@code Validator} that returns the error from {@code this} or {@code other}
+     */
+    default Validator<T> then(Validator<T> other) {
+        return value -> {
+            String message = validate(value);
+            return message == null ? other.validate(value) : message;
+        };
+    }
+
+    /**
+     * Apply another validation after this validation.  Uses {@code System.lineSeparator()} as the message separator.
+     * @param other the other validator
+     * @return a new {@code Validator} that returns the combined messages of {@code this} and {@code other}
+     */
+    default Validator<T> add(Validator<T> other) {
+        return add(other, System.lineSeparator());
+    }
+
+    /**
+     * Apply another validation after this validation.
+     * @param other the other validator
+     * @param separator the separator to use when joining the error messages
+     * @return a new {@code Validator} that returns the combined messages of {@code this} and {@code other}
+     */
+    default Validator<T> add(Validator<T> other, String separator) {
+        return value -> Strings.emptyToNull(Stream.of(validate(value), other.validate(value))
+                .filter(message -> message != null)
+                .collect(Collectors.joining(separator)));
+    }
 }
