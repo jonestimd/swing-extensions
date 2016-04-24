@@ -19,8 +19,6 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
-import java.awt.Component;
-
-public interface ComponentVisitor<C extends Component> {
+public interface ComponentVisitor<C> {
 	void visit(C component);
 }

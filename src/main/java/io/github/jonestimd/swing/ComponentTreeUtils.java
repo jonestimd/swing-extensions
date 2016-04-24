@@ -30,19 +30,19 @@ import javax.swing.JPopupMenu;
 import io.github.jonestimd.util.JavaPredicates;
 
 public class ComponentTreeUtils {
-    public static void visitComponentTree(Container rootComponent, ComponentVisitor<? super Component> visitor) {
+    public static void visitComponentTree(Container rootComponent, ComponentVisitor<Component> visitor) {
         visitComponentTree(rootComponent, visitor, JavaPredicates.alwaysTrue());
     }
 
-    public static void visitComponentTree(Container rootComponent, ComponentVisitor<? super Component> visitor, Predicate<Container> descend) {
+    public static void visitComponentTree(Container rootComponent, ComponentVisitor<Component> visitor, Predicate<Container> descend) {
         visitComponentTree(rootComponent, Component.class, visitor, descend);
     }
 
-    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor) {
+    public static <C> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor) {
         visitComponentTree(rootComponent, type, visitor, JavaPredicates.alwaysTrue());
     }
 
-    public static <C extends Component> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor, Predicate<Container> descend) {
+    public static <C> void visitComponentTree(Container rootComponent, Class<C> type, ComponentVisitor<? super C> visitor, Predicate<Container> descend) {
         if (type.isInstance(rootComponent)) {
             visitor.visit(type.cast(rootComponent));
         }
