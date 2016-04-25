@@ -4,7 +4,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.Format;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import io.github.jonestimd.beans.ObservableBean;
@@ -13,11 +16,12 @@ import org.mockito.ArgumentCaptor;
 
 import static org.fest.assertions.Assertions.*;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 public class ComponentBinderTest {
     @Test
-    public void bind() throws Exception {
+    public void bindBeanToTextField() throws Exception {
         ObservableBean bean = mock(ObservableBean.class);
         JTextField field = new JTextField();
         Format format = new DecimalFormat("#0.00");
@@ -33,7 +37,7 @@ public class ComponentBinderTest {
     }
 
     @Test
-    public void rebind() throws Exception {
+    public void rebindBeanToTextField() throws Exception {
         ObservableBean bean1 = mock(ObservableBean.class);
         ObservableBean bean2 = mock(ObservableBean.class);
         JTextField field = new JTextField();
@@ -51,5 +55,41 @@ public class ComponentBinderTest {
 
         listenerCaptor.getValue().propertyChange(new PropertyChangeEvent(bean1, "property", null, 10));
         assertThat(field.getText()).isEqualTo("10.00");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void bindTextFieldToConsumer() throws Exception {
+        Consumer<String> consumer = mock(Consumer.class);
+
+        JTextField field = ComponentBinder.bind(new JTextField(), consumer);
+        field.setText("text");
+
+        verify(consumer).accept("text");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void bindTextFieldToConsumerWithParser() throws Exception {
+        Function<String, String> parser = mock(Function.class);
+        Consumer<String> consumer = mock(Consumer.class);
+        when(parser.apply(anyString())).thenAnswer(invocation -> invocation.getArguments()[0].toString().toUpperCase());
+
+        JTextField field = ComponentBinder.bind(new JTextField(), parser, consumer);
+        field.setText("text");
+
+        verify(parser).apply("text");
+        verify(consumer).accept("TEXT");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void bindPasswordFieldToConsumer() throws Exception {
+        Consumer<String> consumer = mock(Consumer.class);
+
+        JPasswordField field = ComponentBinder.bind(new JPasswordField(), consumer);
+        field.setText("text");
+
+        verify(consumer).accept("text");
     }
 }

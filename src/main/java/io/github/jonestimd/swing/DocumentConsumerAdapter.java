@@ -1,3 +1,5 @@
+// The MIT License (MIT)
+//
 // Copyright (c) 2016 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,31 +21,44 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.util.function.Consumer;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 /**
- * Invokes a {@code Runnable} whenever a {@code Document} changes.
+ * Passes the document text to a {@code Consumer} whenever the document changes.
  */
-public class DocumentChangeHandler implements DocumentListener {
-    private final Runnable handler;
+public class DocumentConsumerAdapter implements DocumentListener {
+    private final Consumer<String> consumer;
 
-    public DocumentChangeHandler(Runnable handler) {
-        this.handler = handler;
+    public DocumentConsumerAdapter(Consumer<String> consumer) {
+        this.consumer = consumer;
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        handler.run();
+        documentChanged(e);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        handler.run();
+        documentChanged(e);
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        handler.run();
+        documentChanged(e);
+    }
+
+    private void documentChanged(DocumentEvent e) {
+        try {
+            Document document = e.getDocument();
+            consumer.accept(document.getText(0, document.getLength()));
+        } catch (BadLocationException e1) {
+            throw new RuntimeException(e1);
+        }
     }
 }

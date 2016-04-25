@@ -36,7 +36,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
-import io.github.jonestimd.swing.DocumentChangeHandler;
+import io.github.jonestimd.swing.DocumentConsumerAdapter;
 import io.github.jonestimd.swing.filter.BasicFilterParser;
 import io.github.jonestimd.swing.filter.FilterParser;
 import io.github.jonestimd.swing.filter.FilterSource;
@@ -94,7 +94,7 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         StyleConstants.setBold(boldStyle, true);
         StyleConstants.setForeground(boldStyle, Color.BLUE);
         addCaretListener(this::caretUpdate);
-        getDocument().addDocumentListener(new DocumentChangeHandler(this::updateFilter));
+        getDocument().addDocumentListener(new DocumentConsumerAdapter(this::updateFilter));
     }
 
     private void caretUpdate(CaretEvent event) {
@@ -117,10 +117,10 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         }
     }
 
-    private void updateFilter() {
+    private void updateFilter(String text) {
         setToolTipText(null);
         try {
-            predicate = getText().trim().isEmpty() ? null : filterParser.parse(FilterField.this);
+            predicate = text.trim().isEmpty() ? null : filterParser.parse(FilterField.this);
             firePropertyChange(PREDICATE_PROPERTY, null, predicate);
             setBackground(normalBackground);
         } catch (Exception ex) {

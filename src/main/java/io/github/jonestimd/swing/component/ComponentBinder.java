@@ -19,46 +19,83 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Format;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.beans.ObservableBean;
+import io.github.jonestimd.swing.DocumentChangeHandler;
+import io.github.jonestimd.swing.DocumentConsumerAdapter;
 
 public class ComponentBinder {
     private static final String LISTENER_PROPERTY = "com.jonestim.swing.component.ComponentBinder.listener";
     private static final String SOURCE_PROPERTY = "com.jonestim.swing.component.ComponentBinder.source";
 
-    public static <T extends JTextField> T bind(ObservableBean source, String propertyName, Object currentValue, T label, Format format) {
-        ValueChangeHandler listener = (ValueChangeHandler) label.getClientProperty(LISTENER_PROPERTY);
+    /**
+     * Add a listener that updates a text field when a bean property changes.
+     * @param source the source bean
+     * @param propertyName the bean property name
+     * @param currentValue the current value of the bean property
+     * @param field the field to update (typically not editable)
+     * @param format formatter for the value
+     * @return the text field
+     */
+    public static <T extends JTextField> T bind(ObservableBean source, String propertyName, Object currentValue, T field, Format format) {
+        PropertyChangeListener listener = (PropertyChangeListener) field.getClientProperty(LISTENER_PROPERTY);
         if (listener == null) {
-            listener = new ValueChangeHandler(label, format);
-            label.putClientProperty(LISTENER_PROPERTY, listener);
+            listener = event -> field.setText(format.format(event.getNewValue()));
+            field.putClientProperty(LISTENER_PROPERTY, listener);
         }
-        ObservableBean oldSource = (ObservableBean) label.getClientProperty(SOURCE_PROPERTY);
+        ObservableBean oldSource = (ObservableBean) field.getClientProperty(SOURCE_PROPERTY);
         if (oldSource != null) {
             oldSource.removePropertyChangeListener(propertyName, listener);
         }
-        label.putClientProperty(SOURCE_PROPERTY, source);
+        field.putClientProperty(SOURCE_PROPERTY, source);
         source.addPropertyChangeListener(propertyName, listener);
-        label.setText(format.format(currentValue));
-        return label;
+        field.setText(format.format(currentValue));
+        return field;
     }
 
-    private static class ValueChangeHandler implements PropertyChangeListener {
-        private final JTextField label;
-        private final Format format;
+    /**
+     * Add a listener that calls a {@code Consumer} when a text field changes.
+     * @param field the text field
+     * @param consumer the consumer to call
+     * @param <T> the text field class
+     * @return the text field
+     */
+    public static <T extends JTextComponent> T bind(T field, Consumer<String> consumer) {
+        field.getDocument().addDocumentListener(new DocumentConsumerAdapter(consumer));
+        return field;
+    }
 
-        public ValueChangeHandler(JTextField label, Format format) {
-            this.label = label;
-            this.format = format;
-        }
+    /**
+     * Add a listener that calls a {@code Consumer} when a text field changes.
+     * @param field the text field
+     * @param parser a function that parses the field value
+     * @param consumer the consumer to call
+     * @param <T> the text field class
+     * @param <V> the consumer value class
+     * @return the text field
+     */
+    public static <T extends JTextComponent, V> T bind(T field, Function<String, V> parser, Consumer<V> consumer) {
+        field.getDocument().addDocumentListener(new DocumentConsumerAdapter(text -> consumer.accept(parser.apply(text))));
+        return field;
+    }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            label.setText(format.format(evt.getNewValue()));
-        }
+    /**
+     * Add a listener that calls a {@code Consumer} when a password field changes.
+     * @param field the text field
+     * @param consumer the consumer to call
+     * @param <T> the password field class
+     * @return the password field
+     */
+    public static <T extends JPasswordField> T bind(T field, Consumer<String> consumer) {
+        field.getDocument().addDocumentListener(new DocumentChangeHandler(() -> consumer.accept(new String(field.getPassword()))));
+        return field;
     }
 }
