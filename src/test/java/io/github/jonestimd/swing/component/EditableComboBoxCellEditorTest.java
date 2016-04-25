@@ -31,7 +31,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.jonestimd.AsyncTest;
-import io.github.jonestimd.swing.list.ListModelIterable;
 import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.util.Streams;
 import org.junit.Test;
@@ -71,7 +70,7 @@ public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
 
     @SuppressWarnings("unchecked")
     private void checkModel(BeanListModel<TestBean> model, TestBean... otherBeans) {
-        List<TestBean> items = Streams.toList(new ListModelIterable(model));
+        List<TestBean> items = Streams.toList(model);
         assertThat(items).hasSize(comboBoxValues.size() + 1 + otherBeans.length);
         assertThat(items.get(0)).isNull();
         assertThat(items.containsAll(comboBoxValues)).isTrue();
