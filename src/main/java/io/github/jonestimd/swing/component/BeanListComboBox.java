@@ -52,7 +52,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param format display format for the items
      */
     public BeanListComboBox(Format format) {
-        this(format, Collections.<T>emptyList());
+        this(format, Collections.emptyList());
     }
 
     /**
@@ -72,7 +72,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param format display format for the items
      * @param items  the list of items
      */
-    public BeanListComboBox(Format format, Collection<T> items) {
+    public BeanListComboBox(Format format, Collection<? extends T> items) {
         this(items, format);
         setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
     }
@@ -83,7 +83,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param validator validator for new items (applied to the editor value)
      * @param items     the list of items
      */
-    public BeanListComboBox(Format format, Validator<String> validator, Collection<T> items) {
+    public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items) {
         this(format, validator, items, new FormatPrefixSelector<>(format));
     }
 
@@ -94,7 +94,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param items          the list of items
      * @param prefixSelector selector for the best matching item for the editor content
      */
-    public BeanListComboBox(Format format, Validator<String> validator, Collection<T> items, PrefixSelector<T> prefixSelector) {
+    public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items, PrefixSelector<T> prefixSelector) {
         this(items, format);
         BeanListComboBoxEditor<T> editor = new BeanListComboBoxEditor<>(this, format, validator, prefixSelector);
         editor.getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
@@ -103,7 +103,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     }
 
     @SuppressWarnings("unchecked")
-    private BeanListComboBox(Collection<T> items, Format format) {
+    private BeanListComboBox(Collection<? extends T> items, Format format) {
         super(new BeanListModel<>(items));
         setRenderer(new Renderer(format));
     }
