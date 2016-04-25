@@ -21,23 +21,25 @@ package io.github.jonestimd.swing.component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
-public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxModel<T> {
-    private final List<T> elements = new ArrayList<T>();
+public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxModel<T>, Iterable<T> {
+    private final List<T> elements = new ArrayList<>();
     private T selectedElement;
 
     public BeanListModel() {
     }
 
-    public BeanListModel(Collection<T> elements) {
+    public BeanListModel(Collection<? extends T> elements) {
         this.elements.addAll(elements);
     }
 
-    public void setElements(Collection<T> elements) {
+    public void setElements(Collection<? extends T> elements) {
         removeAllElements();
         addAllElements(elements);
     }
@@ -55,7 +57,7 @@ public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxMo
         insertElementAt(obj, elements.size());
     }
 
-    public void addAllElements(Collection<T> elements) {
+    public void addAllElements(Collection<? extends T> elements) {
         if (elements.size() > 0) {
             int size = this.elements.size();
             this.elements.addAll(elements);
@@ -104,5 +106,10 @@ public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxMo
     @Override
     public int getSize() {
         return elements.size();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return Collections.unmodifiableList(elements).iterator();
     }
 }

@@ -20,6 +20,8 @@
 package io.github.jonestimd.swing.list;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -28,7 +30,7 @@ import javax.swing.AbstractListModel;
  * A list model that allows the entire list to be replaced.
  * @param <T> the class of the list items
  */
-public class MutableListModel<T> extends AbstractListModel<T> {
+public class MutableListModel<T> extends AbstractListModel<T> implements Iterable<T> {
     private List<T> elements = new ArrayList<T>();
 
     public void setElements(List<T> elements) {
@@ -54,5 +56,10 @@ public class MutableListModel<T> extends AbstractListModel<T> {
 
     public int getSize() {
         return elements.size();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return Collections.unmodifiableList(elements).iterator();
     }
 }

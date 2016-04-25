@@ -22,6 +22,7 @@
 package io.github.jonestimd.swing.list;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -60,5 +61,15 @@ public class MutableListModelTest {
         assertThat(model.getSize()).isEqualTo(2);
         assertThat(model.getElementAt(0)).isEqualTo("a");
         assertThat(model.getElementAt(1)).isEqualTo("b");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void iteratorIsReadOnly() throws Exception {
+        MutableListModel<String> model = new MutableListModel<>();
+        model.addElement("one");
+        model.addElement("two");
+
+        Iterator<String> iterator = model.iterator();
+        iterator.remove();
     }
 }
