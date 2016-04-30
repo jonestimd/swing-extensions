@@ -51,10 +51,10 @@ import io.github.jonestimd.swing.validation.ValidationTracker;
 public class FormDialog extends MessageDialog {
     protected static final int BUTTON_BAR_BORDER = 10;
     protected final JPanel formPanel = new JPanel();
-    private final CancelAction cancelAction = CancelAction.install(this);
-    private final Action saveAction;
+    protected final CancelAction cancelAction = CancelAction.install(this);
+    protected final Action saveAction;
     private final JButton saveButton;
-    private final Box buttonBar;
+    protected final Box buttonBar;
     private final JTextArea statusArea;
     private final JScrollPane statusScrollPane;
     private boolean changed = false;
