@@ -23,7 +23,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -39,7 +38,7 @@ import io.github.jonestimd.swing.ComponentFactory;
 public class CancelAction extends AbstractAction {
     private static final String CLOSE = "close";
     private final Window window;
-    private Optional<ConfirmClose> confirmClose = Optional.empty();
+    private ConfirmClose confirmClose = null;
     private boolean cancelled = false;
 
     public static CancelAction install(JDialog dialog) {
@@ -67,14 +66,14 @@ public class CancelAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (confirmClose.map(ConfirmClose::confirmClose).orElse(true)) {
+        if (confirmClose == null || confirmClose.confirmClose()) {
             cancelled = true;
             window.dispose();
         }
     }
 
     public void setConfirmClose(ConfirmClose confirmClose) {
-        this.confirmClose = Optional.of(confirmClose);
+        this.confirmClose = confirmClose;
     }
 
     public boolean isCancelled() {
