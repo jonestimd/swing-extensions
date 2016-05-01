@@ -62,6 +62,18 @@ public class ComponentBinder {
     }
 
     /**
+     * Add a listener that calls a {@code Runnable} when a text field changes.
+     * @param field the text field
+     * @param handler the runnable to call
+     * @param <T> the text field class
+     * @return the text field
+     */
+    public static <T extends JTextComponent> T onChange(T field, Runnable handler) {
+        field.getDocument().addDocumentListener(new DocumentChangeHandler(handler));
+        return field;
+    }
+
+    /**
      * Add a listener that calls a {@code Consumer} when a text field changes.
      * @param field the text field
      * @param consumer the consumer to call

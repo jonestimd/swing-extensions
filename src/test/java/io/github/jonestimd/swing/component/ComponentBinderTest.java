@@ -59,6 +59,17 @@ public class ComponentBinderTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    public void onChangeCallsHandler() throws Exception {
+        Runnable handler = mock(Runnable.class);
+
+        JTextField field = ComponentBinder.onChange(new JTextField(), handler);
+        field.setText("text");
+
+        verify(handler).run();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     public void bindTextFieldToConsumer() throws Exception {
         Consumer<String> consumer = mock(Consumer.class);
 
