@@ -41,39 +41,39 @@ public class Streams {
         return of(iterable).collect(Collectors.toList());
     }
 
-    public static <T, R> List<R> map(Iterable<T> iterable, Function<T, R> transform) {
+    public static <T, R> List<R> map(Iterable<T> iterable, Function<? super T, ? extends R> transform) {
         return map(of(iterable), transform);
     }
 
-    public static <T, R> List<R> map(Collection<T> collection, Function<T, R> transform) {
+    public static <T, R> List<R> map(Collection<T> collection, Function<? super T, ? extends R> transform) {
         return map(collection.stream(), transform);
     }
 
-    public static <T, R> List<R> map(Stream<T> stream, Function<T, R> transform) {
+    public static <T, R> List<R> map(Stream<T> stream, Function<? super T, ? extends R> transform) {
         return stream.map(transform).collect(Collectors.toList());
     }
 
-    public static <R> List<R> map(int[] source, IntFunction<R> transform) {
+    public static <R> List<R> map(int[] source, IntFunction<? extends R> transform) {
         return IntStream.of(source).mapToObj(transform).collect(Collectors.toList());
     }
 
-    public static <T> List<T> filter(Collection<T> list, Predicate<T> predicate) {
+    public static <T> List<T> filter(Collection<T> list, Predicate<? super T> predicate) {
         return list.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    public static <T, R> Set<R> unique(Collection<T> collection, Function<T, R> transform) {
+    public static <T, R> Set<R> unique(Collection<T> collection, Function<? super T, ? extends R> transform) {
         return unique(collection.stream(), transform);
     }
 
-    public static <T, R> Set<R> unique(Stream<T> stream, Function<T, R> transform) {
+    public static <T, R> Set<R> unique(Stream<T> stream, Function<? super T, ? extends R> transform) {
         return stream.map(transform).collect(Collectors.toSet());
     }
 
-    public static <K, V> Map<K, V> uniqueIndex(Collection<V> collection, Function<V, K> keyFunction) {
+    public static <K, V> Map<K, V> uniqueIndex(Collection<V> collection, Function<? super V, ? extends K> keyFunction) {
         return uniqueIndex(collection.stream(), keyFunction);
     }
 
-    public static <K, V> Map<K, V> uniqueIndex(Stream<V> stream, Function<V, K> keyFunction) {
+    public static <K, V> Map<K, V> uniqueIndex(Stream<V> stream, Function<? super V, ? extends K> keyFunction) {
         return stream.collect(Collectors.toMap(keyFunction, Function.identity()));
     }
 
