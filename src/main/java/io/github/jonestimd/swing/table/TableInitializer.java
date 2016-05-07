@@ -44,7 +44,7 @@ import io.github.jonestimd.swing.table.model.MixedRowTableModel;
 import io.github.jonestimd.swing.table.model.ValidatedTableModel;
 
 public class TableInitializer {
-    public static final String UNDO_CHANGE_ACTION_KEY = "com.jonestim.swing.table.undoChange";
+    public static final String UNDO_CHANGE_ACTION_KEY = "io.github.jonestimd.swing.table.undoChange";
 
     private final Map<Class<?>, TableCellRenderer> tableCellRenderers;
     private final Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors;

@@ -33,8 +33,8 @@ import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.DocumentConsumerAdapter;
 
 public class ComponentBinder {
-    private static final String LISTENER_PROPERTY = "com.jonestim.swing.component.ComponentBinder.listener";
-    private static final String SOURCE_PROPERTY = "com.jonestim.swing.component.ComponentBinder.source";
+    private static final String LISTENER_PROPERTY = "io.github.jonestimd.swing.component.ComponentBinder.listener";
+    private static final String SOURCE_PROPERTY = "io.github.jonestimd.swing.component.ComponentBinder.source";
 
     /**
      * Add a listener that updates a text field when a bean property changes.
