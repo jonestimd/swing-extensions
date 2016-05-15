@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 
-import io.github.jonestimd.swing.validation.CompositeValidator;
 import io.github.jonestimd.swing.validation.NumberValidator;
 import io.github.jonestimd.swing.validation.PositiveNumberValidator;
 import io.github.jonestimd.swing.validation.RequiredValidator;
@@ -152,7 +151,7 @@ public class TextField<T extends JTextField> {
          * Create and configure the {@link ValidatedTextField}.
          */
         public ValidatedTextField get() {
-            Validator<String> validator = validators.size() == 1 ? validators.get(0) : new CompositeValidator<>(validators);
+            Validator<String> validator = validators.stream().reduce(Validator::then).orElseThrow(IllegalStateException::new);
             return new ValidatedTextField(validator);
         }
 
