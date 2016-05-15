@@ -16,6 +16,28 @@ public class ValidatorTest {
     }
 
     @Test
+    public void whenSuppressesErrorsWhenConditionIsFalse() throws Exception {
+        assertThat(required.when(this::alwaysTrue).validate(null)).isEqualTo(REQUIRED);
+        assertThat(required.when(this::alwaysFalse).validate(null)).isNull();
+        assertThat(required.then(minLength).when(this::alwaysFalse).validate(null)).isNull();
+    }
+
+    @Test
+    public void whenNotSuppressesErrorsWhenConditionIsTrue() throws Exception {
+        assertThat(required.whenNot(this::alwaysFalse).validate(null)).isEqualTo(REQUIRED);
+        assertThat(required.whenNot(this::alwaysTrue).validate(null)).isNull();
+        assertThat(required.then(minLength).whenNot(this::alwaysTrue).validate(null)).isNull();
+    }
+
+    private boolean alwaysTrue() {
+        return true;
+    }
+
+    private boolean alwaysFalse() {
+        return false;
+    }
+
+    @Test
     public void addConcatenatesErrors() throws Exception {
         String messages = required.add(minLength).validate(null);
 

@@ -19,6 +19,7 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.validation;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,6 +31,20 @@ public interface Validator<T> {
     }
 
     String validate(T value);
+
+    /**
+     * @return a new {@code Validator} that only reports errors when the condition is true
+     */
+    default Validator<T> when(Supplier<Boolean> condition) {
+        return value -> condition.get() ? validate(value) : null;
+    }
+
+    /**
+     * @return a new {@code Validator} that only reports errors when the condition is false
+     */
+    default Validator<T> whenNot(Supplier<Boolean> condition) {
+        return value -> condition.get() ? null : validate(value);
+    }
 
     /**
      * Apply another validation if this validation passes.
