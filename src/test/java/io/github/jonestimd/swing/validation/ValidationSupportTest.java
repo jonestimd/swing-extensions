@@ -32,6 +32,19 @@ public class ValidationSupportTest {
     }
 
     @Test
+    public void setValidator() throws Exception {
+        JTextField source = new JTextField();
+        ValidationSupport<String> validationSupport = new ValidationSupport<>(source);
+
+        validationSupport.setValidator(new RequiredValidator(MESSAGE), null);
+
+        assertThat(validationSupport.validateValue(null)).isEqualTo(MESSAGE);
+        assertThat(validationSupport.getMessages()).isEqualTo(MESSAGE);
+        assertThat(validationSupport.validateValue("something")).isNull();
+        assertThat(validationSupport.getMessages()).isNull();
+    }
+
+    @Test
     public void validateValueFiresPropertyChange() throws Exception {
         JTextField source = new JTextField();
         ValidationSupport<String> validationSupport = new ValidationSupport<>(source, new RequiredValidator(MESSAGE));

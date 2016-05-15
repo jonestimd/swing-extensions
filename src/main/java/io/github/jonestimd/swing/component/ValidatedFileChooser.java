@@ -47,6 +47,10 @@ public class ValidatedFileChooser extends JFileChooser implements ValidatedCompo
         this(path, validator, FILES_ONLY);
     }
 
+    public ValidatedFileChooser(File path, int mode) {
+        this(path, Validator.empty(), mode);
+    }
+
     public ValidatedFileChooser(File path, Validator<String> validator, int mode) {
         File file = getCanonicalFile(path);
         setFileHidingEnabled(false);
@@ -69,6 +73,10 @@ public class ValidatedFileChooser extends JFileChooser implements ValidatedCompo
         validationSupport = new ValidationSupport<>(this, validator);
         onChange(selectionField, this::validateValue);
         validateValue();
+    }
+
+    public void setValidator(Validator<String> validator) {
+        validationSupport.setValidator(validator, selectionField.getText());
     }
 
     private static File getCanonicalFile(File file) {

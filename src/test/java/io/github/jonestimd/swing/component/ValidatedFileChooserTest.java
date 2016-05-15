@@ -91,4 +91,18 @@ public class ValidatedFileChooserTest {
         verifyNoMoreInteractions(listener);
         assertThat(fileChooser.getValidationMessages()).isEqualTo(REQUIRED);
     }
+
+    @Test
+    public void setValidator() throws Exception {
+        ValidatedFileChooser fileChooser = new ValidatedFileChooser(new File("."), ValidatedFileChooser.FILES_ONLY);
+
+        fileChooser.setValidator(new RequiredValidator(REQUIRED));
+
+        assertThat(fileChooser.isFileHidingEnabled()).isFalse();
+        assertThat(fileChooser.getFileSelectionMode()).isEqualTo(ValidatedFileChooser.FILES_ONLY);
+        assertThat(fileChooser.getCurrentDirectory()).isEqualTo(new File(".").getCanonicalFile());
+        assertThat(fileChooser.getSelectedFile()).isNull();
+        assertThat(fileChooser.getSelectionField().getText()).isEmpty();
+        assertThat(fileChooser.getValidationMessages()).isEqualTo(REQUIRED);
+    }
 }

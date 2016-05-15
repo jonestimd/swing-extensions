@@ -28,12 +28,21 @@ import javax.swing.JComponent;
 
 public class ValidationSupport<T> {
     private final PropertyChangeSupport changeSupport;
-    private final Validator<T> validator;
+    private Validator<T> validator;
     private String messages;
+
+    public ValidationSupport(JComponent source) {
+        this(source, Validator.empty());
+    }
 
     public ValidationSupport(JComponent source, Validator<T> validator) {
         this.changeSupport = new PropertyChangeSupport(source);
         this.validator = validator;
+    }
+
+    public void setValidator(Validator<T> validator, T value) {
+        this.validator = validator;
+        validateValue(value);
     }
 
     public String validateValue(T value) {
