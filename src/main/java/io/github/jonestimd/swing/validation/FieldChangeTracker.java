@@ -52,8 +52,10 @@ public class FieldChangeTracker extends ContainerTracker {
     private final Map<JToggleButton, ButtonHandler> buttonHandlers = new HashMap<>();
     private final Map<JList, ListHandler> listHandlers = new HashMap<>();
 
-    public static void install(FieldChangeHandler handler, Container container) {
-        new FieldChangeTracker(handler).trackFieldChanges(container);
+    public static FieldChangeTracker install(FieldChangeHandler handler, Container container) {
+        FieldChangeTracker tracker = new FieldChangeTracker(handler);
+        tracker.trackFieldChanges(container);
+        return tracker;
     }
 
     private Set<Object> changedFields = new HashSet<>();

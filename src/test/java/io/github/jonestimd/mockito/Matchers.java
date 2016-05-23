@@ -1,7 +1,9 @@
 package io.github.jonestimd.mockito;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -13,6 +15,15 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
 public class Matchers {
+    @SafeVarargs
+    public static <T> Collection<T> containsOnly(T... items) {
+        return containsOnly(Arrays.asList(items));
+    }
+
+    public static <T> Collection<T> isEmpty() {
+        return containsOnly(Collections.emptyList());
+    }
+
     public static <T> Collection<T> containsOnly(final Collection<T> items) {
         final Set<T> uniqueItems = new HashSet<>(items);
         return Mockito.argThat(new ArgumentMatcher<Collection<T>>() {

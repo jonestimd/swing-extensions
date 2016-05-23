@@ -31,11 +31,15 @@ import java.util.Map;
 
 import javax.swing.JTable;
 
+import com.google.common.collect.Lists;
+
 public class ValidationTracker extends ContainerTracker {
     private final Map<JTable, TableHandler> tableHandlers = new HashMap<>();
 
-    public static void install(ValidationChangeHandler handler, Container container) {
-        new ValidationTracker(handler).trackFieldChanges(container);
+    public static ValidationTracker install(ValidationChangeHandler handler, Container container) {
+        ValidationTracker tracker = new ValidationTracker(handler);
+        tracker.trackFieldChanges(container);
+        return tracker;
     }
 
     private Map<ValidatedComponent, String> validationMessages = new HashMap<>();
@@ -50,13 +54,13 @@ public class ValidationTracker extends ContainerTracker {
     @Override
     public void trackFieldChanges(Container container) {
         super.trackFieldChanges(container);
-        changeHandler.validationChanged(validationMessages.values());
+        changeHandler.validationChanged(getValidationMessages());
     }
 
     @Override
     public void untrackFieldChanges(Container container) {
         super.untrackFieldChanges(container);
-        changeHandler.validationChanged(validationMessages.values());
+        changeHandler.validationChanged(getValidationMessages());
     }
 
     @Override
@@ -102,6 +106,10 @@ public class ValidationTracker extends ContainerTracker {
             validationMessages.put(source, messages);
         }
         changeHandler.validationChanged(validationMessages.values());
+    }
+
+    public Collection<String> getValidationMessages() {
+        return Lists.newArrayList(validationMessages.values());
     }
 
     private class TableHandler implements PropertyChangeListener {

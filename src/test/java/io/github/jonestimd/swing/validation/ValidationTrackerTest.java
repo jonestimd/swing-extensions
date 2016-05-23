@@ -1,82 +1,83 @@
 package io.github.jonestimd.swing.validation;
 
-import java.util.Collection;
-
 import javax.swing.JPanel;
 
+import io.github.jonestimd.mockito.Matchers;
 import io.github.jonestimd.swing.validation.ValidationTracker.ValidationChangeHandler;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ValidationTrackerTest {
     private static final String REQUIRED_MESSAGE = "required";
     private final JPanel panel = new JPanel();
-    private int changes = 0;
-    private Collection<String> validationMessages;
+    @Mock
+    private ValidationChangeHandler handler;
+    private InOrder inOrder;
+
+    @Before
+    public void setup() throws Exception {
+        ValidationTracker.install(handler, panel);
+        inOrder = inOrder(handler);
+    }
 
     @Test
     public void trackValidationMessages() throws Exception {
         ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
+
         panel.add(field);
-        ValidationTracker.install(new Handler(), panel);
-        assertThat(validationMessages).containsOnly(REQUIRED_MESSAGE);
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
 
         field.setText("something");
-        assertThat(changes).isEqualTo(2);
-        assertThat(validationMessages).isEmpty();
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
 
         panel.remove(field);
         field.setText("something");
-
-        assertThat(changes).isEqualTo(3);
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
     }
 
     @Test
     public void trackAddedComponents() throws Exception {
         ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
-        ValidationTracker.install(new Handler(), panel);
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
+
         panel.add(field);
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
 
         field.setText("text");
-        assertThat(changes).isEqualTo(3);
-        assertThat(validationMessages).isEmpty();
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
 
         field.setText("");
-        assertThat(changes).isEqualTo(4);
-        assertThat(validationMessages).containsOnly(REQUIRED_MESSAGE);
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
 
         panel.remove(field);
-        assertThat(changes).isEqualTo(5);
-        assertThat(validationMessages).isEmpty();
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
     }
 
     @Test
     public void trackNestedAddedComponents() throws Exception {
         ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
-        ValidationTracker.install(new Handler(), panel);
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
+
         JPanel nested = new JPanel();
         nested.add(field);
         panel.add(nested);
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
 
         field.setText("text");
-        assertThat(changes).isEqualTo(3);
-        assertThat(validationMessages).isEmpty();
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
 
         field.setText("");
-        assertThat(changes).isEqualTo(4);
-        assertThat(validationMessages).containsOnly(REQUIRED_MESSAGE);
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
 
         panel.remove(nested);
-        assertThat(changes).isEqualTo(5);
-        assertThat(validationMessages).isEmpty();
-    }
-
-    private class Handler implements ValidationChangeHandler {
-        @Override
-        public void validationChanged(Collection<String> validationMessages) {
-            changes++;
-            ValidationTrackerTest.this.validationMessages = validationMessages;
-        }
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
     }
 }

@@ -23,7 +23,9 @@ package io.github.jonestimd.swing.dialog;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -33,15 +35,18 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.AsyncTest;
+import io.github.jonestimd.mockito.Matchers;
 import io.github.jonestimd.swing.validation.RequiredValidator;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import org.junit.After;
 import org.junit.Test;
 
 import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class FormDialogTest {
     private static final long SWING_TIMEOUT = 500L;
+    public static final String REQUIRED_MESSAGE = "value required";
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
     private FormDialog dialog;
 
@@ -56,7 +61,7 @@ public class FormDialogTest {
 
         assertThat(getDialogComponent(0)).isSameAs(dialog.getFormPanel());
         assertThat(getDialogComponent(2)).isInstanceOf(JScrollPane.class);
-        assertThat(((JScrollPane) getDialogComponent(2)).isVisible()).isFalse();
+        assertThat((getDialogComponent(2)).isVisible()).isFalse();
         assertThat(((JScrollPane) getDialogComponent(2)).getViewport().getView()).isInstanceOf(JTextArea.class);
         assertThat(getButton(0).getText()).isEqualTo("Save");
         assertThat(getButton(1).getText()).isEqualTo("Cancel");
@@ -122,9 +127,12 @@ public class FormDialogTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void validation() throws Exception {
         dialog = new FormDialog(JOptionPane.getRootFrame(), "", bundle);
-        ValidatedTextField field = new ValidatedTextField(new RequiredValidator("value required"));
+        Consumer<Collection<String>> validationListener = mock(Consumer.class);
+        dialog.addValidationListener(validationListener);
+        ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
         dialog.getFormPanel().add(field);
 
         showDialog();
@@ -132,11 +140,15 @@ public class FormDialogTest {
         JScrollPane scrollPane = (JScrollPane) getDialogComponent(2);
         assertThat(scrollPane.isVisible()).isTrue();
         JTextArea statusArea = (JTextArea) scrollPane.getViewport().getView();
-        assertThat(statusArea.getText()).isEqualTo("value required");
+        assertThat(statusArea.getText()).isEqualTo(REQUIRED_MESSAGE);
+        assertThat(dialog.getValidationMessages()).containsOnly(REQUIRED_MESSAGE);
 
         SwingUtilities.invokeAndWait(() -> field.setText("value"));
 
         AsyncTest.timeout(SWING_TIMEOUT, () -> ! scrollPane.isVisible());
+        verify(validationListener).accept(Matchers.isEmpty());
+        verify(validationListener).accept(Matchers.containsOnly(REQUIRED_MESSAGE));
+        assertThat(dialog.getValidationMessages()).isEmpty();
     }
 
     private void showDialog() {

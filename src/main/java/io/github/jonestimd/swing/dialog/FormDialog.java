@@ -23,8 +23,10 @@ import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import javax.swing.Action;
 import javax.swing.Box;
@@ -58,7 +60,8 @@ public class FormDialog extends MessageDialog {
     private final JTextArea statusArea;
     private final JScrollPane statusScrollPane;
     private boolean changed = false;
-    private Collection<String> validationMessages = Collections.emptyList();
+    private final ValidationTracker validationTracker;
+    private final List<Consumer<Collection<String>>> validationListeners = new LinkedList<>();
 
     /**
      * Create a document modal dialog.
@@ -87,7 +90,7 @@ public class FormDialog extends MessageDialog {
         statusScrollPane = ComponentTreeUtils.findAncestor(statusArea, JScrollPane.class);
         statusScrollPane.setVisible(false);
         FieldChangeTracker.install(this::fieldsChanged, getFormPanel());
-        ValidationTracker.install(this::validationChanged, getFormPanel());
+        validationTracker = ValidationTracker.install(this::validationChanged, getFormPanel());
     }
 
     protected int getStatusHeight() {
@@ -96,6 +99,10 @@ public class FormDialog extends MessageDialog {
 
     protected JPanel getFormPanel() {
         return formPanel;
+    }
+
+    protected void addValidationListener(Consumer<Collection<String>> listener) {
+        validationListeners.add(listener);
     }
 
     /**
@@ -129,6 +136,10 @@ public class FormDialog extends MessageDialog {
         super.setVisible(visible);
     }
 
+    public Collection<String> getValidationMessages() {
+        return validationTracker.getValidationMessages();
+    }
+
     /**
      * @return true if the dialog was cancelled
      */
@@ -141,17 +152,19 @@ public class FormDialog extends MessageDialog {
      */
     protected void fieldsChanged(boolean changed) {
         this.changed = changed;
-        setSaveEnabled(changed && validationMessages.isEmpty());
-        setStatusText(validationMessages);
+        setSaveEnabled(changed && getValidationMessages().isEmpty());
+        setStatusText(getValidationMessages());
     }
 
     /**
      * Implementation of {@link FieldChangeHandler}.
      */
-    protected void validationChanged(Collection<String> validationMessages) {
-        this.validationMessages = validationMessages;
+    private void validationChanged(Collection<String> validationMessages) {
         setSaveEnabled(changed && validationMessages.isEmpty());
         setStatusText(validationMessages);
+        for (Consumer<Collection<String>> listener : validationListeners) {
+            listener.accept(validationMessages);
+        }
     }
 
     /**
