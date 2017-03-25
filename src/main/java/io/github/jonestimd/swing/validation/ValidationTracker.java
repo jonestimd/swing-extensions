@@ -33,6 +33,10 @@ import javax.swing.JTable;
 
 import com.google.common.collect.Lists;
 
+/**
+ * This class tracks the validation messages for all of the {@link ValidatedComponent}s in a component hierarchy.
+ * Whenever the list of validation messages changes, a notification is sent to the {@link ValidationChangeHandler}.
+ */
 public class ValidationTracker extends ContainerTracker {
     private final Map<JTable, TableHandler> tableHandlers = new HashMap<>();
 

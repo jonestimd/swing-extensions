@@ -33,6 +33,17 @@ import javax.swing.JTable;
 
 import io.github.jonestimd.swing.ComponentTreeUtils;
 
+/**
+ * Base class for tracking changes to a component hierarchy.  After {@link #trackFieldChanges(Container)} is called
+ * for a root container, {@link #componentAdded(Component)} and {@link #componentRemoved(Component)} will be called
+ * for any {@link Component} that is added or removed within the hierarchy of the the root container.  Children of
+ * the following components are excluded from the tracking:
+ * <ul>
+ *     <li>{@link JComboBox}</li>
+ *     <li>{@link JList}</li>
+ *     <li>{@link JTable}</li>
+ * </ul>
+ */
 public abstract class ContainerTracker {
     private static final Predicate<Container> NO_CHILD_TRACKING = container ->
             !(container instanceof JList || container instanceof JTable || container instanceof JComboBox);
@@ -60,20 +71,32 @@ public abstract class ContainerTracker {
         }
     };
 
+    /**
+     * Adds the {@code ContainerListener} to the {@code container} and any of its nested containers.
+     */
     public void trackFieldChanges(Container container) {
         ComponentTreeUtils.visitComponentTree(container, this::componentAdded, NO_CHILD_TRACKING);
     }
 
+    /**
+     * Removes the {@code ContainerListener} from the {@code container} and any of its nested containers.
+     */
     public void untrackFieldChanges(Container container) {
         ComponentTreeUtils.visitComponentTree(container, this::componentRemoved, NO_CHILD_TRACKING);
     }
 
+    /**
+     * Adds the {@code ContainerListener} to the {@code component}.
+     */
     protected void componentAdded(Component component) {
         if (component instanceof Container) {
             ((Container) component).addContainerListener(containerListener);
         }
     }
 
+    /**
+     * Removes the {@code ContainerListener} to the {@code component}.
+     */
     protected void componentRemoved(Component component) {
         if (component instanceof Container) {
             ((Container) component).removeContainerListener(containerListener);

@@ -45,6 +45,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+/**
+ * This class tracks changes to input fields within a component hierarchy and notifies a listener when any of the
+ * input fields has been modified.  It can be used to enable a save action only when some of the fields on a form
+ * have been modified.
+ */
 public class FieldChangeTracker extends ContainerTracker {
     private final Logger logger = Logger.getLogger(FieldChangeHandler.class.getName());
     private final Map<JTextComponent, TextFieldHandler> textFieldHandlers = new HashMap<>();
