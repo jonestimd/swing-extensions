@@ -40,17 +40,24 @@ public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxMo
     }
 
     public void setElements(Collection<? extends T> elements) {
-        removeAllElements();
+        removeAll();
         addAllElements(elements);
+        if (selectedElement != null && ! this.elements.contains(selectedElement)) {
+            setSelectedItem(null);
+        }
     }
 
     public void removeAllElements() {
+        removeAll();
+        setSelectedItem(null);
+    }
+
+    private void removeAll() {
         int size = this.elements.size();
         if (size > 0) {
             this.elements.clear();
             fireIntervalRemoved(this, 0, size-1);
         }
-        this.selectedElement = null;
     }
 
     public void addElement(T obj) {
@@ -94,8 +101,10 @@ public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxMo
     @Override
     @SuppressWarnings("unchecked")
     public void setSelectedItem(Object anItem) {
-        this.selectedElement = (T) anItem;
-        fireContentsChanged(this, -1, -1);
+        if (this.selectedElement != anItem) {
+            this.selectedElement = (T) anItem;
+            fireContentsChanged(this, -1, -1);
+        }
     }
 
     @Override

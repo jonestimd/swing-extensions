@@ -47,7 +47,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
     private PrefixSelector<T> prefixSelector;
     private T newItem;
     private boolean autoSelecting = false;
-    private DocumentListener documentHandler= new DocumentListener() {
+    private DocumentListener documentHandler = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
             documentChange();
         }
@@ -92,7 +92,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
     }
 
     public void setItem(Object anObject) {
-        super.setItem(format.format(anObject));
+        super.setItem(anObject == null ? null : format.format(anObject));
     }
 
     public T getItem() {
@@ -119,8 +119,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         }
         try {
             return newItem = (T) format.parseObject(displayText);
-        }
-        catch (ParseException ex) {
+        } catch (ParseException ex) {
             return null;
         }
     }
@@ -154,7 +153,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         String text = editor.getText();
         ((ValidatedTextField) editor).validateValue();
         String selected = itemToString(model.getSelectedItem());
-        if (text.length() > 0 && (selected == null || ! selected.equalsIgnoreCase(text))) {
+        if (text.length() > 0 && (selected == null || !selected.equalsIgnoreCase(text))) {
             SwingUtilities.invokeLater(this::autoComplete);
         }
     }
@@ -188,7 +187,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
 
         // workaround for 4530952
         public void setText(String s) {
-            if (! getText().equals(s)) {
+            if (!getText().equals(s)) {
                 super.setText(s);
             }
         }

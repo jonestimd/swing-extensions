@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.TableModelEvent;
 
 import org.hamcrest.Description;
@@ -64,6 +65,19 @@ public class Matchers {
                         actual.getPropertyName().equals(example.getPropertyName()) &&
                         Objects.equals(actual.getOldValue(), example.getOldValue()) &&
                         Objects.equals(actual.getNewValue(), example.getNewValue());
+            }
+        });
+    }
+
+    public static ListDataEvent listDataEvent(Object source, int type, int index0, int index1) {
+        return Mockito.argThat(new ArgumentMatcher<ListDataEvent>() {
+            @Override
+            public boolean matches(Object argument) {
+                ListDataEvent actual = (ListDataEvent) argument;
+                return actual.getSource() == source &&
+                        actual.getType() == type &&
+                        actual.getIndex0() == index0 &&
+                        actual.getIndex1() == index1;
             }
         });
     }
