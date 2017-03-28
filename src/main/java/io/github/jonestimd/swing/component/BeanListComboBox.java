@@ -32,6 +32,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 
 import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.ValidationBorder;
 import io.github.jonestimd.swing.validation.Validator;
 
@@ -73,7 +74,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param items  the list of items
      */
     public BeanListComboBox(Format format, Collection<? extends T> items) {
-        this(items, format);
+        this(format, new BeanListModel<>(items));
         setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
     }
 
@@ -84,7 +85,17 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param items     the list of items
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items) {
-        this(format, validator, items, new FormatPrefixSelector<>(format));
+        this(format, validator, new BeanListModel<>(items));
+    }
+
+    /**
+     * Create an editable combo box.
+     * @param format    display format for the items
+     * @param validator validator for new items (applied to the editor value)
+     * @param model     the model containing the list of items
+     */
+    public BeanListComboBox(Format format, Validator<String> validator, BeanListModel<T> model) {
+        this(format, validator, model, new FormatPrefixSelector<>(format));
     }
 
     /**
@@ -95,16 +106,26 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param prefixSelector selector for the best matching item for the editor content
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items, PrefixSelector<T> prefixSelector) {
-        this(items, format);
-        BeanListComboBoxEditor<T> editor = new BeanListComboBoxEditor<>(this, format, validator, prefixSelector);
-        editor.getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
-        setEditor(editor);
+        this(format, validator, new BeanListModel<>(items), prefixSelector);
+    }
+
+    /**
+     * Create an editable combo box.
+     * @param format         display format for the items
+     * @param validator      validator for new items (applied to the editor value)
+     * @param model          the model containing the list of items
+     * @param prefixSelector selector for the best matching item for the editor content
+     */
+    public BeanListComboBox(Format format, Validator<String> validator, BeanListModel<T> model, PrefixSelector<T> prefixSelector) {
+        this(format, model);
+        setEditor(new BeanListComboBoxEditor<>(this, format, validator, prefixSelector));
+        getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
         setEditable(true);
     }
 
     @SuppressWarnings("unchecked")
-    private BeanListComboBox(Collection<? extends T> items, Format format) {
-        super(new BeanListModel<>(items));
+    private BeanListComboBox(Format format, BeanListModel<T> model) {
+        super(model);
         setRenderer(new Renderer(format));
     }
 
@@ -192,6 +213,14 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     @Override
     public void removeValidationListener(PropertyChangeListener listener) {
         removePropertyChangeListener(VALIDATION_MESSAGES, listener);
+    }
+
+    protected String getEditorText() {
+        return getEditorComponent().getText();
+    }
+
+    protected ValidatedTextField getEditorComponent() {
+        return (ValidatedTextField) getEditor().getEditorComponent();
     }
 
     private class PrefixKeySelectionManager implements KeySelectionManager {

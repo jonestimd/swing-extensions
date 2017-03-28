@@ -29,7 +29,9 @@ import java.util.List;
 
 import javax.swing.plaf.basic.BasicComboBoxUI;
 
+import io.github.jonestimd.swing.SwingEdtRule;
 import io.github.jonestimd.util.Streams;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -40,6 +42,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileSuggestFieldTest {
+    @Rule
+    public final SwingEdtRule swingEdtRule = new SwingEdtRule();
+
     @Mock
     private BasicComboBoxUI comboBoxUI;
     private File startDir = new File(".");

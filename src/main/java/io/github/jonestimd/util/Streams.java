@@ -57,8 +57,8 @@ public class Streams {
         return IntStream.of(source).mapToObj(transform).collect(Collectors.toList());
     }
 
-    public static <T> List<T> filter(Collection<T> list, Predicate<? super T> predicate) {
-        return list.stream().filter(predicate).collect(Collectors.toList());
+    public static <T> List<T> filter(Iterable<T> list, Predicate<? super T> predicate) {
+        return of(list).filter(predicate).collect(Collectors.toList());
     }
 
     public static <T, R> Set<R> unique(Collection<T> collection, Function<? super T, ? extends R> transform) {

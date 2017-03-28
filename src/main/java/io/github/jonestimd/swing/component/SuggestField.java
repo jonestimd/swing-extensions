@@ -26,7 +26,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.Format;
-import java.util.List;
 
 import javax.swing.text.JTextComponent;
 
@@ -40,9 +39,9 @@ import io.github.jonestimd.swing.validation.Validator;
  *     <li><strong>ctrl-space</strong> clears the selection and moves the cursor to the end of the input text</li>
  * </ul>
  */
-public abstract class SuggestField<T> extends BeanListComboBox<T> {
-    protected SuggestField(Format format, Validator<String> validator, List<T> suggestions) {
-        super(format, validator, suggestions);
+public class SuggestField<T> extends BeanListComboBox<T> {
+    protected SuggestField(Format format, Validator<String> validator, SuggestModel<T> model) {
+        super(format, validator, model);
         getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
                 public void keyReleased(KeyEvent event) {
@@ -76,13 +75,12 @@ public abstract class SuggestField<T> extends BeanListComboBox<T> {
      * Called whenever the input text changes.  Must be implemented to update the model based on the editor text.
      * @param editorText the current text from the editor
      */
-    protected abstract void updateSuggestions(String editorText);
-
-    protected String getEditorText() {
-        return getEditorComponent().getText();
+    protected void updateSuggestions(String editorText) {
+        setSelectedItem(getModel().updateSuggestions(editorText));
     }
 
-    protected JTextComponent getEditorComponent() {
-        return (JTextComponent) getEditor().getEditorComponent();
+    @Override
+    public SuggestModel<T> getModel() {
+        return (SuggestModel<T>) super.getModel();
     }
 }

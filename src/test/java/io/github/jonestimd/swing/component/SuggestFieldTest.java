@@ -24,15 +24,13 @@ package io.github.jonestimd.swing.component;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.plaf.basic.BasicComboBoxUI;
 
+import io.github.jonestimd.swing.SwingEdtRule;
 import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.text.StringFormat;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,10 +41,13 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SuggestFieldTest {
+    @Rule
+    public final SwingEdtRule swingEdtRule = new SwingEdtRule();
+
     @Mock
     private BasicComboBoxUI comboBoxUI;
-
-    private List<String> updateArgs;
+    @Mock
+    private SuggestModel<String> model;
 
     private KeyListener getKeyListener(SuggestField<?> field) {
         KeyListener[] listeners = field.getEditorComponent().getKeyListeners();
@@ -66,21 +67,16 @@ public class SuggestFieldTest {
         return new KeyEvent(field.getEditorComponent(), KeyEvent.KEY_RELEASED, System.currentTimeMillis(), modifiers, keyCode, keyChar);
     }
 
-    @Before
-    public void resetUpdateArgs() {
-        updateArgs = new ArrayList<>();
-    }
-
     @Test
     public void createFieldWithoutValidation() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
 
-        assertThat(field.getModel()).containsOnly("one", "two");
+        assertThat((Object) field.getModel()).isSameAs(model);
     }
 
     @Test
     public void setsPopupVisibleOnKeyRelease() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.setUI(comboBoxUI);
         when(comboBoxUI.isPopupVisible(field)).thenReturn(false);
 
@@ -91,7 +87,7 @@ public class SuggestFieldTest {
 
     @Test
     public void doesNotSetPopupVisibleWhenAlreadyShowing() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.setUI(comboBoxUI);
         when(comboBoxUI.isPopupVisible(field)).thenReturn(true);
 
@@ -102,7 +98,7 @@ public class SuggestFieldTest {
 
     @Test
     public void doesNotSetPopupVisibleOnEscape() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.setUI(comboBoxUI);
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.VK_ESCAPE, (char)0));
@@ -112,7 +108,7 @@ public class SuggestFieldTest {
 
     @Test
     public void doesNotSetPopupVisibleOnEnter() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.setUI(comboBoxUI);
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.VK_ENTER, (char)0));
@@ -122,29 +118,29 @@ public class SuggestFieldTest {
 
     @Test
     public void updatesSuggestionsOnKeyRelease() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.getEditorComponent().setText("abc");
         field.setUI(comboBoxUI);
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.VK_X, 'x'));
 
-        assertThat(updateArgs).containsExactly("abc");
+        verify(model).updateSuggestions("abc");
     }
 
     @Test
     public void updatesSuggestionsOnSpaceKeyRelease() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.getEditorComponent().setText("abc");
         field.setUI(comboBoxUI);
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.VK_SPACE, ' '));
 
-        assertThat(updateArgs).containsExactly("abc");
+        verify(model).updateSuggestions("abc");
     }
 
     @Test
     public void movesCaretToEntOnCtrlSpace() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.getEditorComponent().setText("abc");
         field.getEditorComponent().setSelectionStart(1);
         field.getEditorComponent().setSelectionEnd(2);
@@ -152,14 +148,14 @@ public class SuggestFieldTest {
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.CTRL_DOWN_MASK, KeyEvent.VK_SPACE, ' '));
 
-        assertThat(updateArgs).containsExactly("abc");
+        verify(model).updateSuggestions("abc");
         assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(3);
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(3);
     }
 
     @Test
     public void showsPopupOnFocusGained() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.setUI(comboBoxUI);
 
         getFocusListener(field).focusGained(null);
@@ -169,7 +165,7 @@ public class SuggestFieldTest {
 
     @Test
     public void movesCaretToEntOnFocusLost() throws Exception {
-        TestSuggestField field = new TestSuggestField(Arrays.asList("one", "two"));
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
         field.getEditorComponent().setText("abc");
         field.getEditorComponent().setSelectionStart(1);
         field.getEditorComponent().setSelectionEnd(2);
@@ -179,16 +175,5 @@ public class SuggestFieldTest {
 
         assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(3);
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(3);
-    }
-
-    private class TestSuggestField extends SuggestField<String> {
-        protected TestSuggestField(List<String> suggestions) {
-            super(new StringFormat(), Validator.empty(), suggestions);
-        }
-
-        @Override
-        protected void updateSuggestions(String editorText) {
-            updateArgs.add(editorText);
-        }
     }
 }

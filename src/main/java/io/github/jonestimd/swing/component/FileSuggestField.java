@@ -25,9 +25,6 @@ import java.io.File;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 
 import javax.swing.ComboBoxEditor;
@@ -35,7 +32,6 @@ import javax.swing.ComboBoxEditor;
 import io.github.jonestimd.swing.validation.RequiredValidator;
 import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.util.JavaPredicates;
-import io.github.jonestimd.util.Streams;
 
 /**
  * File selection field that displays files and sub-directories in a popup menu.
@@ -54,9 +50,6 @@ public class FileSuggestField extends SuggestField<File> {
             return new File(source);
         }
     };
-    public static final String TRAILING_DOT = "(\\" + File.separator + "\\.)+$";
-    private final Predicate<File> filePredicate;
-    private File directory;
 
     public FileSuggestField(boolean onlyDirectories, File startDirectory) {
         this(onlyDirectories ? File::isDirectory : JavaPredicates.alwaysTrue(), startDirectory, Validator.empty());
@@ -79,35 +72,9 @@ public class FileSuggestField extends SuggestField<File> {
      * @param validator the validator for the editor component
      */
     public FileSuggestField(Predicate<File> filePredicate, File startDirectory, Validator<String> validator) {
-        super(FORMAT, validator, getFiles(startDirectory, filePredicate));
-        this.filePredicate = filePredicate;
-        this.directory = startDirectory;
-        setSelectedItem(directory);
+        super(FORMAT, validator, new FileSuggestModel(startDirectory, filePredicate));
+        setSelectedItem(startDirectory);
         getEditorComponent().setCaretPosition(getEditorText().length());
-    }
-
-    private static List<File> getFiles(File directory, Predicate<File> filePredicate) {
-        File[] files = directory.listFiles();
-        if (files == null) return Collections.singletonList(directory);
-        List<File> items = Streams.filter(Arrays.asList(files), filePredicate);
-        items.add(0, directory);
-        Collections.sort(items);
-        return items;
-    }
-
-    @Override
-    protected void updateSuggestions(String editorText) {
-        File currentDir = getParent(editorText.replaceAll(TRAILING_DOT, ""));
-        if (currentDir != null && !currentDir.getAbsolutePath().equals(directory.getAbsolutePath())) {
-            directory = currentDir;
-            getModel().setElements(getFiles(directory, filePredicate));
-        }
-        setSelectedItem(new File(editorText));
-    }
-
-    private File getParent(String text) {
-        File file = new File(text);
-        return text.endsWith(File.separator) ? file : file.getParentFile();
     }
 
     @Override
