@@ -30,19 +30,29 @@ import javax.swing.text.Document;
 
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
+/**
+ * Extends {@link JTextField} to add validation.  Uses {@link ValidationBorder} to provide visual feedback when
+ * there is a validation error.  Validation is disabled when the component is not editable.
+ */
 public class ValidatedTextField extends JTextField implements ValidatedComponent {
     private ValidationTooltipBorder validationBorder;
     private final ValidationSupport<String> validationSupport;
     private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
     public ValidatedTextField(Validator<String> validator) {
-        this.validationSupport = new ValidationSupport<>(this, validator);
+        this.validationSupport = new ValidationSupport<>(this, value -> isEditable() ? validator.validate(value) : null);
         this.validationBorder = new ValidationTooltipBorder(this);
         super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
         validateValue();
         getDocument().addDocumentListener(validationHandler);
     }
 
+    /**
+     * Overridden to wrap the {@link ValidationBorder} with the input border.
+     * @param border the border to add around the {@code ValidationBorder} or null
+     *        to use the {@code ValidationBorder} alone
+     */
+    @Override
     public void setBorder(Border border) {
         if (border == null) {
             super.setBorder(validationBorder);
@@ -52,23 +62,36 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         }
     }
 
+    /**
+     * Overridden to update validation.
+     */
+    @Override
+    public void setEditable(boolean editable) {
+        super.setEditable(editable);
+        if (getDocument() != null) validateValue();
+    }
+
     @Override
     public void validateValue() {
         validationBorder.setValid(validationSupport.validateValue(getText()) == null);
     }
 
+    @Override
     public String getValidationMessages() {
         return validationSupport.getMessages();
     }
 
+    @Override
     public void addValidationListener(PropertyChangeListener listener) {
         validationSupport.addValidationListener(listener);
     }
 
+    @Override
     public void removeValidationListener(PropertyChangeListener listener) {
         validationSupport.removeValidationListener(listener);
     }
 
+    @Override
     public void setDocument(Document document) {
         if (getDocument() != null) {
             getDocument().removeDocumentListener(validationHandler);
@@ -77,10 +100,12 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         document.addDocumentListener(validationHandler);
     }
 
+    @Override
     public Cursor getCursor() {
         return validationBorder.isMouseOverIndicator() ? Cursor.getDefaultCursor() : super.getCursor();
     }
 
+    @Override
     public String getToolTipText() {
         return validationBorder.isMouseOverIndicator() ? validationSupport.getMessages() : super.getToolTipText();
     }

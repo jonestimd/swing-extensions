@@ -95,4 +95,31 @@ public class ValidatedTextFieldTest {
 
         assertThat(field.getToolTipText()).isEqualTo(MESSAGE);
     }
+
+    @Test
+    public void settingNotEditableClearsError() throws Exception {
+        ValidatedTextField field = new ValidatedTextField(validator);
+        field.setBorder(null);
+        field.validateValue();
+        assertThat(field.getValidationMessages()).isEqualTo(MESSAGE);
+
+        field.setEditable(false);
+
+        assertThat(field.getValidationMessages()).isNull();
+        assertThat(((ValidationBorder) field.getBorder()).isValid()).isTrue();
+    }
+
+    @Test
+    public void settingEditableShowsError() throws Exception {
+        ValidatedTextField field = new ValidatedTextField(validator);
+        field.setEditable(false);
+        field.setBorder(null);
+        field.validateValue();
+        assertThat(field.getValidationMessages()).isNull();
+
+        field.setEditable(true);
+
+        assertThat(field.getValidationMessages()).isEqualTo(MESSAGE);
+        assertThat(((ValidationBorder) field.getBorder()).isValid()).isFalse();
+    }
 }
