@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.Format;
@@ -40,7 +41,7 @@ import io.github.jonestimd.swing.validation.Validator;
  * </ul>
  */
 public class SuggestField<T> extends BeanListComboBox<T> {
-    protected SuggestField(Format format, Validator<String> validator, SuggestModel<T> model) {
+    public SuggestField(Format format, Validator<String> validator, SuggestModel<T> model) {
         super(format, validator, model);
         getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
@@ -61,6 +62,9 @@ public class SuggestField<T> extends BeanListComboBox<T> {
             public void focusLost(FocusEvent e) {
                 moveToEnd();
             }
+        });
+        addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.SELECTED && event.getItem() != null) getModel().updateSuggestions(getEditorText());
         });
     }
 

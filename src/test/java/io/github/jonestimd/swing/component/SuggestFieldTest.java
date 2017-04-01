@@ -176,4 +176,15 @@ public class SuggestFieldTest {
         assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(3);
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(3);
     }
+
+    @Test
+    public void setSelectedItemUpdatesSuggestionsUsingEditorText() throws Exception {
+        SuggestField<String> field = new SuggestField<>(new StringFormat(), Validator.empty(), model);
+        field.getEditorComponent().setText("abc");
+        when(model.getSelectedItem()).thenReturn("abcd");
+
+        field.setSelectedItem("abcd");
+
+        verify(model).updateSuggestions("abc");
+    }
 }

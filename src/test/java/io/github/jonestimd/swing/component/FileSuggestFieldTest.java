@@ -193,4 +193,15 @@ public class FileSuggestFieldTest {
 
         assertThat(field.getModel()).hasSize(startDir.list().length + 1);
     }
+
+    @Test
+    public void setSelectedItemUpdatesSuggestions() throws Exception {
+        FileSuggestField field = new FileSuggestField(false, startDir);
+        File child = startDir.listFiles(File::isDirectory)[0];
+        File selectedItem = child.listFiles(File::isDirectory)[0];
+
+        field.setSelectedItem(selectedItem);
+
+        assertThat(field.getModel()).contains(child.listFiles());
+    }
 }
