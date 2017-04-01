@@ -202,6 +202,6 @@ public class FileSuggestFieldTest {
 
         field.setSelectedItem(selectedItem);
 
-        assertThat(field.getModel()).contains(child.listFiles());
+        assertThat(field.getModel()).contains((Object) child.listFiles());
     }
 }
