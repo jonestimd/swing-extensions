@@ -34,6 +34,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import io.github.jonestimd.swing.ButtonBarFactory;
@@ -62,6 +63,7 @@ public class FormDialog extends MessageDialog {
     private boolean changed = false;
     private final ValidationTracker validationTracker;
     private final List<Consumer<Collection<String>>> validationListeners = new LinkedList<>();
+    private boolean resizePending = false;
 
     /**
      * Create a document modal dialog.
@@ -171,13 +173,29 @@ public class FormDialog extends MessageDialog {
      * Set the messages in the validation status area.
      */
     protected void setStatusText(Collection<String> messages) {
-        int statusHeight = getStatusHeight();
+        if (! resizePending) {
+            resizePending = true;
+            SwingUtilities.invokeLater(new ResizeTask(getStatusHeight()));
+        }
         statusArea.setRows(messages.size());
         statusArea.setText(String.join("\n", messages));
         statusScrollPane.setVisible(!messages.isEmpty());
-        if (isVisible() && statusHeight != getStatusHeight()) {
-            int deltaHeight = getStatusHeight() - statusHeight;
-            setSize(getWidth(), getHeight() + deltaHeight);
+    }
+
+    private class ResizeTask implements Runnable {
+        private final int statusHeight;
+
+        private ResizeTask(int statusHeight) {
+            this.statusHeight = statusHeight;
+        }
+
+        @Override
+        public void run() {
+            if (isVisible() && statusHeight != getStatusHeight()) {
+                int deltaHeight = getStatusHeight() - statusHeight;
+                setSize(getWidth(), getHeight() + deltaHeight);
+            }
+            resizePending = false;
         }
     }
 }
