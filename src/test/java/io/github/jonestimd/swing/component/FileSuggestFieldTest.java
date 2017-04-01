@@ -204,4 +204,15 @@ public class FileSuggestFieldTest {
 
         assertThat(field.getModel()).contains((Object[]) child.listFiles());
     }
+
+    @Test
+    public void setSelectedItemRetainsSelection() throws Exception {
+        FileSuggestField field = new FileSuggestField(false, startDir);
+        File child = startDir.listFiles(File::isDirectory)[0];
+        File selectedItem = new File(child, "unknown");
+
+        field.setSelectedItem(selectedItem);
+
+        assertThat(field.getSelectedItem()).isEqualTo(selectedItem);
+    }
 }

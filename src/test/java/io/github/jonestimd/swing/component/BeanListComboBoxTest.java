@@ -155,7 +155,7 @@ public class BeanListComboBoxTest {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
         BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
         comboBox.addValidationListener(listener);
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")));
+        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")), false);
         assertThat(comboBox.getValidationMessages()).isEqualTo("required");
 
         comboBox.setSelectedIndex(0);
@@ -170,7 +170,7 @@ public class BeanListComboBoxTest {
     public void rendererDoesNotShowValidationErrorForSelectedValue() throws Exception {
         Graphics2D g = mock(Graphics2D.class);
         BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")));
+        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")), false);
         Component component = comboBox.getRenderer().getListCellRendererComponent(new JList<TestBean>(), null, 0, false, false);
 
         component.paint(g);
@@ -186,7 +186,7 @@ public class BeanListComboBoxTest {
         when(g.getFontMetrics(any())).thenReturn(fm);
         when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
         BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")));
+        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")), false);
         Component component = comboBox.getRenderer().getListCellRendererComponent(new JList<TestBean>(), null, -1, false, false);
 
         component.paint(g);
@@ -201,7 +201,7 @@ public class BeanListComboBoxTest {
         BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
         comboBox.addValidationListener(listener);
         comboBox.removeValidationListener(listener);
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")));
+        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")), false);
 
         comboBox.setSelectedIndex(0);
 

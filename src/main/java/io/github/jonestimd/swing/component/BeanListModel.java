@@ -39,10 +39,16 @@ public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxMo
         this.elements.addAll(elements);
     }
 
-    public void setElements(Collection<? extends T> elements) {
+    /**
+     * Replace the elements.
+     * @param elements the new elements
+     * @param keepSelection if true then the selected item is not changed, if false then the selected item is cleared
+     *        if it is not in {@code elements}
+     */
+    public void setElements(Collection<? extends T> elements, boolean keepSelection) {
         removeAll();
         addAllElements(elements);
-        if (selectedElement != null && ! this.elements.contains(selectedElement)) {
+        if (! keepSelection && selectedElement != null && ! this.elements.contains(selectedElement)) {
             setSelectedItem(null);
         }
     }

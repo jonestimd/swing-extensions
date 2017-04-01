@@ -189,7 +189,7 @@ public class BeanListModelTest {
         BeanListModel<String> model = new BeanListModel<>(Arrays.asList("one", "two"));
         model.addListDataListener(listDataListener);
 
-        model.setElements(Arrays.asList("ONE", "TWO"));
+        model.setElements(Arrays.asList("ONE", "TWO"), false);
 
         assertThat(model).hasSize(2);
         assertThat(model.getElementAt(0)).isEqualTo("ONE");
@@ -206,7 +206,7 @@ public class BeanListModelTest {
         model.setSelectedItem("one");
         model.addListDataListener(listDataListener);
 
-        model.setElements(Arrays.asList("ONE", "TWO"));
+        model.setElements(Arrays.asList("ONE", "TWO"), false);
 
         assertThat(model.getSelectedItem()).isNull();
         verify(listDataListener).intervalRemoved(listDataEvent(model, ListDataEvent.INTERVAL_REMOVED, 0, 1));
@@ -216,14 +216,28 @@ public class BeanListModelTest {
     }
 
     @Test
-    public void setElementsRetainsSelection() throws Exception {
+    public void setElementsRetainsSelectionOfExistingItem() throws Exception {
         BeanListModel<String> model = new BeanListModel<>(Arrays.asList("one", "two"));
         model.setSelectedItem("one");
         model.addListDataListener(listDataListener);
 
-        model.setElements(Arrays.asList("zero", "one", "two"));
+        model.setElements(Arrays.asList("zero", "one", "two"), false);
 
         assertThat(model.getSelectedItem()).isEqualTo("one");
+        verify(listDataListener).intervalRemoved(listDataEvent(model, ListDataEvent.INTERVAL_REMOVED, 0, 1));
+        verify(listDataListener).intervalAdded(listDataEvent(model, ListDataEvent.INTERVAL_ADDED, 0, 2));
+        verifyNoMoreInteractions(listDataListener);
+    }
+
+    @Test
+    public void setElementsRetainsSelectionOfNonExistentItem() throws Exception {
+        BeanListModel<String> model = new BeanListModel<>(Arrays.asList("one", "two"));
+        model.setSelectedItem("three");
+        model.addListDataListener(listDataListener);
+
+        model.setElements(Arrays.asList("zero", "one", "two"), true);
+
+        assertThat(model.getSelectedItem()).isEqualTo("three");
         verify(listDataListener).intervalRemoved(listDataEvent(model, ListDataEvent.INTERVAL_REMOVED, 0, 1));
         verify(listDataListener).intervalAdded(listDataEvent(model, ListDataEvent.INTERVAL_ADDED, 0, 2));
         verifyNoMoreInteractions(listDataListener);

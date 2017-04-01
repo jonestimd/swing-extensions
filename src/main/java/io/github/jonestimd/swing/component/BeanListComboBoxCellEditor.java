@@ -100,7 +100,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     public void addListItems(Collection<T> newItems) {
         items.addAll(newItems);
         Collections.sort(items);
-        getComboBoxModel().setElements(items);
+        getComboBoxModel().setElements(items, getComboBox().isEditable());
         getComboBoxModel().insertElementAt(null, 0);
     }
 

@@ -37,7 +37,7 @@ public class FileSuggestModel extends SuggestModel<File> {
     public FileSuggestModel(File startDirectory, Predicate<File> filePredicate) {
         this.directory = startDirectory;
         this.filePredicate = filePredicate;
-        setElements(getFiles());
+        setElements(getFiles(), true);
     }
 
     private List<File> getFiles() {
@@ -54,7 +54,7 @@ public class FileSuggestModel extends SuggestModel<File> {
         File currentDir = getParent(editorText.replaceAll(TRAILING_DOT, ""));
         if (currentDir != null && !currentDir.getAbsolutePath().equals(directory.getAbsolutePath())) {
             directory = currentDir;
-            setElements(getFiles());
+            setElements(getFiles(), true);
         }
         return new File(editorText);
     }
