@@ -187,6 +187,15 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
         return -1;
     }
 
+    /**
+     * Overridden to enable/disable editor component.
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (isEditable()) getEditorComponent().setEditable(enabled);
+    }
+
     @Override
     public void validateValue() {
         if (requiredMessage != null) {

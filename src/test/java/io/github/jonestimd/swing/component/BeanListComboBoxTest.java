@@ -224,6 +224,18 @@ public class BeanListComboBoxTest {
         inOrder.verify(listener).propertyChange(propertyEvent(BeanListComboBox.VALIDATION_MESSAGES, null, null));
     }
 
+    @Test
+    public void settingEnabledSetsEditorEditable() throws Exception {
+        RequiredValidator validator = new RequiredValidator("required");
+        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), validator, Lists.newArrayList(new TestBean("aaa")));
+
+        comboBox.setEnabled(false);
+        assertThat(comboBox.getEditorComponent().isEditable()).isFalse();
+
+        comboBox.setEnabled(true);
+        assertThat(comboBox.getEditorComponent().isEditable()).isTrue();
+    }
+
     private PropertyChangeEvent propertyEvent(String property, Object oldValue, Object newValue) {
         return argThat(new BaseMatcher<PropertyChangeEvent>() {
             @Override
