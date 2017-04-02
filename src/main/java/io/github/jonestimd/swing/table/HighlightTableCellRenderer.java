@@ -21,6 +21,7 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.Component;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -39,9 +40,7 @@ public class HighlightTableCellRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         HighlightText highlightSource = ComponentTreeUtils.findAncestor(table, HighlightText.class);
-        if (highlightSource != null) {
-            this.highlightText = highlightSource.getHighlightText();
-        }
+        this.highlightText = highlightSource != null ? highlightSource.getHighlightText() : Collections.emptyList();
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
