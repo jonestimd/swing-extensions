@@ -130,6 +130,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
         if (! singletonFrames.containsKey(key)) {
             singletonFrames.put(key, frame);
             initializeFrame(frame);
+            frame.setContentPane(singletonPanels.get(key));
         }
         else if (singletonFrames.get(key) != frame) {
             throw new IllegalArgumentException("Duplicate JFrame ID: " + key.toString());
@@ -145,9 +146,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
         StatusFrame frame = singletonFrames.get(key);
         if (frame == null) {
             frame = frameFactory.apply(bundle, key.getResourcePrefix());
-            singletonFrames.put(key, frame);
-            initializeFrame(frame);
-            frame.setContentPane(singletonPanels.get(key));
+            addSingletonFrame(key, frame);
             frame.setVisible(true);
         }
         else {
