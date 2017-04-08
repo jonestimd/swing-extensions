@@ -19,7 +19,6 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.dialog;
 
-import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
@@ -39,11 +38,8 @@ import javax.swing.border.EmptyBorder;
 
 import io.github.jonestimd.swing.ButtonBarFactory;
 import io.github.jonestimd.swing.ComponentFactory;
-import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.action.CancelAction;
 import io.github.jonestimd.swing.action.MnemonicAction;
-import io.github.jonestimd.swing.layout.FormElement;
-import io.github.jonestimd.swing.layout.GridBagBuilder;
 import io.github.jonestimd.swing.validation.FieldChangeTracker;
 import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
 import io.github.jonestimd.swing.validation.ValidationTracker;
@@ -83,13 +79,12 @@ public class FormDialog extends MessageDialog {
         formPanel.setBorder(new EmptyBorder(BUTTON_BAR_BORDER, BUTTON_BAR_BORDER, 0, BUTTON_BAR_BORDER));
         buttonBar = new ButtonBarFactory().alignRight().border(BUTTON_BAR_BORDER).add(saveButton, new JButton(cancelAction)).get();
         statusArea = ComponentFactory.newValidationStatusArea(1, bundle);
+        statusScrollPane = new JScrollPane(statusArea);
 
-        getContentPane().add(formPanel, BorderLayout.CENTER);
-        GridBagBuilder builder = new GridBagBuilder(getContentPane(), bundle, "");
-        builder.append(formPanel, FormElement.PANEL);
-        builder.append(buttonBar);
-        builder.append(statusArea);
-        statusScrollPane = ComponentTreeUtils.findAncestor(statusArea, JScrollPane.class);
+        setContentPane(Box.createVerticalBox());
+        getContentPane().add(formPanel);
+        getContentPane().add(buttonBar);
+        getContentPane().add(statusScrollPane);
         statusScrollPane.setVisible(false);
         FieldChangeTracker.install(this::fieldsChanged, getFormPanel());
         validationTracker = ValidationTracker.install(this::validationChanged, getFormPanel());
