@@ -50,13 +50,28 @@ public class ExceptionDialog extends MessageDialog {
     }
 
     /**
+     * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
+     */
+    public ExceptionDialog(Window owner, String label, Throwable exception) {
+        this(owner, DEFAULT_BUNDLE, DEFAULT_RESOURCE_PREFIX, label, exception);
+    }
+
+    /**
      * Construct an exception dialog using the specified resource bundle with fallback to
      * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
      */
     public ExceptionDialog(Window owner, ResourceBundle bundle, String resourcePrefix, Throwable exception) {
+        this(owner, bundle, resourcePrefix, getString(bundle, resourcePrefix, "exception.label"), exception);
+    }
+
+    /**
+     * Construct an exception dialog using the specified resource bundle with fallback to
+     * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
+     */
+    public ExceptionDialog(Window owner, ResourceBundle bundle, String resourcePrefix, String label, Throwable exception) {
         super(owner, getString(bundle, resourcePrefix, "title"), ModalityType.APPLICATION_MODAL);
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(new JLabel(getString(bundle, resourcePrefix, "exception.label")), BorderLayout.NORTH);
+        getContentPane().add(new JLabel(label), BorderLayout.NORTH);
         JTextArea detailArea = new JTextArea(getInt(bundle, resourcePrefix, "exception.rows"), getInt(bundle, resourcePrefix, "exception.columns"));
         detailArea.setEditable(false);
         detailArea.setTabSize(4);
