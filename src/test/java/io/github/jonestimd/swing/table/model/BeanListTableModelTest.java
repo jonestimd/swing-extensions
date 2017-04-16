@@ -2,6 +2,8 @@ package io.github.jonestimd.swing.table.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.event.TableModelEvent;
@@ -121,5 +123,34 @@ public class BeanListTableModelTest {
         verify(tableModelListener).tableChanged(captor.capture());
         assertThat(captor.getValue().getType()).isEqualTo(TableModelEvent.UPDATE);
         assertThat(captor.getValue().getColumn()).isEqualTo(1);
+    }
+
+    @Test
+    public void setRowReplacesRow() throws Exception {
+        model.addRow(BigDecimal.ONE);
+        model.addRow(BigDecimal.ZERO);
+        reset(tableModelListener);
+
+        model.setRow(1, BigDecimal.TEN);
+
+        assertThat(model.getBeanCount()).isEqualTo(2);
+        assertThat(model.getBean(0)).isSameAs(BigDecimal.ONE);
+        assertThat(model.getBean(1)).isSameAs(BigDecimal.TEN);
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE)));
+        verifyNoMoreInteractions(tableModelListener);
+    }
+
+    @Test
+    public void appendMissingAddsMissingBeans() throws Exception {
+        model.addRow(BigDecimal.ONE);
+        reset(tableModelListener);
+
+        model.appendMissing(Arrays.asList(new BigDecimal(1L), BigDecimal.TEN), Object::equals);
+
+        assertThat(model.getBeanCount()).isEqualTo(2);
+        assertThat(model.getBean(0)).isSameAs(BigDecimal.ONE);
+        assertThat(model.getBean(1)).isSameAs(BigDecimal.TEN);
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
+        verifyNoMoreInteractions(tableModelListener);
     }
 }

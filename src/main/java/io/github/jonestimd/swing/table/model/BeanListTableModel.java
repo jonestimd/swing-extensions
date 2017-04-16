@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -39,7 +41,7 @@ public class BeanListTableModel<T> extends AbstractTableModel implements ColumnI
     private List<T> beans = new IdentityArrayList<>();
 
     public BeanListTableModel(List<? extends ColumnAdapter<? super T, ?>> columnAdapters) {
-        this(columnAdapters, Collections.<TableDataProvider<T>>emptyList());
+        this(columnAdapters, Collections.emptyList());
     }
 
     public BeanListTableModel(List<? extends ColumnAdapter<? super T, ?>> columnAdapters, Iterable<? extends TableDataProvider<T>> dataProviders) {
@@ -150,6 +152,16 @@ public class BeanListTableModel<T> extends AbstractTableModel implements ColumnI
         beans.add(row, bean);
         beanTableAdapter.addBean(bean);
         fireTableRowsInserted(row, row);
+    }
+
+    /**
+     * Append missing rows to the end of the bean list.
+     * @param beans rows to append
+     * @param isEqual used to determine if a row is already in the bean list
+     */
+    public void appendMissing(Collection<T> beans, BiPredicate<T, T> isEqual) {
+        Predicate<T> predicate = bean -> this.beans.stream().noneMatch(item -> isEqual.test(bean, item));
+        beans.stream().filter(predicate).forEach(this::addRow);
     }
 
     public void removeRow(T bean) {
