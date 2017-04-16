@@ -21,11 +21,37 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class BackgroundTaskTest {
+    private static final String THE_STRING = "the String";
+    private static final String STATUS_MESSAGE = "working";
+    @Mock
+    private Supplier<String> supplier;
+    @Mock
+    private Consumer<String> consumer;
+    @Mock
+    private BackgroundTask<String> task;
+    private CompletableFuture<String> future;
+    private String threadName;
+
     @Test
     public void handleExceptionDefaultsToFalse() throws Exception {
         assertThat(new BackgroundTask<String>() {
@@ -41,8 +67,96 @@ public class BackgroundTaskTest {
 
             @Override
             public void updateUI(String result) {
-
             }
         }.handleException(null)).isFalse();
     }
+
+    @Test
+    public void taskStatusMessageDefaultsToNull() throws Exception {
+        BackgroundTask<String> task = BackgroundTask.task(supplier, consumer);
+
+        assertThat(task.getStatusMessage()).isNull();
+    }
+
+    @Test
+    public void taskReturnsStatusMessage() throws Exception {
+        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+
+        assertThat(task.getStatusMessage()).isEqualTo(STATUS_MESSAGE);
+    }
+
+    @Test
+    public void taskCallsSupplier() throws Exception {
+        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+
+        task.performTask();
+
+        verify(supplier).get();
+    }
+
+    @Test
+    public void taskCallsConsumer() throws Exception {
+        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+
+        task.updateUI(THE_STRING);
+
+        verify(consumer).accept(THE_STRING);
+    }
+
+    @Test
+    public void runStartsTaskOnNewThread() throws Exception {
+        TestStatusIndicator indicator = mock(TestStatusIndicator.class);
+        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
+        when(task.performTask()).thenAnswer(invocation -> {
+            threadName = Thread.currentThread().getName();
+            return THE_STRING;
+        });
+
+        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, indicator, new JPanel()));
+
+        assertThat(future.get()).isEqualTo(THE_STRING);
+        verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
+        verify(indicator, timeout(1000)).enableUI();
+        verify(task, timeout(1000)).updateUI(THE_STRING);
+        assertThat(threadName).startsWith("ForkJoinPool.");
+    }
+
+    @Test
+    public void runPassesExceptionToTask() throws Exception {
+        TestStatusIndicator indicator = mock(TestStatusIndicator.class);
+        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
+        RuntimeException exception = new RuntimeException("task failed");
+        when(task.performTask()).thenThrow(exception);
+        when(task.handleException(any())).thenReturn(true);
+
+        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, indicator, new JPanel()));
+
+        try {
+            future.get();
+            Assert.fail("expected an exception");
+        } catch (ExecutionException ex) {
+            assertThat(ex.getCause()).isSameAs(exception);
+            verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
+            verify(indicator, timeout(1000)).enableUI();
+            verify(task, timeout(1000)).handleException(same(exception));
+        }
+    }
+
+    @Test
+    public void runUsesParentStatusIndicator() throws Exception {
+        TestStatusIndicator indicator = mock(TestStatusIndicator.class);
+        JComponent owner = mock(JComponent.class);
+        when(owner.getParent()).thenReturn(indicator);
+        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
+        when(task.performTask()).thenAnswer(invocation -> THE_STRING);
+
+        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, owner));
+
+        assertThat(future.get()).isEqualTo(THE_STRING);
+        verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
+        verify(indicator, timeout(1000)).enableUI();
+        verify(task, timeout(1000)).updateUI(THE_STRING);
+    }
+
+    private static abstract class TestStatusIndicator extends JComponent implements StatusIndicator {}
 }

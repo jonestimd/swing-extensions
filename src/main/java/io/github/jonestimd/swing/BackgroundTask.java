@@ -19,8 +19,16 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.awt.Component;
+import java.awt.Window;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import javax.swing.SwingUtilities;
+
+import io.github.jonestimd.swing.dialog.ExceptionDialog;
 
 public interface BackgroundTask<T> {
 
@@ -68,5 +76,40 @@ public interface BackgroundTask<T> {
                 updateUI.accept(result);
             }
         };
+    }
+
+    /**
+     *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
+     *  Requires that {@code owner} or one if its ancestors is a {@link StatusIndicator}.
+     *  @param task the task to run
+     *  @param owner owner component for displaying an error dialog if the task fails
+     */
+    static <T> CompletableFuture<T> run(BackgroundTask<T> task, Component owner) {
+        StatusIndicator statusIndicator = ComponentTreeUtils.findAncestor(owner, StatusIndicator.class);
+        return run(task, statusIndicator, owner);
+    }
+
+    /**
+     *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
+     *  @param task the task to run
+     *  @param statusIndicator UI component to receive status messages (disabled while {@code task} is running)
+     *  @param owner owner component for displaying an error dialog if the task fails
+     */
+    static <T> CompletableFuture<T> run(BackgroundTask<T> task, StatusIndicator statusIndicator, Component owner) {
+        statusIndicator.disableUI(task.getStatusMessage());
+        return CompletableFuture.supplyAsync(task::performTask)
+                .whenCompleteAsync((result, throwable) -> {
+                    if (throwable == null) {
+                        task.updateUI(result);
+                        statusIndicator.enableUI();
+                    }
+                    else {
+                        if (throwable instanceof CompletionException) throwable = throwable.getCause();
+                        statusIndicator.enableUI();
+                        if (! task.handleException(throwable)) {
+                            new ExceptionDialog(ComponentTreeUtils.findAncestor(owner, Window.class), throwable).setVisible(true);
+                        }
+                    }
+                }, SwingUtilities::invokeLater);
     }
 }
