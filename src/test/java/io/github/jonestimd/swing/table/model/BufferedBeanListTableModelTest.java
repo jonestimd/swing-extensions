@@ -2,6 +2,8 @@ package io.github.jonestimd.swing.table.model;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import javax.swing.event.TableModelEvent;
@@ -12,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import static io.github.jonestimd.swing.table.model.TableModelEventMatcher.*;
 import static java.util.Collections.*;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -20,6 +23,7 @@ import static org.mockito.Mockito.*;
 public class BufferedBeanListTableModelTest {
     private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER1 = new TestColumnAdapter<>("column1", String.class, TestBean::getColumn1, TestBean::setColumn1);
     private static final ColumnAdapter<TestBean, String> COLUMN_ADAPTER2 = new TestColumnAdapter<>("column2", String.class, TestBean::getColumn2, TestBean::setColumn2);
+    private static final BiPredicate<TestBean, TestBean> ID_PREDICATE = (b1, b2) -> Objects.equals(b1.id, b2.id);
     private TableModelListener listener = mock(TableModelListener.class);
     private BufferedBeanListTableModel<TestBean> model = new BufferedBeanListTableModel<>(COLUMN_ADAPTER1, COLUMN_ADAPTER2);
 
@@ -51,9 +55,9 @@ public class BufferedBeanListTableModelTest {
         assertEquals("value2", model.getValueAt(0, 1));
 
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -99,18 +103,18 @@ public class BufferedBeanListTableModelTest {
 
         InOrder inOrder = inOrder(listener);
         // setBeans()
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
         // setValueAt()
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
         // pendingAdd()
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 2, 2, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.INSERT, 2, 2, -1));
         // pendingDelete()
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1));
         // revert()
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 2, 2, -1)); // undo add
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1)); // undo delete
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0)); // undo setValue
-        inOrder.verify(listener, times(2)).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.DELETE, 2, 2, -1)); // undo add
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1)); // undo delete
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0)); // undo setValue
+        inOrder.verify(listener, times(2)).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -163,14 +167,14 @@ public class BufferedBeanListTableModelTest {
         assertEquals("value1", model.getValueAt(0, 0));
         assertNull(model.getValueAt(0, 1));
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 2, 2, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 2, 2, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 1, 1, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
-        inOrder.verify(listener, times(2)).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.INSERT, 2, 2, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 2, 2, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.DELETE, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        inOrder.verify(listener, times(2)).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -194,9 +198,9 @@ public class BufferedBeanListTableModelTest {
         assertThat(beans).containsExactly(testBean, testBean).as("both changed and to be deleted");
         assertThat(testBean.column1).isEqualTo("value1").as("still the changed value");
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -240,12 +244,12 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(2, 1)).isFalse();
 
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 1, 1, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 0, 0, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 2, 2, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.INSERT, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.INSERT, 0, 0, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 2, 2, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -265,9 +269,9 @@ public class BufferedBeanListTableModelTest {
 
         assertThat(model.isChanged()).isFalse();
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.INSERT, 1, 1, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.INSERT, 1, 1, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.DELETE, 1, 1, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -304,8 +308,8 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isCellEditable(0, 0)).isFalse();
         assertThat(model.getBeans()).contains(bean);
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -322,8 +326,8 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isCellEditable(0, 0)).isTrue();
         assertThat(model.getBeans().contains(bean)).isTrue();
         InOrder inOrder = inOrder(listener);
-        inOrder.verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
-        inOrder.verify(listener, times(2)).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        inOrder.verify(listener, times(2)).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -333,7 +337,7 @@ public class BufferedBeanListTableModelTest {
 
         model.undoDelete(0);
 
-        verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
         verifyNoMoreInteractions(listener);
     }
 
@@ -349,9 +353,124 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.getValueAt(0, 0)).isNull();
     }
 
+    @Test
+    public void setRowUpdatesPendingDelete() throws Exception {
+        TestBean bean1 = new TestBean(1L, "a");
+        model.setBeans(singleton(bean1));
+        model.queueDelete(bean1);
+        TestBean bean2 = new TestBean(1L, "b");
+        reset(listener);
+
+        model.setRow(0, bean2);
+
+        assertThat(bean2.column1).isEqualTo("b");
+        assertThat(bean2.column2).isNull();
+        assertThat(model.getBeanCount()).isEqualTo(1);
+        assertThat(model.getValueAt(0, 0)).isEqualTo("b");
+        assertThat(model.isPendingDelete(0)).isTrue();
+        assertThat(model.getChangedRows().count()).isEqualTo(1);
+        assertThat(model.getChangedRows().anyMatch(bean1::equals)).isFalse();
+        assertThat(model.getChangedRows().anyMatch(bean2::equals)).isTrue();
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void setRowUpdatesPendingAdd() throws Exception {
+        TestBean bean1 = new TestBean(1L, "a");
+        model.queueAdd(0, bean1);
+        TestBean bean2 = new TestBean(1L, "b");
+        reset(listener);
+
+        model.setRow(0, bean2);
+
+        assertThat(bean2.column1).isEqualTo("b");
+        assertThat(bean2.column2).isNull();
+        assertThat(model.getBeanCount()).isEqualTo(1);
+        assertThat(model.getValueAt(0, 0)).isEqualTo("b");
+        assertThat(model.isPendingAdd(0)).isTrue();
+        assertThat(model.getChangedRows().count()).isEqualTo(1);
+        assertThat(model.getChangedRows().anyMatch(bean1::equals)).isFalse();
+        assertThat(model.getChangedRows().anyMatch(bean2::equals)).isTrue();
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void setRowRetainsPendingChange() throws Exception {
+        TestBean bean1 = new TestBean(1L, "a");
+        model.setBeans(singleton(bean1));
+        model.setValue("x", 0, 0);
+        TestBean bean2 = new TestBean(1L, "a");
+        reset(listener);
+
+        model.setRow(0, bean2);
+
+        assertThat(bean2.column1).isEqualTo("x");
+        assertThat(bean2.column2).isNull();
+        assertThat(model.getBeanCount()).isEqualTo(1);
+        assertThat(model.getValueAt(0, 0)).isEqualTo("x");
+        assertThat(model.isChangedAt(0, 0)).isTrue();
+        assertThat(model.getChangedRows().count()).isEqualTo(1);
+        assertThat(model.getChangedRows().anyMatch(bean1::equals)).isFalse();
+        assertThat(model.getChangedRows().anyMatch(bean2::equals)).isTrue();
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void setRowUpdatesOriginalValue() throws Exception {
+        TestBean bean1 = new TestBean(1L, "a");
+        model.setBeans(singleton(bean1));
+        model.setValue("x", 0, 0);
+        TestBean bean2 = new TestBean(1L, "y");
+        reset(listener);
+        model.setRow(0, bean2);
+
+        model.revert();;
+
+        assertThat(bean2.column1).isEqualTo("y");
+        assertThat(model.getValueAt(0, 0)).isEqualTo("y");
+        assertThat(model.isChangedAt(0, 0)).isFalse();
+        assertThat(model.getChangedRows().count()).isEqualTo(0);
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void setRowClearsObsoleteChange() throws Exception {
+        TestBean bean1 = new TestBean(1L, "a");
+        model.setBeans(singleton(bean1));
+        model.setValue("x", 0, 0);
+        TestBean bean2 = new TestBean(1L, "x");
+        reset(listener);
+
+        model.setRow(0, bean2);
+
+        assertThat(bean2.column1).isEqualTo("x");
+        assertThat(bean2.column2).isNull();
+        assertThat(model.getBeanCount()).isEqualTo(1);
+        assertThat(model.getValueAt(0, 0)).isEqualTo("x");
+        assertThat(model.isChangedAt(0, 0)).isFalse();
+        assertThat(model.getChangedRows().count()).isEqualTo(0);
+        verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, -1));
+        verifyNoMoreInteractions(listener);
+    }
+
     public static class TestBean {
+        private final long id;
         private String column1;
         private String column2;
+
+        public TestBean() {
+            this(1L, null);
+        }
+
+        public TestBean(long id, String column1) {
+            this.id = id;
+            this.column1 = column1;
+        }
 
         public String getColumn1() {
             return column1;

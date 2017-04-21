@@ -19,6 +19,9 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.util.Collection;
+import java.util.function.BiPredicate;
+
 import javax.swing.table.TableModel;
 
 /**
@@ -41,4 +44,17 @@ public interface BeanTableModel<T> extends TableModel {
      * Get a column cell value for a bean.
      */
     Object getValue(T bean, int columnIndex);
+
+    /**
+     * Replace all rows of the table model.
+     * @param beans the new rows
+     */
+    void setBeans(Collection<T> beans);
+
+    /**
+     * Update existing rows and add missing rows to the table model.
+     * @param beans beans to update/append
+     * @param isEqual used to determine if a row is already in the model
+     */
+    void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual);
 }

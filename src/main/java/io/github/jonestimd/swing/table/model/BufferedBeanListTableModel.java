@@ -142,7 +142,31 @@ public class BufferedBeanListTableModel<T> extends BeanListTableModel<T> impleme
     }
 
     /**
-     * Override so that pending deletes can not be edited.
+     * Override to merge pending changes with new bean.  Copies changed column values from the old bean to the
+     * new bean.  If the row was a pending add or delete then it will still be a pending add or delete.
+     */
+    @Override
+    public void setRow(int row, T bean) {
+        T oldBean = getBean(row);
+        if (changeTracker.isPendingDelete(oldBean)) changeTracker.pendingDelete(bean);
+        else if (changeTracker.isPendingAdd(oldBean)) changeTracker.pendingAdd(bean);
+        else changeTracker.getChangeIndexes(oldBean).forEach(column -> copyColumn(column, oldBean, bean));
+        changeTracker.resetItem(oldBean);
+        super.setRow(row, bean);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void copyColumn(int column, T oldBean, T newBean) {
+        Object changeValue = getValue(oldBean, column);
+        Object value = getValue(newBean, column);
+        if (!value.equals(changeValue)) {
+            ColumnAdapter.class.cast(beanTableAdapter.getColumnAdapter(column)).setValue(newBean, changeValue);
+            changeTracker.setValue(newBean, column, value, changeValue);
+        }
+    }
+
+    /**
+     * Override to disable editing on a pending delete.
      */
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {

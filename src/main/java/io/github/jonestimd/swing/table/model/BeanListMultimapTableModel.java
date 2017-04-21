@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -35,6 +36,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import io.github.jonestimd.swing.table.sort.SectionTableRowSorter;
 import io.github.jonestimd.util.JavaPredicates;
 
@@ -48,16 +50,25 @@ import io.github.jonestimd.util.JavaPredicates;
 public class BeanListMultimapTableModel<G, T> extends AbstractTableModel implements ColumnIdentifier, SectionTableModel<T>, BeanTableModel<T> {
     private static final int GROWTH_FACTOR = 10;
     private final BeanTableAdapter<T> beanTableAdapter;
+    private final Function<T, G> groupingFunction;
     private final Function<G, String> groupNameFunction;
     private final ListMultimap<G, T> groups = ArrayListMultimap.create();
     private final Comparator<G> groupOrdering;
     private final List<G> sortedGroups = new ArrayList<>();
     private int[] groupOffsets = new int[GROWTH_FACTOR];
 
+    /**
+     * Create a new model.
+     * @param columnAdapters provides access to column values on the row beans
+     * @param tableDataProviders supplemental data providers
+     * @param groupingFunction provides the group key for a row
+     * @param groupNameFunction provides the display name for a group
+     */
     public BeanListMultimapTableModel(List<? extends ColumnAdapter<? super T, ?>> columnAdapters,
                                       Iterable<? extends TableDataProvider<T>> tableDataProviders,
-                                      Function<G, String> groupNameFunction) {
+                                      Function<T, G> groupingFunction, Function<G, String> groupNameFunction) {
         this.beanTableAdapter = new BeanTableAdapter<>(this, columnAdapters, tableDataProviders);
+        this.groupingFunction = groupingFunction;
         this.groupNameFunction = groupNameFunction;
         groupOrdering = Comparator.comparing(groupNameFunction);
     }
@@ -89,12 +100,16 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         return groups.get(sortedGroups.get(groupNumber));
     }
 
+    public void setBeans(Collection<T> beans) {
+        setBeans(Multimaps.index(beans, groupingFunction::apply));
+    }
+
     public void setBeans(Multimap<G, T> beans) {
         groups.clear();
         groups.putAll(beans);
         sortedGroups.clear();
         sortedGroups.addAll(groups.keySet());
-        Collections.sort(sortedGroups, groupOrdering);
+        sortedGroups.sort(groupOrdering);
 
         groupOffsets = new int[sortedGroups.size() + GROWTH_FACTOR];
         int groupIndex = 0;
@@ -104,6 +119,15 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         }
         fireTableDataChanged();
         beanTableAdapter.setBeans(beans.values());
+    }
+
+    @Override
+    public void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual) {
+        for (T bean : beans) {
+            int index = indexOf(item -> isEqual.test(bean, item));
+            if (index < 0) put(groupingFunction.apply(bean), bean);
+            else setBean(index, bean);
+        }
     }
 
     public List<T> getBeans() {
@@ -132,9 +156,19 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         return groups.get(sortedGroups.get(groupNumber)).get(rowIndex - groupOffsets[groupNumber] - 1);
     }
 
+    private void setBean(int rowIndex, T bean) {
+        int groupNumber = getGroupNumber(rowIndex);
+        groups.get(sortedGroups.get(groupNumber)).set(rowIndex - groupOffsets[groupNumber] - 1, bean);
+        fireTableRowsUpdated(rowIndex, rowIndex);
+    }
+
     @Override
     public Object getValue(T bean, int columnIndex) {
         return beanTableAdapter.getValue(bean, columnIndex);
+    }
+
+    public void addBean(T bean) {
+        put(groupingFunction.apply(bean), bean);
     }
 
     /**
@@ -144,7 +178,7 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         groups.put(group, bean);
         if (! sortedGroups.contains(group)) {
             sortedGroups.add(group);
-            Collections.sort(sortedGroups, groupOrdering);
+            sortedGroups.sort(groupOrdering);
             int groupIndex = sortedGroups.indexOf(group);
             groupAdded(groupIndex, 1);
         }
@@ -194,7 +228,7 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         groups.putAll(group, beans);
         if (! sortedGroups.contains(group)) {
             sortedGroups.add(group);
-            Collections.sort(sortedGroups, groupOrdering);
+            sortedGroups.sort(groupOrdering);
             int groupIndex = sortedGroups.indexOf(group);
             groupAdded(groupIndex, beans.size());
         }

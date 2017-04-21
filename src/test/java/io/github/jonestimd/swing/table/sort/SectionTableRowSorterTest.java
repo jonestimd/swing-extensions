@@ -13,7 +13,6 @@ import javax.swing.event.TableModelEvent;
 import io.github.jonestimd.swing.table.SectionTable;
 import io.github.jonestimd.swing.table.model.BeanListMultimapTableModel;
 import io.github.jonestimd.swing.table.model.ColumnAdapter;
-import io.github.jonestimd.swing.table.model.TableDataProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +39,7 @@ public class SectionTableRowSorterTest {
     };
     @SuppressWarnings("unchecked")
     private BeanListMultimapTableModel<String, TestBean> tableModel = new BeanListMultimapTableModel<>(
-            Arrays.asList(NAME_ADAPTER, VALUE_ADAPTER), Collections.<TableDataProvider<TestBean>>emptyList(), Function.<String>identity());
+            Arrays.asList(NAME_ADAPTER, VALUE_ADAPTER), Collections.emptyList(), null, Function.identity());
     private SectionTable<TestBean, BeanListMultimapTableModel<String, TestBean>> table = new SectionTable<>(tableModel);
     private TableModelEvent modelEvent;
     private RowSorterEvent sorterEvent;

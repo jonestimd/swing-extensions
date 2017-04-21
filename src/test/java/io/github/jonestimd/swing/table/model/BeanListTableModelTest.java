@@ -141,16 +141,42 @@ public class BeanListTableModelTest {
     }
 
     @Test
-    public void appendMissingAddsMissingBeans() throws Exception {
+    public void updateBeansAddsMissingRows() throws Exception {
         model.addRow(BigDecimal.ONE);
         reset(tableModelListener);
 
-        model.appendMissing(Arrays.asList(new BigDecimal(1L), BigDecimal.TEN), Object::equals);
+        model.updateBeans(singletonList(BigDecimal.TEN), Object::equals);
 
         assertThat(model.getBeanCount()).isEqualTo(2);
         assertThat(model.getBean(0)).isSameAs(BigDecimal.ONE);
         assertThat(model.getBean(1)).isSameAs(BigDecimal.TEN);
         verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
         verifyNoMoreInteractions(tableModelListener);
+    }
+
+    @Test
+    public void updateBeansReplacesRows() throws Exception {
+        model.addRow("one");
+        reset(tableModelListener);
+
+        model.updateBeans(Arrays.asList("ONE", "two"), (s1, s2) -> s1.toString().equalsIgnoreCase(s2.toString()));
+
+        assertThat(model.getBeanCount()).isEqualTo(2);
+        assertThat(model.getBean(0)).isEqualTo("ONE");
+        assertThat(model.getBean(1)).isEqualTo("two");
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 0, 0, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE)));
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
+        verifyNoMoreInteractions(tableModelListener);
+    }
+
+    @Test
+    public void notifyDataProvidersDelegatesToAdapter() throws Exception {
+        String bean = "row";
+        String columnId = "column Id";
+        String oldValue = "old value";
+
+        model.notifyDataProviders(bean, columnId, oldValue);
+
+        verify(dataProvider).updateBean(bean, columnId, oldValue);
     }
 }

@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -165,6 +166,10 @@ public abstract class ChangeTracker<T> {
     public boolean isChanged(T item, int index) {
         return pendingAdds.contains(item) || pendingDeletes.contains(item)
                 || originalValues.containsKey(item) && originalValues.get(item).containsKey(index);
+    }
+
+    public Set<Integer> getChangeIndexes(T item) {
+        return originalValues.getOrDefault(item, Collections.emptyMap()).keySet();
     }
 
     /**

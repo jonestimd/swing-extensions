@@ -37,7 +37,7 @@ import io.github.jonestimd.collection.IdentityArrayList;
  * @see ColumnAdapter
  */
 public class BeanListTableModel<T> extends AbstractTableModel implements ColumnIdentifier, BeanTableModel<T> {
-    private final BeanTableAdapter<T> beanTableAdapter;
+    protected final BeanTableAdapter<T> beanTableAdapter;
     private List<T> beans = new IdentityArrayList<>();
 
     public BeanListTableModel(List<? extends ColumnAdapter<? super T, ?>> columnAdapters) {
@@ -154,20 +154,22 @@ public class BeanListTableModel<T> extends AbstractTableModel implements ColumnI
         fireTableRowsInserted(row, row);
     }
 
-    /**
-     * Append missing rows to the end of the bean list.
-     * @param beans rows to append
-     * @param isEqual used to determine if a row is already in the bean list
-     */
-    public void appendMissing(Collection<T> beans, BiPredicate<T, T> isEqual) {
-        Predicate<T> predicate = bean -> this.beans.stream().noneMatch(item -> isEqual.test(bean, item));
-        beans.stream().filter(predicate).forEach(this::addRow);
+    public void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual) {
+        for (T bean : beans) {
+            int index = indexOf(item -> isEqual.test(bean, item));
+            if (index < 0) addRow(bean);
+            else setRow(index, bean);
+        }
+    }
+
+    private int indexOf(Predicate<T> condition) {
+        return beans.stream().filter(condition).findFirst().map(this::indexOf).orElse(-1);
     }
 
     public void removeRow(T bean) {
         int row = beans.indexOf(bean);
         if (row >= 0) {
-        	removeRowAt(row);
+            removeRowAt(row);
         }
     }
 

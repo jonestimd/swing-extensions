@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,6 +175,11 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
         this.beans.clear();
         this.beans.addAll(beans);
         fireTableDataChanged();
+    }
+
+    @Override
+    public void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual) {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**

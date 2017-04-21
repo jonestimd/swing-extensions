@@ -28,7 +28,6 @@ import java.util.Collections;
 
 import javax.swing.table.TableCellRenderer;
 
-import com.google.common.collect.Multimaps;
 import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.table.model.BeanListMultimapTableModel;
 import io.github.jonestimd.swing.table.model.ColumnAdapter;
@@ -44,11 +43,10 @@ public class SectionTableTest {
     private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter<>("Value", String.class, TestBean::getValue, TestBean::setValue);
     private final BeanListMultimapTableModel<TestGroup, TestBean> model = new BeanListMultimapTableModel<>(
             Arrays.asList(BEAN_NAME_ADAPTER, BEAN_VALUE_ADAPTER),
-            Collections.emptyList(), TestGroup::getGroupName);
+            Collections.emptyList(), TestBean::getGroup, TestGroup::getGroupName);
     private final SectionTable<TestBean, BeanListMultimapTableModel<TestGroup, TestBean>> table = new SectionTable<>(model);
 
     private TestGroup group1 = new TestGroup("group1");
-    private TestGroup group2 = new TestGroup("group2");
 
     @Test
     public void setSectionRowBackground() throws Exception {
@@ -61,9 +59,9 @@ public class SectionTableTest {
 
     @Test
     public void isSectionRow() throws Exception {
-        model.setBeans(Multimaps.index(Arrays.asList(
+        model.setBeans(Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
-                new TestBean(group1, "bean1b", "x")), TestBean::getGroup));
+                new TestBean(group1, "bean1b", "x")));
 
         assertThat(table.isSectionRow(0)).isTrue();
         assertThat(table.isSectionRow(1)).isFalse();
@@ -72,9 +70,9 @@ public class SectionTableTest {
 
     @Test
     public void isCellEditable() throws Exception {
-        model.setBeans(Multimaps.index(Arrays.asList(
+        model.setBeans(Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
-                new TestBean(group1, "bean1b", "x")), TestBean::getGroup));
+                new TestBean(group1, "bean1b", "x")));
 
         assertThat(table.isCellEditable(0, 0)).isFalse();
         assertThat(table.isCellEditable(0, 1)).isFalse();
@@ -86,9 +84,9 @@ public class SectionTableTest {
 
     @Test
     public void getValueAt() throws Exception {
-        model.setBeans(Multimaps.index(Arrays.asList(
+        model.setBeans(Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
-                new TestBean(group1, "bean1b", "y")), TestBean::getGroup));
+                new TestBean(group1, "bean1b", "y")));
 
         assertThat(table.getValueAt(0, 0)).isEqualTo(group1.getGroupName());
         assertThat(table.getValueAt(0, 1)).isNull();
@@ -100,9 +98,9 @@ public class SectionTableTest {
 
     @Test
     public void getCellRenderer() throws Exception {
-        model.setBeans(Multimaps.index(Arrays.asList(
+        model.setBeans(Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
-                new TestBean(group1, "bean1b", "x")), TestBean::getGroup));
+                new TestBean(group1, "bean1b", "x")));
         assertThat(table.getCellRenderer(0, 0).getClass().getSimpleName()).isEqualTo("DefaultSectionRowRenderer");
         assertThat(table.getCellRenderer(1, 0)).isEqualTo(table.getDefaultRenderer(String.class));
 
@@ -114,9 +112,9 @@ public class SectionTableTest {
 
     @Test
     public void defaultSectionRowRenderer() throws Exception {
-        model.setBeans(Multimaps.index(Arrays.asList(
+        model.setBeans(Arrays.asList(
                 new TestBean(group1, "bean1a", "x"),
-                new TestBean(group1, "bean1b", "x")), TestBean::getGroup));
+                new TestBean(group1, "bean1b", "x")));
         final TableCellRenderer renderer = table.getCellRenderer(0, 0);
 
         Component component = renderer.getTableCellRendererComponent(table, "", false, false, 0, 0);
