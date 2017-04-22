@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class StringFormatTest {
     private StringFormat format = new StringFormat();

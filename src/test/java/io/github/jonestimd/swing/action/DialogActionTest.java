@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
 import io.github.jonestimd.AsyncTest;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class DialogActionTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");

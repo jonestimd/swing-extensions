@@ -12,7 +12,7 @@ import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.text.StringFormat;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class BeanListComboBoxEditorTest {
     private BeanListModel<String> model = new BeanListModel<>(Arrays.asList("Apple", "Banana", "Cherry"));

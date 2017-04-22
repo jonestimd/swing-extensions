@@ -32,7 +32,7 @@ import com.google.common.collect.Lists;
 import io.github.jonestimd.AsyncTest;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class BeanListComboBoxCellEditorTest extends ComboBoxCellEditorTest {
     private List<TestBean> comboBoxValues = ImmutableList.of(new TestBean("abc"), new TestBean("adf"), new TestBean("xyz"));

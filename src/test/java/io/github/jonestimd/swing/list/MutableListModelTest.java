@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class MutableListModelTest {
     @Test

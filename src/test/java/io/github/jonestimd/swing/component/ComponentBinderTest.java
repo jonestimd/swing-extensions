@@ -14,7 +14,7 @@ import io.github.jonestimd.beans.ObservableBean;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;

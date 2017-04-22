@@ -42,7 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class CalendarPanelTest {
     private Date date;

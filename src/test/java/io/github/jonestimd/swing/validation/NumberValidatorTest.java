@@ -2,7 +2,7 @@ package io.github.jonestimd.swing.validation;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class NumberValidatorTest {
     public static final String MESSAGE = "invalid number";

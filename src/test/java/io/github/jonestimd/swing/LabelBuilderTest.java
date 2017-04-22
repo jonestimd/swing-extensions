@@ -28,7 +28,7 @@ import javax.swing.UIManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class LabelBuilderTest {
     @BeforeClass

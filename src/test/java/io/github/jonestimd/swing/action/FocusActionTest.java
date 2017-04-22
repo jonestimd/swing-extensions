@@ -32,7 +32,7 @@ import javax.swing.KeyStroke;
 import io.github.jonestimd.swing.action.FocusAction.KeyAction;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class FocusActionTest {

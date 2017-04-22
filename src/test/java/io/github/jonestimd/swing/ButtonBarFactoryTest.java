@@ -34,7 +34,7 @@ import javax.swing.JButton;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class ButtonBarFactoryTest {
     @Test

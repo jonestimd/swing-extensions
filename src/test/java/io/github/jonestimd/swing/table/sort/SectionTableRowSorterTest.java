@@ -16,7 +16,7 @@ import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class SectionTableRowSorterTest {
     private static final ColumnAdapter<TestBean, String> NAME_ADAPTER = new TestColumnAdapter<TestBean>("Name") {

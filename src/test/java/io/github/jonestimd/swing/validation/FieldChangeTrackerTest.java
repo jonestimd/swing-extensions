@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
 import io.github.jonestimd.swing.validation.FieldChangeTracker.FieldChangeHandler;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class FieldChangeTrackerTest {
     private final JPanel panel = new JPanel();

@@ -25,7 +25,7 @@ import java.awt.GridBagConstraints;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class FormElementTest {
     @Test

@@ -27,7 +27,7 @@ import io.github.jonestimd.swing.table.sort.HeaderDetailTableRowSorter;
 import org.junit.Test;
 
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class MixedRowTableTest {
     private Color evenBackground = ComponentDefaults.getColor("Table.alternateRowColor");

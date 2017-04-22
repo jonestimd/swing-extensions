@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class BufferedHeaderDetailTableModelTest {
@@ -649,7 +649,7 @@ public class BufferedHeaderDetailTableModelTest {
 
         List<TestSummaryBean> updates = model.getPendingUpdates().collect(Collectors.toList());
 
-        assertThat(updates).containsOnly(beans.toArray());
+        assertThat(updates).containsOnlyElementsOf(beans);
     }
 
     @Test

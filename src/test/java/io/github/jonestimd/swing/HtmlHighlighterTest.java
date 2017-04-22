@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class HtmlHighlighterTest {
     private final HtmlHighlighter highlighter = new HtmlHighlighter("<span>", "</span>");

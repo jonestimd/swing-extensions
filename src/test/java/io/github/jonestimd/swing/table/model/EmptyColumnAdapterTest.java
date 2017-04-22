@@ -23,7 +23,7 @@ package io.github.jonestimd.swing.table.model;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class EmptyColumnAdapterTest {
     private static final String IDENTIFIER = "dummy1";

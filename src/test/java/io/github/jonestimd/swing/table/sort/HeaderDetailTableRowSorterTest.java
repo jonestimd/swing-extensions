@@ -17,7 +17,7 @@ import io.github.jonestimd.swing.table.model.SingleTypeDetailAdapter;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class HeaderDetailTableRowSorterTest {
     private static final ColumnAdapter<TestBean, String> headerAdapter = new TestColumnAdapter<TestBean>("Header") {

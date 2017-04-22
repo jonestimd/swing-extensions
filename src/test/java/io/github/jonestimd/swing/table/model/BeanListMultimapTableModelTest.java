@@ -22,7 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static io.github.jonestimd.mockito.Matchers.*;
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,7 +76,7 @@ public class BeanListMultimapTableModelTest {
 
         assertThat(tableModel.getRowCount()).isEqualTo(6);
         assertThat(tableModel.getBeanCount()).isEqualTo(4);
-        assertThat(tableModel.getBeans()).containsOnly(beans.toArray());
+        assertThat(tableModel.getBeans()).containsOnlyElementsOf(beans);
         assertThat(tableModel.getSections()).containsExactly(group1, group2);
         assertThat(tableModel.getGroup(0)).containsExactly(beans.get(0), beans.get(2));
         assertThat(tableModel.getBeans(group1)).containsExactly(beans.get(0), beans.get(2));

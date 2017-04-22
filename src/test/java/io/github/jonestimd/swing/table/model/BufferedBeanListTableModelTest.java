@@ -16,8 +16,7 @@ import org.mockito.InOrder;
 
 import static io.github.jonestimd.swing.table.model.TableModelEventMatcher.*;
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class BufferedBeanListTableModelTest {
@@ -51,8 +50,8 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(0, 1)).isTrue();
         assertThat(model.getPendingUpdates().collect(Collectors.toList())).containsExactly(bean);
 
-        assertEquals("value1", model.getValueAt(0, 0));
-        assertEquals("value2", model.getValueAt(0, 1));
+        assertThat(model.getValueAt(0, 0)).isEqualTo("value1");
+        assertThat(model.getValueAt(0, 1)).isEqualTo("value2");
 
         InOrder inOrder = inOrder(listener);
         inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
@@ -80,7 +79,7 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(1, 1));
 
         model.revert();
-        assertEquals(2, model.getBeans().size());
+        assertThat(model.getBeans()).hasSize(2);
         assertThat(model.isChanged()).isFalse();
         assertThat(model.isChangedAt(0, 0)).isFalse();
         assertThat(model.isChangedAt(0, 1)).isFalse();
@@ -91,15 +90,15 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isFalse();
         assertThat(model.isChangedAt(0, 1)).isTrue();
-        assertNull(model.getValueAt(0, 0));
-        assertEquals("value2", model.getValueAt(0, 1));
+        assertThat(model.getValueAt(0, 0)).isNull();
+        assertThat(model.getValueAt(0, 1)).isEqualTo("value2");
 
         model.setValueAt(null, 0, 1);
         assertThat(model.isChanged()).isFalse();
         assertThat(model.isChangedAt(0, 0)).isFalse();
         assertThat(model.isChangedAt(0, 1)).isFalse();
-        assertNull(model.getValueAt(0, 0));
-        assertNull(model.getValueAt(0, 1));
+        assertThat(model.getValueAt(0, 0)).isNull();
+        assertThat(model.getValueAt(0, 1)).isNull();
 
         InOrder inOrder = inOrder(listener);
         // setBeans()
@@ -164,8 +163,8 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(0, 0)).isFalse();
         assertThat(model.isChangedAt(0, 1)).isFalse();
 
-        assertEquals("value1", model.getValueAt(0, 0));
-        assertNull(model.getValueAt(0, 1));
+        assertThat(model.getValueAt(0, 0)).isEqualTo("value1");
+        assertThat(model.getValueAt(0, 1)).isNull();
         InOrder inOrder = inOrder(listener);
         inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, Integer.MAX_VALUE, -1));
         inOrder.verify(listener).tableChanged(tableModelEvent(TableModelEvent.UPDATE, 0, 0, 0));
@@ -228,11 +227,11 @@ public class BufferedBeanListTableModelTest {
         assertThat(model.isChangedAt(2, 1)).isTrue();
 
         model.setValueAt("value1", 0, 0);
-        assertEquals("write-through on added rows", "value1", model.getBeans().get(0).column1);
+        assertThat(model.getBeans().get(0).column1).isEqualTo("value1").as("write-through on added rows");
         assertThat(model.isChangedAt(0, 0)).isTrue();
 
         List<TestBean> beans = model.getChangedRows().collect(Collectors.toList());
-        assertEquals(2, beans.size());
+        assertThat(beans).hasSize(2);
         assertThat(beans.contains(model.getBeans().get(0))).isTrue();
         assertThat(beans.contains(model.getBeans().get(2))).isTrue();
         model.commit();

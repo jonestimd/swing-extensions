@@ -1,16 +1,16 @@
 package io.github.jonestimd.util;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class StreamsTest {
     @Test
@@ -19,7 +19,7 @@ public class StreamsTest {
 
         List<String> result = Streams.toList(source);
 
-        assertThat(result).containsOnly(source.toArray());
+        assertThat(result).containsOnlyElementsOf(source);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class StreamsTest {
 
     @Test
     public void sum() throws Exception {
-        BigDecimal sum = Streams.sum(Arrays.asList(BigDecimal.ONE, BigDecimal.ONE).stream());
+        BigDecimal sum = Streams.sum(Stream.of(BigDecimal.ONE, BigDecimal.ONE));
 
         assertThat(sum.compareTo(BigDecimal.valueOf(2))).isEqualTo(0);
     }

@@ -26,7 +26,7 @@ import java.util.function.BiFunction;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class UniqueValueValidatorTest {
     private static final String REQUIRED_MESSAGE = "required";

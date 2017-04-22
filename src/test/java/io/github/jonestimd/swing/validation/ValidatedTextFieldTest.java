@@ -31,7 +31,7 @@ import javax.swing.border.CompoundBorder;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class ValidatedTextFieldTest {
     public static final String MESSAGE = "required";

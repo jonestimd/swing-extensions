@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static io.github.jonestimd.swing.validation.ValidatedComponent.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ValidatedFileChooserTest {

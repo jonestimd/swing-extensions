@@ -50,7 +50,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.System.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class StatusFrameTest {
     private static final String RESOURCE_PREFIX = "StatusFrameTest";

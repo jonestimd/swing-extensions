@@ -14,7 +14,7 @@ import javax.swing.SwingUtilities;
 import io.github.jonestimd.swing.FocusContainer;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class CompositeCellEditorTest {
     private TestCellEditor editor = new TestCellEditor();

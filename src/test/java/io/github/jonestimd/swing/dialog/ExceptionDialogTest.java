@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
 import static java.awt.event.KeyEvent.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class ExceptionDialogTest {
     public static final long SWING_TIMEOUT = 500L;

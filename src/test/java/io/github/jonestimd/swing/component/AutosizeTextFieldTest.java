@@ -29,7 +29,7 @@ import javax.swing.SwingUtilities;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class AutosizeTextFieldTest {
     private JFrame frame = new JFrame("Autosize text field test");

@@ -31,7 +31,7 @@ import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.FunctionColumnAdapter;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class BeanListColumnConfigurationTest {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("test-resources");

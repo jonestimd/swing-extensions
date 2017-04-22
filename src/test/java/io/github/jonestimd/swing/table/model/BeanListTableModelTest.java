@@ -19,7 +19,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)

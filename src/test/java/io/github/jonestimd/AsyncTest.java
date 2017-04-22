@@ -23,7 +23,7 @@ package io.github.jonestimd;
 
 import java.util.function.Supplier;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class AsyncTest {
     public static void timeout(long waitMs, Supplier<Boolean> condition) {

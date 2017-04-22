@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class ReadOnlyColumnAdapterTest {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("test-resources");

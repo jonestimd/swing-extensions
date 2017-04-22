@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 import io.github.jonestimd.swing.component.TextField;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class EditableComponentFocusTraversalPolicyTest {
     private final EditableComponentFocusTraversalPolicy policy = new EditableComponentFocusTraversalPolicy();

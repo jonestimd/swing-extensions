@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -70,7 +70,7 @@ public class FileSuggestFieldTest {
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
         assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
         assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).contains(children.toArray());
+        assertThat(field.getModel()).containsAll(children);
 
         field.getEditorComponent().setText("");
 
@@ -88,7 +88,7 @@ public class FileSuggestFieldTest {
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
         assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
         assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).contains(children.toArray());
+        assertThat(field.getModel()).containsAll(children);
 
         field.getEditorComponent().setText("");
 
@@ -106,7 +106,7 @@ public class FileSuggestFieldTest {
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
         assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
         assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).contains(children.toArray());
+        assertThat(field.getModel()).containsAll(children);
 
         field.getEditorComponent().setText("");
 
@@ -124,7 +124,7 @@ public class FileSuggestFieldTest {
         assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
         assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
         assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).contains(children.toArray());
+        assertThat(field.getModel()).containsAll(children);
 
         field.getEditorComponent().setText("");
 
@@ -158,7 +158,7 @@ public class FileSuggestFieldTest {
 
         getKeyListener(field).keyReleased(newKeyEvent(field, 0, File.separatorChar));
 
-        assertThat(field.getModel()).contains(Streams.filter(Arrays.asList(child.listFiles()), File::isDirectory).toArray());
+        assertThat(field.getModel()).containsAll(Streams.filter(Arrays.asList(child.listFiles()), File::isDirectory));
         verify(comboBoxUI).setPopupVisible(field, true);
     }
 
@@ -202,7 +202,7 @@ public class FileSuggestFieldTest {
 
         field.setSelectedItem(selectedItem);
 
-        assertThat(field.getModel()).contains((Object[]) child.listFiles());
+        assertThat(field.getModel()).contains(child.listFiles());
     }
 
     @Test

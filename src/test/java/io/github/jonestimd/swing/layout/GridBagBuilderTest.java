@@ -41,7 +41,7 @@ import javax.swing.JTextField;
 import org.junit.Test;
 
 import static java.awt.GridBagConstraints.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class GridBagBuilderTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");

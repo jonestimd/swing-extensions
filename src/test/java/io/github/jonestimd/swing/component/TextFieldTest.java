@@ -11,7 +11,7 @@ import io.github.jonestimd.swing.validation.RequiredValidator;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class TextFieldTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");

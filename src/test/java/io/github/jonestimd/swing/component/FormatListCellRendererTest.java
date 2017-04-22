@@ -8,7 +8,7 @@ import javax.swing.JList;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class FormatListCellRendererTest {
     private final Format format = DecimalFormat.getInstance();

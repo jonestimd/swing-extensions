@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.junit.Test;
 
 import static java.util.Collections.*;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class HashListTest {
     @Test
@@ -16,7 +16,7 @@ public class HashListTest {
 
         HashList<String, String> list = new HashList<>(items, Function.identity());
 
-        assertThat(list).containsExactly(items.toArray());
+        assertThat(list).containsExactlyElementsOf(items);
         assertThat(list.indexOf("one")).isEqualTo(0);
         assertThat(list.indexOf("two")).isEqualTo(1);
         assertThat(list.indexOf("three")).isEqualTo(2);
