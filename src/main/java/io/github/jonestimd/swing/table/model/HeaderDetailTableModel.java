@@ -183,9 +183,17 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
     public void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual) {
         for (T bean : beans) {
             int index = indexOf(item -> isEqual.test(bean, item));
-            if (index < 0) addBean(getBeanCount(), bean);
+            if (index < 0) addBean(getInsertionIndex(bean), bean);
             else setBean(index, bean);
         }
+    }
+
+    /**
+     * Get the index at which a bean should be inserted.  Used by {@link #updateBeans(Collection, BiPredicate)}.
+     * @return this implementation returns {@link #getBeanCount()}
+     */
+    protected int getInsertionIndex(T bean) {
+        return getBeanCount();
     }
 
     /**
