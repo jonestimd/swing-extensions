@@ -20,6 +20,7 @@
 package io.github.jonestimd.swing.dialog;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Window;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -32,6 +33,7 @@ import javax.swing.JTextArea;
 
 import com.google.common.base.MoreObjects;
 import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.action.CancelAction;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
@@ -41,6 +43,10 @@ import static io.github.jonestimd.swing.ComponentFactory.*;
  */
 public class ExceptionDialog extends MessageDialog {
     public static final String DEFAULT_RESOURCE_PREFIX = "exceptionDialog.";
+
+    public static void show(Component owner, Throwable throwable) {
+        new ExceptionDialog(ComponentTreeUtils.findAncestor(owner, Window.class), throwable).setVisible(true);
+    }
 
     /**
      * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
