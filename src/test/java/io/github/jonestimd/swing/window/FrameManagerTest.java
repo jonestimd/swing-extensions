@@ -231,6 +231,7 @@ public class FrameManagerTest {
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         assertThat(frame2.getJMenuBar().getMenu(0).getMenuComponentCount()).isEqualTo(1);
+        assertThat(singletonPanels.get(Type.SINGLETON1).getParent()).isNull();
     }
 
     public static class TestBundle extends ListResourceBundle {

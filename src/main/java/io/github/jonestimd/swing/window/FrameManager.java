@@ -241,6 +241,8 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
         frames.remove(frame);
         removeWindowAction(singletonFrames.values(), action);
         removeWindowAction(frames, action);
+        // if it's a singleton this will remove the singleton panel from the frame's hierarchy
+        frame.getLayeredPane().remove(frame.getContentPane());
     }
 
     private void removeWindowAction(Collection<StatusFrame> windows, WindowAction action) {
