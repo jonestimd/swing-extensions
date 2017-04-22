@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -174,12 +175,17 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
     public void setBeans(Collection<T> beans) {
         this.beans.clear();
         this.beans.addAll(beans);
+        updateRowOffsets(0);
         fireTableDataChanged();
     }
 
     @Override
     public void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual) {
-        throw new UnsupportedOperationException("not implemented");
+        for (T bean : beans) {
+            int index = indexOf(item -> isEqual.test(bean, item));
+            if (index < 0) addBean(getBeanCount(), bean);
+            else setBean(index, bean);
+        }
     }
 
     /**
@@ -296,6 +302,10 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
      */
     public int indexOf(T bean) {
         return beans.indexOf(bean);
+    }
+
+    public int indexOf(Predicate<T> condition) {
+        return beans.stream().filter(condition).findFirst().map(this::indexOf).orElse(-1);
     }
 
     /**

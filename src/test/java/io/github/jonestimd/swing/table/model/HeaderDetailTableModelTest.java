@@ -21,20 +21,72 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.function.Function;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static io.github.jonestimd.mockito.Matchers.matches;
+import static java.util.Collections.*;
+import static org.fest.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class HeaderDetailTableModelTest {
+    public static final String COLUMN_ID = "columnId";
+    @Mock
+    private ColumnAdapter<Object, String> columnAdapter;
+    @Mock
+    private ColumnAdapter<Object, String> detailColumnAdapter;
     @Mock
     private DetailAdapter<Object> detailAdapter;
+    @Mock
+    private TableModelListener tableModelListener;
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void updateBeansNotImplemented() throws Exception {
-        new HeaderDetailTableModel<>(detailAdapter, Function.identity()).updateBeans(null, null);
+    private HeaderDetailTableModel<Object> model;
+
+    @Before
+    public void createModel() {
+        when(columnAdapter.getColumnId()).thenReturn(COLUMN_ID);
+        model = new HeaderDetailTableModel<>(detailAdapter, Function.identity(), singletonList(columnAdapter), singletonList(singletonList(detailColumnAdapter)));
+        model.addTableModelListener(tableModelListener);
+        when(detailAdapter.getDetailCount(any())).thenReturn(1);
+    }
+
+    @Test
+    public void updateBeansAddsMissingRows() throws Exception {
+        model.setBeans(singletonList(BigDecimal.ONE));
+        reset(tableModelListener);
+
+        model.updateBeans(singletonList(BigDecimal.TEN), Object::equals);
+
+        assertThat(model.getBeanCount()).isEqualTo(2);
+        assertThat(model.getBean(0)).isSameAs(BigDecimal.ONE);
+        assertThat(model.getBean(1)).isSameAs(BigDecimal.TEN);
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 2, 3, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
+        verifyNoMoreInteractions(tableModelListener);
+    }
+
+    @Test
+    public void updateBeansReplacesRows() throws Exception {
+        model.setBeans(singletonList("one"));
+        reset(tableModelListener);
+
+        model.updateBeans(Arrays.asList("ONE", "two"), (s1, s2) -> s1.toString().equalsIgnoreCase(s2.toString()));
+
+        assertThat(model.getBeanCount()).isEqualTo(2);
+        assertThat(model.getBean(0)).isEqualTo("ONE");
+        assertThat(model.getBean(1)).isEqualTo("two");
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 0, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE)));
+        verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 2, 3, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
+        verifyNoMoreInteractions(tableModelListener);
     }
 }

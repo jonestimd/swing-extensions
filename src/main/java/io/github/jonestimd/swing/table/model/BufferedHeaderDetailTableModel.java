@@ -95,7 +95,6 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
     @Override
     public void fireTableDataChanged() {
         changeTracker.reset();
-        updateRowOffsets(0);
         errors.clear();
         for (int i = 0; i < getBeanCount(); i++) {
             updateGroupValidation(i);
