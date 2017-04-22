@@ -21,6 +21,7 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -28,9 +29,16 @@ import java.util.function.Supplier;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import io.github.jonestimd.swing.dialog.ExceptionDialog;
+import io.github.jonestimd.swing.window.StatusFrame;
+import org.assertj.swing.core.BasicRobot;
+import org.assertj.swing.core.Robot;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -51,6 +59,20 @@ public class BackgroundTaskTest {
     private BackgroundTask<String> task;
     private CompletableFuture<String> future;
     private String threadName;
+
+    private StatusFrame window;
+    private Robot robot;
+
+    @Before
+    public void createRobot() throws Exception {
+        robot = BasicRobot.robotWithNewAwtHierarchy();
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        robot.cleanUp();
+        if (window != null && window.isVisible()) SwingUtilities.invokeAndWait(window::dispose);
+    }
 
     @Test
     public void handleExceptionDefaultsToFalse() throws Exception {
@@ -156,6 +178,57 @@ public class BackgroundTaskTest {
         verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
         verify(indicator, timeout(1000)).enableUI();
         verify(task, timeout(1000)).updateUI(THE_STRING);
+    }
+
+    @Test
+    public void displaysErrorFromSupplier() throws Exception {
+        String message = "error loading data";
+        when(supplier.get()).thenThrow(new RuntimeException(message));
+        BackgroundTask<String> task = BackgroundTask.task("Loading ...", supplier, consumer);
+        showWindow();
+
+        SwingUtilities.invokeAndWait(() -> task.run(window));
+
+        waitForEnableUI();
+        verify(supplier, timeout(1000)).get();
+        ExceptionDialog dialog = robot.finder().findByType(ExceptionDialog.class);
+        JTextArea textArea = robot.finder().findByType(dialog.getContentPane(), JTextArea.class);
+        assertThat(textArea.getText()).contains(message);
+        SwingUtilities.invokeAndWait(dialog::dispose);
+        verifyZeroInteractions(consumer);
+    }
+
+    @Test
+    public void displaysErrorFromConsumer() throws Exception {
+        String message = "error showing data";
+        when(supplier.get()).thenReturn("result");
+        doThrow(new RuntimeException(message)).when(consumer).accept(any());
+        BackgroundTask<String> task = BackgroundTask.task("Loading ...", supplier, consumer);
+        showWindow();
+
+        SwingUtilities.invokeAndWait(() -> task.run(window));
+
+        verify(supplier, timeout(1000)).get();
+        verify(consumer, timeout(1000)).accept(any());
+        ExceptionDialog dialog = robot.finder().findByType(ExceptionDialog.class);
+        JTextArea textArea = robot.finder().findByType(dialog.getContentPane(), JTextArea.class);
+        assertThat(textArea.getText()).contains(message);
+        SwingUtilities.invokeAndWait(dialog::dispose);
+        waitForEnableUI();
+    }
+
+    private void showWindow() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            window = new StatusFrame(ResourceBundle.getBundle("test-resources"), "StatusFrameTest");
+            window.pack();
+            window.setVisible(true);
+        });
+    }
+
+    private void waitForEnableUI() {
+        long deadline = System.currentTimeMillis() + 1000;
+        while (window.getGlassPane().isVisible() && System.currentTimeMillis() < deadline) Thread.yield();
+        if (window.getGlassPane().isVisible()) fail("timed out waiting for window to be enabled");
     }
 
     private static abstract class TestStatusIndicator extends JComponent implements StatusIndicator {}

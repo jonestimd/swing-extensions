@@ -82,10 +82,6 @@ public interface BackgroundTask<T> {
         return run(this, owner);
     }
 
-    default CompletableFuture<T> run(StatusIndicator statusIndicator, Component owner) {
-        return run(this, statusIndicator, owner);
-    }
-
     /**
      *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
      *  Requires that {@code owner} or one if its ancestors is a {@link StatusIndicator}.
