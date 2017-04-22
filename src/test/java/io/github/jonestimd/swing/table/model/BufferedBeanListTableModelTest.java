@@ -398,10 +398,10 @@ public class BufferedBeanListTableModelTest {
 
     @Test
     public void setRowRetainsPendingChange() throws Exception {
-        TestBean bean1 = new TestBean(1L, "a");
+        TestBean bean1 = new TestBean(1L, null);
         model.setBeans(singleton(bean1));
         model.setValue("x", 0, 0);
-        TestBean bean2 = new TestBean(1L, "a");
+        TestBean bean2 = new TestBean(1L, null);
         reset(listener);
 
         model.setRow(0, bean2);

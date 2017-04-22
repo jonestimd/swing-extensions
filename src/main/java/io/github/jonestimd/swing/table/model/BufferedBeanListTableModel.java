@@ -22,6 +22,7 @@ package io.github.jonestimd.swing.table.model;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -159,7 +160,7 @@ public class BufferedBeanListTableModel<T> extends BeanListTableModel<T> impleme
     private void copyColumn(int column, T oldBean, T newBean) {
         Object changeValue = getValue(oldBean, column);
         Object value = getValue(newBean, column);
-        if (!value.equals(changeValue)) {
+        if (!Objects.equals(value, changeValue)) {
             ColumnAdapter.class.cast(beanTableAdapter.getColumnAdapter(column)).setValue(newBean, changeValue);
             changeTracker.setValue(newBean, column, value, changeValue);
         }

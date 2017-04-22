@@ -156,7 +156,7 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
         return groups.get(sortedGroups.get(groupNumber)).get(rowIndex - groupOffsets[groupNumber] - 1);
     }
 
-    private void setBean(int rowIndex, T bean) {
+    protected void setBean(int rowIndex, T bean) {
         int groupNumber = getGroupNumber(rowIndex);
         groups.get(sortedGroups.get(groupNumber)).set(rowIndex - groupOffsets[groupNumber] - 1, bean);
         fireTableRowsUpdated(rowIndex, rowIndex);
