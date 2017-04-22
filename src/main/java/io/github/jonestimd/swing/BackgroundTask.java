@@ -20,18 +20,18 @@
 package io.github.jonestimd.swing;
 
 import java.awt.Component;
-import java.awt.Window;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.swing.dialog.ExceptionDialog;
 
 public interface BackgroundTask<T> {
-
     /**
      * @return ResourceBundle key for description of the background task.
      */
@@ -78,6 +78,14 @@ public interface BackgroundTask<T> {
         };
     }
 
+    default CompletableFuture<T> run(Component owner) {
+        return run(this, owner);
+    }
+
+    default CompletableFuture<T> run(StatusIndicator statusIndicator, Component owner) {
+        return run(this, statusIndicator, owner);
+    }
+
     /**
      *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
      *  Requires that {@code owner} or one if its ancestors is a {@link StatusIndicator}.
@@ -100,14 +108,20 @@ public interface BackgroundTask<T> {
         return CompletableFuture.supplyAsync(task::performTask)
                 .whenCompleteAsync((result, throwable) -> {
                     if (throwable == null) {
-                        task.updateUI(result);
+                        try {
+                            task.updateUI(result);
+                        } catch (Throwable ex) {
+                            Logger.getLogger(BackgroundTask.class.getName()).log(Level.SEVERE, "Error updating UI", ex);
+                            ExceptionDialog.show(owner, ex);
+                        }
                         statusIndicator.enableUI();
                     }
                     else {
                         if (throwable instanceof CompletionException) throwable = throwable.getCause();
                         statusIndicator.enableUI();
                         if (! task.handleException(throwable)) {
-                            new ExceptionDialog(ComponentTreeUtils.findAncestor(owner, Window.class), throwable).setVisible(true);
+                            Logger.getLogger(BackgroundTask.class.getName()).log(Level.SEVERE, "Error loading data", throwable);
+                            ExceptionDialog.show(owner, throwable);
                         }
                     }
                 }, SwingUtilities::invokeLater);
