@@ -22,6 +22,8 @@ package io.github.jonestimd.swing;
 import java.util.logging.Logger;
 
 public class LoggerStatusIndicator implements StatusIndicator {
+    public static final LoggerStatusIndicator INSTANCE = new LoggerStatusIndicator(Logger.getLogger(LoggerStatusIndicator.class.getName()));
+
     private Logger logger;
 
     public LoggerStatusIndicator(Logger logger) {

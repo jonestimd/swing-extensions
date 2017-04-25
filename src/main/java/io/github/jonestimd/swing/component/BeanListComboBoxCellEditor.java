@@ -34,11 +34,7 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import io.github.jonestimd.swing.BackgroundRunner;
 import io.github.jonestimd.swing.BackgroundTask;
-import io.github.jonestimd.swing.ComponentTreeUtils;
-import io.github.jonestimd.swing.LoggerStatusIndicator;
-import io.github.jonestimd.swing.StatusIndicator;
 
 /**
  * Provides a cell editor ({@link BeanListComboBox}) for selecting from a list of beans.
@@ -47,7 +43,6 @@ import io.github.jonestimd.swing.StatusIndicator;
 public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>> extends ComboBoxCellEditor {
     private static final Logger logger = Logger.getLogger(BeanListComboBoxCellEditor.class.getName());
     private final String loadingMessage;
-    private StatusIndicator fallbackStatusIndicator = new LoggerStatusIndicator(logger);
     private boolean loading;
     private List<T> items;
 
@@ -55,7 +50,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
      * Create a combo box cell editor for an optional field.
      */
     protected BeanListComboBoxCellEditor(Format format, String loadingMessage) {
-        this(new BeanListComboBox<T>(format), loadingMessage);
+        this(new BeanListComboBox<>(format), loadingMessage);
     }
 
     /**
@@ -107,8 +102,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     private void initializeList(JComponent container, T selectedValue) {
         if (items == null) {
             items = Collections.emptyList();
-            new BackgroundRunner<>(new LoadComboBoxTask(), getComboBox(),
-                    ComponentTreeUtils.findAncestor(container, StatusIndicator.class, fallbackStatusIndicator)).doTask();
+            new LoadComboBoxTask().run(container);
             loading = true;
         }
         if (loading) {
@@ -139,7 +133,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
 
     protected abstract List<T> getComboBoxValues();
 
-    private class LoadComboBoxTask implements BackgroundTask<List<T>> {
+    private class LoadComboBoxTask extends BackgroundTask<List<T>> {
         public String getStatusMessage() {
             return loadingMessage;
         }
@@ -160,6 +154,11 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
                 getComboBox().setPopupVisible(false);
                 getComboBox().setPopupVisible(true);
             }
+        }
+
+        @Override
+        public boolean handleException(Throwable th) {
+            return false;
         }
     }
 }

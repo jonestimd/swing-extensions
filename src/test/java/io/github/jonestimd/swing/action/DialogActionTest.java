@@ -41,29 +41,25 @@ public class DialogActionTest {
 
     @Test
     public void actionPerformedNoDialog() throws Exception {
-        final int threads = Thread.currentThread().getThreadGroup().activeCount();
+        loaded = false;
         TestAction action = new TestAction(false);
 
         SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
 
-        AsyncTest.waitForThreadCount(threads);
-        assertThat(loaded).isTrue();
+        AsyncTest.timeout(5000L, () -> loaded);
         assertThat(saved).isFalse();
         assertThat(setResultOnUI).isFalse();
     }
 
     @Test
     public void actionPerformedWithDialog() throws Exception {
-        final int threads = Thread.currentThread().getThreadGroup().activeCount();
+        loaded = false;
         TestAction action = new TestAction(true);
 
         SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
 
-        AsyncTest.waitForThreadCount(threads);
-        assertThat(loaded).isTrue();
-        AsyncTest.timeout(10000L, () -> saved && setResultOnUI);
-        assertThat(saved).isTrue();
-        assertThat(setResultOnUI).isTrue();
+        AsyncTest.timeout(5000L, () -> loaded);
+        AsyncTest.timeout(5000L, () -> saved && setResultOnUI);
     }
 
     private class TestAction extends DialogAction {

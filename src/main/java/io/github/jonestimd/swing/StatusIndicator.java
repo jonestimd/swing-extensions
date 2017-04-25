@@ -20,11 +20,38 @@
 package io.github.jonestimd.swing;
 
 
-public interface StatusIndicator {
+import java.awt.Component;
 
+/**
+ * This interface is for providing UI feedback while a background task is running.
+ */
+public interface StatusIndicator {
+    /**
+     * Change the status message to indicate the progress of a background task.
+     */
     void setStatusMessage(String message);
 
+    /**
+     * Disable the UI while a background task is running.
+     * @param message the message to display to the user while the task is running.
+     */
     void disableUI(String message);
 
+    /**
+     * Enable the UI after a background task has completed.
+     */
     void enableUI();
+
+    /**
+     * Get or create a status indicator for a component.  This method should only be called from the Swing event
+     * dispatch thread.
+     * @return the ancestor {@link StatusIndicator}, a {@link DeferredStatusIndicator} if the component is not showing
+     *         or {@link LoggerStatusIndicator#INSTANCE}
+     */
+    static StatusIndicator forComponent(Component component) {
+        if (component == null) return LoggerStatusIndicator.INSTANCE;
+        StatusIndicator indicator = ComponentTreeUtils.findAncestor(component, StatusIndicator.class);
+        if (indicator == null && !component.isShowing()) return new DeferredStatusIndicator(component);
+        return indicator == null ? LoggerStatusIndicator.INSTANCE : indicator;
+    }
 }

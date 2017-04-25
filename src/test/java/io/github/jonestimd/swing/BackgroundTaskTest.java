@@ -21,10 +21,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.awt.event.HierarchyListener;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.swing.JComponent;
@@ -44,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static io.github.jonestimd.swing.BackgroundTask.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -56,11 +59,12 @@ public class BackgroundTaskTest {
     @Mock
     private Consumer<String> consumer;
     @Mock
-    private BackgroundTask<String> task;
+    private Function<Throwable, Boolean> onException;
     private CompletableFuture<String> future;
     private String threadName;
 
     private StatusFrame window;
+    private JPanel owner = new JPanel();
     private Robot robot;
 
     @Before
@@ -76,40 +80,37 @@ public class BackgroundTaskTest {
 
     @Test
     public void handleExceptionDefaultsToFalse() throws Exception {
-        assertThat(new BackgroundTask<String>() {
-            @Override
-            public String getStatusMessage() {
-                return null;
-            }
+        assertThat(task("", null, null).handleException(null)).isFalse();
+    }
 
-            @Override
-            public String performTask() {
-                return null;
-            }
+    @Test
+    public void handleExceptionCallsHandler() throws Exception {
+        RuntimeException exception = new RuntimeException();
+        when(onException.apply(any())).thenReturn(true, false);
 
-            @Override
-            public void updateUI(String result) {
-            }
-        }.handleException(null)).isFalse();
+        assertThat(task("", null, null, onException).handleException(exception)).isTrue();
+        assertThat(task("", null, null, onException).handleException(exception)).isFalse();
+
+        verify(onException, times(2)).apply(same(exception));
     }
 
     @Test
     public void taskStatusMessageDefaultsToNull() throws Exception {
-        BackgroundTask<String> task = BackgroundTask.task(supplier, consumer);
+        BackgroundTask<String> task = task(supplier, consumer);
 
         assertThat(task.getStatusMessage()).isNull();
     }
 
     @Test
     public void taskReturnsStatusMessage() throws Exception {
-        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+        BackgroundTask<String> task = task(STATUS_MESSAGE, supplier, consumer);
 
         assertThat(task.getStatusMessage()).isEqualTo(STATUS_MESSAGE);
     }
 
     @Test
     public void taskCallsSupplier() throws Exception {
-        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+        BackgroundTask<String> task = task(STATUS_MESSAGE, supplier, consumer);
 
         task.performTask();
 
@@ -118,7 +119,7 @@ public class BackgroundTaskTest {
 
     @Test
     public void taskCallsConsumer() throws Exception {
-        BackgroundTask<String> task = BackgroundTask.task(STATUS_MESSAGE, supplier, consumer);
+        BackgroundTask<String> task = task(STATUS_MESSAGE, supplier, consumer);
 
         task.updateUI(THE_STRING);
 
@@ -126,32 +127,46 @@ public class BackgroundTaskTest {
     }
 
     @Test
-    public void runStartsTaskOnNewThread() throws Exception {
-        TestStatusIndicator indicator = mock(TestStatusIndicator.class);
-        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
-        when(task.performTask()).thenAnswer(invocation -> {
+    public void runAddsVisibilityHandlerToShowStatus() throws Exception {
+        when(supplier.get()).thenAnswer(invocation -> {
             threadName = Thread.currentThread().getName();
             return THE_STRING;
         });
 
-        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, indicator, new JPanel()));
+        SwingUtilities.invokeAndWait(() -> future = task(STATUS_MESSAGE, supplier, consumer).run(owner));
+
+        HierarchyListener[] listeners = owner.getListeners(HierarchyListener.class);
+        assertThat(listeners).filteredOn("class", VisibilityHandler.class).isNotEmpty();
+        assertThat(future.get()).isEqualTo(THE_STRING);
+        verify(consumer, timeout(1000)).accept(THE_STRING);
+        assertThat(threadName).startsWith("ForkJoinPool.");
+    }
+
+    @Test
+    public void runStartsTaskOnNewThread() throws Exception {
+        TestStatusIndicator indicator = mock(TestStatusIndicator.class);
+        when(supplier.get()).thenAnswer(invocation -> {
+            threadName = Thread.currentThread().getName();
+            return THE_STRING;
+        });
+
+        SwingUtilities.invokeAndWait(() -> future = task(STATUS_MESSAGE, supplier, consumer).run(indicator, new JPanel()));
 
         assertThat(future.get()).isEqualTo(THE_STRING);
         verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
         verify(indicator, timeout(1000)).enableUI();
-        verify(task, timeout(1000)).updateUI(THE_STRING);
+        verify(consumer, timeout(1000)).accept(THE_STRING);
         assertThat(threadName).startsWith("ForkJoinPool.");
     }
 
     @Test
     public void runPassesExceptionToTask() throws Exception {
         TestStatusIndicator indicator = mock(TestStatusIndicator.class);
-        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
         RuntimeException exception = new RuntimeException("task failed");
-        when(task.performTask()).thenThrow(exception);
-        when(task.handleException(any())).thenReturn(true);
+        when(supplier.get()).thenThrow(exception);
+        when(onException.apply(any())).thenReturn(true);
 
-        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, indicator, new JPanel()));
+        SwingUtilities.invokeAndWait(() -> future = task(STATUS_MESSAGE, supplier, null, onException).run(indicator, new JPanel()));
 
         try {
             future.get();
@@ -160,7 +175,7 @@ public class BackgroundTaskTest {
             assertThat(ex.getCause()).isSameAs(exception);
             verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
             verify(indicator, timeout(1000)).enableUI();
-            verify(task, timeout(1000)).handleException(same(exception));
+            verify(onException, timeout(1000)).apply(same(exception));
         }
     }
 
@@ -169,22 +184,21 @@ public class BackgroundTaskTest {
         TestStatusIndicator indicator = mock(TestStatusIndicator.class);
         JComponent owner = mock(JComponent.class);
         when(owner.getParent()).thenReturn(indicator);
-        when(task.getStatusMessage()).thenReturn(STATUS_MESSAGE);
-        when(task.performTask()).thenAnswer(invocation -> THE_STRING);
+        when(supplier.get()).thenAnswer(invocation -> THE_STRING);
 
-        SwingUtilities.invokeAndWait(() -> future = BackgroundTask.run(task, owner));
+        SwingUtilities.invokeAndWait(() -> future = task(STATUS_MESSAGE, supplier, consumer).run(owner));
 
         assertThat(future.get()).isEqualTo(THE_STRING);
         verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
         verify(indicator, timeout(1000)).enableUI();
-        verify(task, timeout(1000)).updateUI(THE_STRING);
+        verify(consumer, timeout(1000)).accept(THE_STRING);
     }
 
     @Test
     public void displaysErrorFromSupplier() throws Exception {
         String message = "error loading data";
         when(supplier.get()).thenThrow(new RuntimeException(message));
-        BackgroundTask<String> task = BackgroundTask.task("Loading ...", supplier, consumer);
+        BackgroundTask<String> task = task("Loading ...", supplier, consumer);
         showWindow();
 
         SwingUtilities.invokeAndWait(() -> task.run(window));
@@ -203,7 +217,7 @@ public class BackgroundTaskTest {
         String message = "error showing data";
         when(supplier.get()).thenReturn("result");
         doThrow(new RuntimeException(message)).when(consumer).accept(any());
-        BackgroundTask<String> task = BackgroundTask.task("Loading ...", supplier, consumer);
+        BackgroundTask<String> task = task("Loading ...", supplier, consumer);
         showWindow();
 
         SwingUtilities.invokeAndWait(() -> task.run(window));

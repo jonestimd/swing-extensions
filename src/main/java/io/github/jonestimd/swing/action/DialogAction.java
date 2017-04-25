@@ -25,9 +25,17 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import io.github.jonestimd.swing.BackgroundRunner;
 import io.github.jonestimd.swing.BackgroundTask;
 
+/**
+ * Abstract action for displaying a dialog.  The abstract methods are executed as follows:
+ * <ul>
+ *     <li>{@link #loadDialogData()} - run on a background thread with the parent window disabled</li>
+ *     <li>{@link #displayDialog(JComponent)} - run on the Swing event dispatch thread</li>
+ *     <li>{@link #saveDialogData()} - run on a background thread with the parent window disabled</li>
+ *     <li>{@link #setSaveResultOnUI()} - run on the Swing event dispatch thread</li>
+ * </ul>
+ */
 public abstract class DialogAction extends MnemonicAction {
     private ResourceBundle bundle;
     private String initializeMessageKey;
@@ -42,14 +50,14 @@ public abstract class DialogAction extends MnemonicAction {
 
     public final void actionPerformed(ActionEvent event) {
         JComponent source = (JComponent) event.getSource();
-        new BackgroundRunner<>(new InitializeTask(source), source).doTask();
+        new InitializeTask(source).run(source);
     }
 
-    public boolean handleLoadException(Throwable th) {
+    protected boolean handleLoadException(Throwable th) {
         return false;
     }
 
-    public boolean handleSaveException(Throwable th) {
+    protected boolean handleSaveException(Throwable th) {
         return false;
     }
 
@@ -73,7 +81,7 @@ public abstract class DialogAction extends MnemonicAction {
      */
     protected abstract void setSaveResultOnUI();
 
-    private class InitializeTask implements BackgroundTask<Void> { // TODO clean up handler API
+    private class InitializeTask extends BackgroundTask<Void> {
         private final JComponent owner;
 
         public InitializeTask(JComponent owner) {
@@ -90,7 +98,12 @@ public abstract class DialogAction extends MnemonicAction {
         }
 
         public void updateUI(Void notUsed) {
-            SwingUtilities.invokeLater(new DialogTask(owner));
+            // use invokeLater() so the parent window is enabled before displaying the dialog
+            SwingUtilities.invokeLater(() -> {
+                if (displayDialog(owner)) {
+                    new UpdateTask().run(owner);
+                }
+            });
         }
 
         public boolean handleException(Throwable th) {
@@ -98,22 +111,7 @@ public abstract class DialogAction extends MnemonicAction {
         }
     }
 
-    private class DialogTask implements Runnable {
-        private final JComponent owner;
-
-        public DialogTask(JComponent owner) {
-            this.owner = owner;
-        }
-
-        @Override
-        public void run() {
-            if (displayDialog(owner)) {
-                new BackgroundRunner<>(new UpdateTask(), owner).doTask();
-            }
-        }
-    }
-
-    private class UpdateTask implements BackgroundTask<Void> {
+    private class UpdateTask extends BackgroundTask<Void> {
         public String getStatusMessage() {
             return bundle.getString(updateMessageKey);
         }

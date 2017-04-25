@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,35 +32,74 @@ import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.swing.dialog.ExceptionDialog;
 
-public interface BackgroundTask<T> {
+public abstract class BackgroundTask<T> {
     /**
-     * @return ResourceBundle key for description of the background task.
+     * @return description of the background task to be displayed to the user.
      */
-    String getStatusMessage();
+    public abstract String getStatusMessage();
 
     /**
      * Execute a long running task (called on a non-Swing thread).
      */
-    T performTask();
+    public abstract T performTask();
 
     /**
      * Update the UI with the result of the long running task (called on the Swing event thread).
      */
-    void updateUI(T result);
+    public abstract void updateUI(T result);
 
     /**
      * Handle an exception thrown by the long running task (called on the Swing event thread).
      * @return true if the exception has been handled.
      */
-    default boolean handleException(Throwable th) {
-        return false;
+    public abstract boolean handleException(Throwable th);
+
+
+    /**
+     * Create a task from callbacks.  An error dialog will be displayed if there is an exception.
+     * @param doInBackground the action to perform on the background thread
+     * @param updateUI the action to perform on the Swing Event Dispatch Thread
+     * @param <T> the type of the task's result
+     * @return the new task
+     */
+    public static <T> BackgroundTask<T> task(Supplier<T> doInBackground, Consumer<T> updateUI) {
+        return task(null, doInBackground, updateUI, null);
     }
 
-    static <T> BackgroundTask<T> task(Supplier<T> doInBackground, Consumer<T> updateUI) {
-        return task(null, doInBackground, updateUI);
+    /**
+     * Create a task from callbacks.
+     * @param doInBackground the action to perform on the background thread
+     * @param updateUI the action to perform on the Swing Event Dispatch Thread
+     * @param onException exception handler (returns true if it handled the exception or false to display an error dialog)
+     * @param <T> the type of the task's result
+     * @return the new task
+     */
+    public static <T> BackgroundTask<T> task(Supplier<T> doInBackground, Consumer<T> updateUI, Function<Throwable, Boolean> onException) {
+        return task(null, doInBackground, updateUI, onException);
     }
 
-    static <T> BackgroundTask<T> task(String statusMessage, Supplier<T> doInBackground, Consumer<T> updateUI) {
+    /**
+     * Create a task from callbacks.  An error dialog will be displayed if there is an exception.
+     * @param statusMessage the message to display while the task is running
+     * @param doInBackground the action to perform on the background thread
+     * @param updateUI the action to perform on the Swing Event Dispatch Thread
+     * @param <T> the type of the task's result
+     * @return the new task
+     */
+    public static <T> BackgroundTask<T> task(String statusMessage, Supplier<T> doInBackground, Consumer<T> updateUI) {
+        return task(statusMessage, doInBackground, updateUI, null);
+    }
+
+    /**
+     * Create a task from callbacks.
+     * @param statusMessage the message to display while the task is running
+     * @param doInBackground the action to perform on the background thread
+     * @param updateUI the action to perform on the Swing Event Dispatch Thread
+     * @param onException exception handler (returns true if it handled the exception or false to display an error dialog)
+     * @param <T> the type of the task's result
+     * @return the new task
+     */
+    public static <T> BackgroundTask<T> task(String statusMessage, Supplier<T> doInBackground, Consumer<T> updateUI, Function<Throwable, Boolean> onException) {
         return new BackgroundTask<T>() {
             @Override
             public String getStatusMessage() {
@@ -75,37 +115,44 @@ public interface BackgroundTask<T> {
             public void updateUI(T result) {
                 updateUI.accept(result);
             }
+
+            @Override
+            public boolean handleException(Throwable th) {
+                return onException != null && onException.apply(th);
+            }
         };
     }
 
-    default CompletableFuture<T> run(Component owner) {
-        return run(this, owner);
+    /**
+     * Run this task on a background thread.  Status messages will be sent to the log.  An unowned dialog will be used
+     * to display any unhandled exception.
+     */
+    public CompletableFuture<T> run() {
+        return run(LoggerStatusIndicator.INSTANCE, null);
     }
 
     /**
-     *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
-     *  Requires that {@code owner} or one if its ancestors is a {@link StatusIndicator}.
-     *  @param task the task to run
-     *  @param owner owner component for displaying an error dialog if the task fails
+     * Run this task on a background thread. This method should only be called from the Swing Event Dispatch thread.
+     * The UI will be disabled and the status message will be displayed if {@code owner} or one if its ancestors is
+     * a {@link StatusIndicator}.
+     * @param owner owner component for displaying an error dialog if the task fails
      */
-    static <T> CompletableFuture<T> run(BackgroundTask<T> task, Component owner) {
-        StatusIndicator statusIndicator = ComponentTreeUtils.findAncestor(owner, StatusIndicator.class);
-        return run(task, statusIndicator, owner);
+    public CompletableFuture<T> run(Component owner) {
+        return run(StatusIndicator.forComponent(owner), owner);
     }
 
     /**
-     *  Run a task on a background thread. This method should only be called from the Swing Event Dispatch thread.
-     *  @param task the task to run
-     *  @param statusIndicator UI component to receive status messages (disabled while {@code task} is running)
-     *  @param owner owner component for displaying an error dialog if the task fails
+     * Run this task on a background thread. This method should only be called from the Swing Event Dispatch thread.
+     * @param statusIndicator UI component to receive status messages (disabled while the task is running)
+     * @param owner owner component for displaying an error dialog if the task fails
      */
-    static <T> CompletableFuture<T> run(BackgroundTask<T> task, StatusIndicator statusIndicator, Component owner) {
-        statusIndicator.disableUI(task.getStatusMessage());
-        return CompletableFuture.supplyAsync(task::performTask)
+    public CompletableFuture<T> run(StatusIndicator statusIndicator, Component owner) {
+        statusIndicator.disableUI(getStatusMessage());
+        return CompletableFuture.supplyAsync(this::performTask)
                 .whenCompleteAsync((result, throwable) -> {
                     if (throwable == null) {
                         try {
-                            task.updateUI(result);
+                            updateUI(result);
                         } catch (Throwable ex) {
                             Logger.getLogger(BackgroundTask.class.getName()).log(Level.SEVERE, "Error updating UI", ex);
                             ExceptionDialog.show(owner, ex);
@@ -115,7 +162,7 @@ public interface BackgroundTask<T> {
                     else {
                         if (throwable instanceof CompletionException) throwable = throwable.getCause();
                         statusIndicator.enableUI();
-                        if (! task.handleException(throwable)) {
+                        if (! handleException(throwable)) {
                             Logger.getLogger(BackgroundTask.class.getName()).log(Level.SEVERE, "Error loading data", throwable);
                             ExceptionDialog.show(owner, throwable);
                         }

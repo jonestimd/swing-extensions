@@ -202,7 +202,7 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
     @Override
     public void disableUI(String message) {
         logger.log(Level.FINE, "disableUI {0}", message);
-        setStatusMessage(message);
+        if (message != null) setStatusMessage(message);
         getGlassPane().setVisible(true);
         getGlassPane().requestFocus();
     }

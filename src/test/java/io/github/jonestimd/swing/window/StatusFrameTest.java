@@ -262,6 +262,21 @@ public class StatusFrameTest {
     }
 
     @Test
+    public void disableUIWithNullMessageBlocksKeyboardInput() throws Exception {
+        TestAction action = createFrameWithMenuBar();
+        SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
+        SwingUtilities.invokeAndWait(() -> frame.disableUI(null));
+        AsyncTest.timeout(SWING_TIMEOUT, frame.getGlassPane()::isFocusOwner);
+
+        SwingUtilities.invokeAndWait(() -> {
+            KeyEvent event = new KeyEvent(frame.getGlassPane(), KeyEvent.KEY_PRESSED, currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, KeyEvent.VK_A, KeyEvent.CHAR_UNDEFINED);
+            SwingUtilities.processKeyBindings(event);
+        });
+
+        assertThat(action.actionPerformed).isFalse();
+    }
+
+    @Test
     public void disableUIBlocksMouseInput() throws Exception {
         createFrameWithMenuBar();
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));

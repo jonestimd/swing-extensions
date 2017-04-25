@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -17,38 +19,34 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-package io.github.jonestimd.swing.action;
+package io.github.jonestimd.swing;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.util.ResourceBundle;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.util.function.Consumer;
 
-import io.github.jonestimd.swing.BackgroundTask;
+/**
+ * This class can be used to invoke a callback when a component becomes visible on the screen.
+ * @see Component#isShowing()
+ */
+public class VisibilityHandler implements HierarchyListener {
+    private final Consumer<Component> onShowing;
 
-public abstract class BackgroundAction<T> extends MnemonicAction {
-    private final Component owner;
-    private final String statusMessage;
-
-    protected BackgroundAction(Component owner, ResourceBundle bundle, String resourcePrefix) {
-        super(bundle, resourcePrefix);
-        this.owner = owner;
-        statusMessage = bundle.containsKey(resourcePrefix + ".status.initialize") ?
-                bundle.getString(resourcePrefix + ".status.initialize") : null;
+    public static void addCallback(Component component, Consumer<Component> onShowing) {
+        if (!component.isShowing()) component.addHierarchyListener(new VisibilityHandler(onShowing));
     }
 
-    public final void actionPerformed(ActionEvent event) {
-        if (confirmAction(event)) {
-            BackgroundTask.task(statusMessage, this::performTask, this::updateUI).run(owner);
+    public VisibilityHandler(Consumer<Component> onShowing) {
+        this.onShowing = onShowing;
+    }
+
+    @Override
+    public void hierarchyChanged(HierarchyEvent event) {
+        Component component = event.getComponent();
+        if (component.isShowing()) {
+            component.removeHierarchyListener(this);
+            onShowing.accept(component);
         }
-    }
-
-    protected abstract boolean confirmAction(ActionEvent event);
-
-    protected abstract T performTask();
-
-    protected abstract void updateUI(T result);
-
-    protected boolean handleException(Throwable th) {
-        return false;
     }
 }
