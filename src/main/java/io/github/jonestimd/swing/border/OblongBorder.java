@@ -27,7 +27,14 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 
+import javax.swing.JComponent;
 import javax.swing.border.Border;
+import javax.swing.plaf.synth.ColorType;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthUI;
+import javax.swing.text.JTextComponent;
+
+import sun.swing.SwingUtilities2;
 
 /**
  * A line border drawn with semi-circles for the left and right sides of the component.
@@ -46,7 +53,7 @@ public class OblongBorder implements Border {
         g2d.setStroke(new BasicStroke(lineWidth));
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2d.setColor(c.getBackground());
+        g2d.setColor(getBackground(c));
         g2d.clearRect(x, y, height/2, height);
         g2d.clearRect(x+width-height/2, y, height/2, height);
         g2d.fillArc(x + lineWidth / 2, y + lineWidth / 2, height - lineWidth, height - lineWidth, 90, 180);
@@ -55,6 +62,18 @@ public class OblongBorder implements Border {
         g2d.setColor(lineColor);
         g2d.drawRoundRect(x+lineWidth/2, y+lineWidth/2, width-lineWidth, height-lineWidth, height, height);
         g2d.dispose();
+    }
+
+    private Color getBackground(Component c) {
+        if (c instanceof JTextComponent) {
+            JComponent jc = (JComponent) c;
+            Object ui = jc.getClientProperty(SwingUtilities2.COMPONENT_UI_PROPERTY_KEY);
+            if (ui instanceof SynthUI) {
+                SynthContext context = ((SynthUI) ui).getContext(jc);
+                return context.getStyle().getColor(context, ColorType.TEXT_BACKGROUND);
+            }
+        }
+        return c.getBackground();
     }
 
     @Override

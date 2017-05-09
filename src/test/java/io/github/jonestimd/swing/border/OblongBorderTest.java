@@ -29,6 +29,11 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 
+import javax.swing.JTextField;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthStyle;
+import javax.swing.plaf.synth.SynthTextFieldUI;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -36,6 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,6 +58,12 @@ public class OblongBorderTest {
     private Graphics2D g2d;
     @Mock
     private Component component;
+    @Mock
+    private SynthTextFieldUI synthUI;
+    @Mock
+    private SynthContext context;
+    @Mock
+    private SynthStyle style;
 
     @Test
     public void paint() throws Exception {
@@ -64,6 +76,51 @@ public class OblongBorderTest {
         verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
         verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         verify(g2d).setColor(component.getBackground());
+        verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
+        verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
+        verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
+        verify(g2d).fillArc(X + WIDTH - HEIGHT - LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, -90, 180);
+        verify(g2d).setColor(Color.black);
+        verify(g2d).drawRoundRect(X+LINE_WIDTH/2, Y+LINE_WIDTH/2, WIDTH-LINE_WIDTH, HEIGHT-LINE_WIDTH, HEIGHT, HEIGHT);
+        verify(g2d).dispose();
+    }
+
+    @Test
+    public void paintUsesTextBackgroundForTextField() throws Exception {
+        final JTextField textField = new JTextField();
+        when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
+
+        new OblongBorder(LINE_WIDTH, Color.black).paintBorder(textField, g, X, Y, WIDTH, HEIGHT);
+
+        verify(g).create(X, Y, WIDTH, HEIGHT);
+        verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
+        verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        verify(g2d).setColor(textField.getBackground());
+        verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
+        verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
+        verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
+        verify(g2d).fillArc(X + WIDTH - HEIGHT - LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, -90, 180);
+        verify(g2d).setColor(Color.black);
+        verify(g2d).drawRoundRect(X+LINE_WIDTH/2, Y+LINE_WIDTH/2, WIDTH-LINE_WIDTH, HEIGHT-LINE_WIDTH, HEIGHT, HEIGHT);
+        verify(g2d).dispose();
+    }
+
+    @Test
+    public void paintUsesTextBackgroundForTextFieldWithSynthUI() throws Exception {
+        final Color backgroundColor = new Color(1, 2, 3);
+        final JTextField textField = new JTextField();
+        textField.setUI(synthUI);
+        when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
+        when(synthUI.getContext(textField)).thenReturn(context);
+        when(context.getStyle()).thenReturn(style);
+        when(style.getColor(any(), any())).thenReturn(backgroundColor);
+
+        new OblongBorder(LINE_WIDTH, Color.black).paintBorder(textField, g, X, Y, WIDTH, HEIGHT);
+
+        verify(g).create(X, Y, WIDTH, HEIGHT);
+        verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
+        verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        verify(g2d).setColor(backgroundColor);
         verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
         verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
         verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
