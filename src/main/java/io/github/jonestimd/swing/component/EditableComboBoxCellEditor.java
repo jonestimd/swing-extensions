@@ -79,7 +79,7 @@ public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>
     }
 
     /**
-     * Populate {@code item} and maybe persist the it.  If {@code item} is persisted then it should also
+     * Populate {@code item} and maybe persist it.  If {@code item} is persisted then it should also
      * be added to the combo box list.
      * @param item the new item from the combo box editor
      * @return the updated item.
