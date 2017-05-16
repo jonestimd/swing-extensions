@@ -22,12 +22,12 @@
 package io.github.jonestimd.swing.component;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.jonestimd.AsyncTest;
@@ -64,7 +64,7 @@ public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
         AsyncTest.timeout(10000L, () -> editor.getComboBoxModel().getSize() == 5);
         SwingUtilities.invokeAndWait(() -> {
             checkModel(editor.getComboBoxModel(), selectedItem);
-            assertThat(editor.getCellEditorValue()).isSameAs(selectedItem);
+            assertThat(editor.getComboBoxModel().getSelectedItem()).isSameAs(selectedItem);
         });
     }
 
@@ -114,7 +114,6 @@ public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
         SwingUtilities.invokeAndWait(() -> {
             BeanListComboBox component = (BeanListComboBox) editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
             ((JTextField)component.getEditor().getEditorComponent()).setText("selected");
-            ((BeanListComboBoxEditor)component.getEditor()).getItem("selected");
 
             assertThat(editor.stopCellEditing()).isTrue();
 
@@ -124,19 +123,18 @@ public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
     }
 
     @Test
-    public void stopCellEditingReturnsTrueForUnsavedValue() throws Exception {
-        TestBean selectedItem = new TestBean("selected");
+    public void stopCellEditingReturnsFalseForUnsavedValue() throws Exception {
+        final String name = "new item";
         when(validator.validate(anyString())).thenReturn(null);
         TestEditor editor = new TestEditor();
         SwingUtilities.invokeAndWait(() -> {
             BeanListComboBox component = (BeanListComboBox) editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
-            ((JTextField)component.getEditor().getEditorComponent()).setText(selectedItem.name);
-            ((BeanListComboBoxEditor)component.getEditor()).getItem(selectedItem.name);
+            ((JTextField)component.getEditor().getEditorComponent()).setText(name);
 
             assertThat(editor.stopCellEditing()).isFalse();
 
-            assertThat(editor.getCellEditorValue()).isEqualTo(selectedItem);
-            assertThat(savedBean.name).isEqualTo(selectedItem.name);
+            assertThat(editor.getCellEditorValue()).isNull();
+            assertThat(savedBean.name).isEqualTo(name);
         });
     }
 

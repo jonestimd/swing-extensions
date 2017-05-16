@@ -45,7 +45,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
     private ComboBoxModel<T> model;
     private Format format;
     private PrefixSelector<T> prefixSelector;
-    private T newItem;
     private boolean autoSelecting = false;
     private DocumentListener documentHandler = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
@@ -87,38 +86,38 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         return autoSelecting;
     }
 
+    @Override
     public ValidatedTextField getEditorComponent() {
         return (ValidatedTextField) super.getEditorComponent();
     }
 
+    @Override
     public void setItem(Object anObject) {
         super.setItem(anObject == null ? null : format.format(anObject));
     }
 
+    @Override
     public T getItem() {
         return getItem((String) super.getItem());
     }
 
     public boolean isNew(Object item) {
-        return item == newItem;
+        return item != null && indexOf(format.format(item)) < 0;
     }
 
     @SuppressWarnings("unchecked")
     protected T getItem(String displayText) {
-        if (displayText != null && displayText.trim().length() > 0) {
+        if (displayText != null && displayText.length() > 0) {
             int index = indexOf(displayText);
-            return (T) (index >= 0 ? model.getElementAt(index) : parseInput(displayText));
+            return (index >= 0 ? model.getElementAt(index) : parseInput(displayText));
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private Object parseInput(String displayText) {
-        if (newItem != null && displayText.equals(format.format(newItem))) {
-            return newItem;
-        }
+    protected T parseInput(String displayText) {
         try {
-            return newItem = (T) format.parseObject(displayText);
+            return (T) format.parseObject(displayText);
         } catch (ParseException ex) {
             return null;
         }
@@ -186,12 +185,14 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         }
 
         // workaround for 4530952
+        @Override
         public void setText(String s) {
             if (!getText().equals(s)) {
                 super.setText(s);
             }
         }
 
+        @Override
         public void setBorder(Border b) {
             if (!(b instanceof UIResource)) {
                 super.setBorder(b);

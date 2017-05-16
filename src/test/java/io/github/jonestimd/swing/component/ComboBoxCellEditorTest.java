@@ -60,7 +60,7 @@ public class ComboBoxCellEditorTest {
 
         @Override
         public Object parseObject(String source, ParsePosition pos) {
-            pos.setIndex(source.length());
+            pos.setIndex(source.length() + 1);
             return new TestBean(source);
         }
     }

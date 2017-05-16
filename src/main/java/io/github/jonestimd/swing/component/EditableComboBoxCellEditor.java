@@ -32,6 +32,7 @@ import io.github.jonestimd.swing.validation.Validator;
  */
 public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>> extends BeanListComboBoxCellEditor<T> {
     private BeanListComboBoxEditor<T> editor;
+    private T value;
 
     @SuppressWarnings("unchecked")
     protected EditableComboBoxCellEditor(Format format, Validator<String> validator, String loadingMessage) {
@@ -59,23 +60,23 @@ public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>
      * @return true if the editor item is valid.
      */
     private boolean selectMatch() {
-        T editorItem = editor.getItem();
+        value = editor.getItem();
         if (editor.getEditorComponent().getValidationMessages() == null) {
-            if (editorItem != null && editor.isNew(editorItem)) {
-                return addNewItem(editorItem);
+            if (value != null && editor.isNew(value)) {
+                return addNewItem(value);
             }
-            getComboBoxModel().setSelectedItem(editorItem);
+            getComboBoxModel().setSelectedItem(value);
             return true;
         }
         return false;
     }
 
     private boolean addNewItem(T item) {
-        item = saveItem(item);
-        if (item != null) {
+        value = saveItem(item);
+        if (value != null) {
             editor.setItem(item);
         }
-        return item != null;
+        return value != null;
     }
 
     /**
@@ -88,6 +89,6 @@ public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>
 
     @Override
     public Object getCellEditorValue() {
-        return editor.getItem();
+        return value;
     }
 }
