@@ -21,10 +21,10 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.Component;
 import java.text.Format;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
@@ -35,16 +35,17 @@ import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.BackgroundTask;
+import io.github.jonestimd.util.Streams;
 
 /**
  * Provides a cell editor ({@link BeanListComboBox}) for selecting from a list of beans.
  * @param <T> list item class
  */
 public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>> extends ComboBoxCellEditor {
+    private enum LoadStatus {PENDING, IN_PROGRESS, DONE}
     private static final Logger logger = Logger.getLogger(BeanListComboBoxCellEditor.class.getName());
     private final String loadingMessage;
-    private boolean loading;
-    private List<T> items;
+    private LoadStatus status = LoadStatus.PENDING;
 
     /**
      * Create a combo box cell editor for an optional field.
@@ -88,11 +89,12 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     }
 
     public void setListItems(List<T> items) {
-        this.items = new ArrayList<>();
+        status = LoadStatus.DONE;
         addListItems(items);
     }
 
     public void addListItems(Collection<T> newItems) {
+        List<T> items = Streams.filter(getComboBoxModel(), Objects::nonNull);
         items.addAll(newItems);
         Collections.sort(items);
         getComboBoxModel().setElements(items, getComboBox().isEditable());
@@ -100,22 +102,18 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     }
 
     private void initializeList(JComponent container, T selectedValue) {
-        if (items == null) {
-            items = Collections.emptyList();
+        if (status == LoadStatus.PENDING) {
             new LoadComboBoxTask().run(container);
-            loading = true;
+            status = LoadStatus.IN_PROGRESS;
         }
-        if (loading) {
+        if (status == LoadStatus.IN_PROGRESS) {
             if (selectedValue != null) {
                 getComboBoxModel().addElement(selectedValue);
             }
         }
-        else {
-            setListItemsOnComboBox();
-        }
     }
 
-    private void setListItemsOnComboBox() {
+    private void setListItemsOnComboBox(List<T> items) {
         JComboBox comboBox = getComboBox();
         String editorText = comboBox.isEditable() ? ((JTextComponent)comboBox.getEditor().getEditorComponent()).getText() : "";
         BeanListModel<T> comboBoxModel = getComboBoxModel();
@@ -145,10 +143,9 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         }
 
         public void updateUI(List<T> comboBoxItems) {
-            items = comboBoxItems;
             logger.fine("loaded combo box values");
-            loading = false;
-            setListItemsOnComboBox();
+            status = LoadStatus.DONE;
+            setListItemsOnComboBox(comboBoxItems);
             // resize the list box
             if (getComboBox().isShowing()) {
                 getComboBox().setPopupVisible(false);
