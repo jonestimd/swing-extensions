@@ -19,6 +19,7 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -93,13 +94,13 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
      * Overridden to reset change tracking and validation.
      */
     @Override
-    public void fireTableDataChanged() {
+    public void setBeans(Collection<H> beans) {
         changeTracker.reset();
         errors.clear();
+        super.setBeans(beans);
         for (int i = 0; i < getBeanCount(); i++) {
             updateGroupValidation(i);
         }
-        super.fireTableDataChanged();
     }
 
     /**
