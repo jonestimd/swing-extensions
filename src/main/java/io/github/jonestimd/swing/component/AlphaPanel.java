@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +24,23 @@ package io.github.jonestimd.swing.component;
 import java.awt.AlphaComposite;
 import java.awt.Component;
 import java.awt.Composite;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 /**
  * Extends {@link JComponent} to fill the bounds using the background color at a specified transparency.
  */
 public class AlphaPanel extends JComponent {
+    public static final float GLASS_PANE_ALPHA = 0.5f;
 
     private float alpha;
 
@@ -68,5 +77,29 @@ public class AlphaPanel extends JComponent {
             ((JComponent)comp).setOpaque(true);
         }
         super.addImpl(comp, constraints, index);
+    }
+
+    /**
+     * Create an {@link AlphaPanel} to use as a glass pane on a window.  When visible, the panel will display the
+     * status message component and block input on the window.
+     * @param statusMessage the component for displaying messages
+     */
+    public static AlphaPanel createStatusPane(JComponent statusMessage) {
+        AlphaPanel statusPane = new AlphaPanel(new GridBagLayout(), GLASS_PANE_ALPHA) {
+            @Override
+            protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+                super.processKeyBinding(ks, e, condition, pressed);
+                // block keyboard events when glass pane is visible
+                return true;
+            }
+        };
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.CENTER;
+        statusPane.add(statusMessage, gbc);
+        // block mouse events when glass pane is visible
+        MouseAdapter mouseAdapter = new MouseAdapter() {};
+        statusPane.addMouseListener(mouseAdapter);
+        statusPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        return statusPane;
     }
 }

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +23,10 @@ package io.github.jonestimd.swing.window;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +37,6 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.KeyStroke;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -80,7 +76,7 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
         this.resourcePrefix = resourcePrefix;
         setIcons(bundle, SMALL_ICON_RESOURCE_KEY, LARGE_ICON_RESOURCE_KEY);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        createGlassPane();
+        setGlassPane(AlphaPanel.createStatusPane(statusMessageLabel));
         statusMessageLabel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(5, 5, 5, 5)));
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", this::focusChanged);
     }
@@ -105,25 +101,6 @@ public class StatusFrame extends JFrame implements StatusIndicator, UnsavedChang
         if (! icons.isEmpty()) {
             setIconImages(icons);
         }
-    }
-
-    private void createGlassPane() {
-        AlphaPanel glassPane = new AlphaPanel(new GridBagLayout(), GLASS_PANE_ALPHA) {
-            @Override
-            protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-                super.processKeyBinding(ks, e, condition, pressed);
-                // block keyboard events when glass pane is visible
-                return true;
-            }
-        };
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.CENTER;
-        glassPane.add(statusMessageLabel, gbc);
-        // block mouse events when glass pane is visible
-        MouseAdapter mouseAdapter = new MouseAdapter() {};
-        glassPane.addMouseListener(mouseAdapter);
-        glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        setGlassPane(glassPane);
     }
 
     @Override

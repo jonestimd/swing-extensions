@@ -60,7 +60,7 @@ public class DeferredStatusIndicatorTest {
     }
 
     @Test
-    public void dispaysStatusMessageWhenAlreadyShowing() throws Exception {
+    public void displaysStatusMessageWhenAlreadyShowing() throws Exception {
         String message = "message";
         DeferredStatusIndicator indicator = new DeferredStatusIndicator(component);
         verify(component).addHierarchyListener(listenerCaptor.capture());
