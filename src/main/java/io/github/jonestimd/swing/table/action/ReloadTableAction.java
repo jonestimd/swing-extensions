@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +53,9 @@ public abstract class ReloadTableAction<T> extends BackgroundAction<List<T>> {
         int selectedRow = Math.max(0, table.getSelectedRow());
         int selectedColumn = Math.max(0, table.getSelectedColumn());
         tableModel.setBeans(rows);
-        if (! rows.isEmpty()) {
-            selectedRow = Math.min(selectedRow, rows.size()-1);
+        int rowCount = table.getRowCount();
+        if (rowCount > 0) {
+            selectedRow = Math.min(selectedRow, rowCount -1);
             table.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
             table.getColumnModel().getSelectionModel().setSelectionInterval(selectedColumn, selectedColumn);
         }
