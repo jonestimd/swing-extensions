@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +62,7 @@ public class ComponentFactory {
     public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
     public static final char NO_MNEMONIC = ' ';
     public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
+    public static final String TOOLBAR_BUTTON_ACTION_KEY = "doClick";
 
     protected final ResourceBundle bundle;
 
@@ -168,23 +171,25 @@ public class ComponentFactory {
     }
 
     private static <T extends AbstractButton> T initToolbarButton(Action action, T button) {
-        StringBuilder tooltip = new StringBuilder(button.getText());
+        String tooltip = button.getText();
         KeyStroke accelerator = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
         if (accelerator != null) {
-            tooltip.append(" (");
+            button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, TOOLBAR_BUTTON_ACTION_KEY);
+            button.getActionMap().put(TOOLBAR_BUTTON_ACTION_KEY, action);
+            StringBuilder acceleratorKey = new StringBuilder();
             if (accelerator.getModifiers() > 0) {
-                tooltip.append(KeyEvent.getKeyModifiersText(accelerator.getModifiers()));
-                tooltip.append(ACCELERATOR_DELIMITER);
+                acceleratorKey.append(KeyEvent.getKeyModifiersText(accelerator.getModifiers()));
+                acceleratorKey.append(ACCELERATOR_DELIMITER);
             }
             if (accelerator.getKeyCode() != 0) {
-                tooltip.append(KeyEvent.getKeyText(accelerator.getKeyCode()));
+                acceleratorKey.append(KeyEvent.getKeyText(accelerator.getKeyCode()));
             }
             else {
-                tooltip.append(accelerator.getKeyChar());
+                acceleratorKey.append(accelerator.getKeyChar());
             }
-            tooltip.append(')');
+            tooltip += String.format(DEFAULT_BUNDLE.getString("button.tooltip.accelerator.format"), acceleratorKey.toString());
         }
-        button.setToolTipText(tooltip.toString());
+        button.setToolTipText(tooltip);
         button.setText(null);
         button.setFocusable(false);
         return button;

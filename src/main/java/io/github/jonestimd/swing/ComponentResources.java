@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +30,7 @@ public class ComponentResources extends ListResourceBundle {
     @Override
     protected Object[][] getContents() {
         return new Object[][] {
+            { "button.tooltip.accelerator.format", " (%s)" },
             { "filter.iconImage", new ImageIcon(getClass().getResource("/io/github/jonestimd/swing/component/filter.png")) },
             { "filter.invalid.background", new Color(255, 210, 210) },
 

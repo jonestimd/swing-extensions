@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.util.JavaPredicates;
 import org.junit.Test;
 
+import static io.github.jonestimd.swing.ComponentFactory.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -184,22 +185,28 @@ public class ComponentFactoryTest {
     public void newToolbarButtonShowsAcceleratorInTooltipForTypedKey() throws Exception {
         Action action = mock(Action.class);
         when(action.getValue(Action.NAME)).thenReturn("action");
-        when(action.getValue(Action.ACCELERATOR_KEY)).thenReturn(KeyStroke.getKeyStroke("typed B"));
+        KeyStroke keyStroke = KeyStroke.getKeyStroke("typed B");
+        when(action.getValue(Action.ACCELERATOR_KEY)).thenReturn(keyStroke);
 
         JButton button = ComponentFactory.newToolbarButton(action);
 
         assertThat(button.getToolTipText()).isEqualTo("action (B)");
+        assertThat(button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).get(keyStroke)).isEqualTo(TOOLBAR_BUTTON_ACTION_KEY);
+        assertThat(button.getActionMap().get(TOOLBAR_BUTTON_ACTION_KEY)).isSameAs(action);
     }
 
     @Test
     public void newToolbarButtonWithModifierShowsAcceleratorInTooltip1() throws Exception {
         Action action = mock(Action.class);
         when(action.getValue(Action.NAME)).thenReturn("action");
-        when(action.getValue(Action.ACCELERATOR_KEY)).thenReturn(KeyStroke.getKeyStroke("ctrl B"));
+        KeyStroke keyStroke = KeyStroke.getKeyStroke("ctrl B");
+        when(action.getValue(Action.ACCELERATOR_KEY)).thenReturn(keyStroke);
 
         JButton button = ComponentFactory.newToolbarButton(action);
 
         assertThat(button.getToolTipText()).isEqualTo("action (Ctrl-B)");
+        assertThat(button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).get(keyStroke)).isEqualTo(TOOLBAR_BUTTON_ACTION_KEY);
+        assertThat(button.getActionMap().get(TOOLBAR_BUTTON_ACTION_KEY)).isSameAs(action);
     }
 
     @Test
