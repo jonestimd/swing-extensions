@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +34,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.google.common.base.MoreObjects;
-import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.action.CancelAction;
-
-import static io.github.jonestimd.swing.ComponentFactory.*;
 
 /**
  * Display an exception with its stack trace.
@@ -49,22 +49,22 @@ public class ExceptionDialog extends MessageDialog {
     }
 
     /**
-     * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
+     * Construct an exception dialog using {@link ComponentResources#BUNDLE}.
      */
     public ExceptionDialog(Window owner, Throwable exception) {
-        this(owner, DEFAULT_BUNDLE, DEFAULT_RESOURCE_PREFIX, exception);
+        this(owner, ComponentResources.BUNDLE, DEFAULT_RESOURCE_PREFIX, exception);
     }
 
     /**
-     * Construct an exception dialog using {@link ComponentFactory#DEFAULT_BUNDLE}.
+     * Construct an exception dialog using {@link ComponentResources#BUNDLE}.
      */
     public ExceptionDialog(Window owner, String label, Throwable exception) {
-        this(owner, DEFAULT_BUNDLE, DEFAULT_RESOURCE_PREFIX, label, exception);
+        this(owner, ComponentResources.BUNDLE, DEFAULT_RESOURCE_PREFIX, label, exception);
     }
 
     /**
      * Construct an exception dialog using the specified resource bundle with fallback to
-     * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
+     * {@link ComponentResources#BUNDLE} for missing values.
      */
     public ExceptionDialog(Window owner, ResourceBundle bundle, String resourcePrefix, Throwable exception) {
         this(owner, bundle, resourcePrefix, getString(bundle, resourcePrefix, "exception.label"), exception);
@@ -72,7 +72,7 @@ public class ExceptionDialog extends MessageDialog {
 
     /**
      * Construct an exception dialog using the specified resource bundle with fallback to
-     * {@link ComponentFactory#DEFAULT_BUNDLE} for missing values.
+     * {@link ComponentResources#BUNDLE} for missing values.
      */
     public ExceptionDialog(Window owner, ResourceBundle bundle, String resourcePrefix, String label, Throwable exception) {
         super(owner, getString(bundle, resourcePrefix, "title"), ModalityType.APPLICATION_MODAL);
@@ -98,7 +98,7 @@ public class ExceptionDialog extends MessageDialog {
         try {
             return Integer.parseInt(bundle.getObject(MoreObjects.firstNonNull(resourcePrefix, "") + key).toString());
         } catch (Exception ex) {
-            return (int) DEFAULT_BUNDLE.getObject(DEFAULT_RESOURCE_PREFIX + key);
+            return ComponentResources.getInt(DEFAULT_RESOURCE_PREFIX + key);
         }
     }
 
@@ -106,7 +106,7 @@ public class ExceptionDialog extends MessageDialog {
         try {
             return bundle.getString(MoreObjects.firstNonNull(resourcePrefix, "") + key);
         } catch (Exception ex) {
-            return DEFAULT_BUNDLE.getString(DEFAULT_RESOURCE_PREFIX + key);
+            return ComponentResources.BUNDLE.getString(DEFAULT_RESOURCE_PREFIX + key);
         }
     }
 }

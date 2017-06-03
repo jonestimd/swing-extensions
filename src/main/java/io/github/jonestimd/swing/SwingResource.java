@@ -25,8 +25,6 @@ import java.awt.Color;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import static io.github.jonestimd.swing.ComponentFactory.*;
-
 public enum SwingResource {
     BUTTON_TOOLTIP_ACCELERATOR_FORMAT,
     FILTER_OPERATOR_SYMBOL_AND,
@@ -49,7 +47,7 @@ public enum SwingResource {
     }
 
     public String getString() {
-        return DEFAULT_BUNDLE.getString(key);
+        return ComponentResources.BUNDLE.getString(key);
     }
 
     public char getChar(ResourceBundle bundle) {
@@ -62,7 +60,7 @@ public enum SwingResource {
     }
 
     public char getChar() {
-        return (char) DEFAULT_BUNDLE.getObject(key);
+        return (char) ComponentResources.BUNDLE.getObject(key);
     }
 
     public Color getColor(ResourceBundle bundle) {
@@ -75,10 +73,10 @@ public enum SwingResource {
     }
 
     public Color getColor() {
-        return (Color) DEFAULT_BUNDLE.getObject(key);
+        return (Color) ComponentResources.BUNDLE.getObject(key);
     }
 
     public static String getString(String key) {
-        return DEFAULT_BUNDLE.getString(key);
+        return ComponentResources.BUNDLE.getString(key);
     }
 }

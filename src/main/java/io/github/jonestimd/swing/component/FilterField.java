@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.PrimitiveIterator.OfInt;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -38,6 +39,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.DocumentConsumerAdapter;
 import io.github.jonestimd.swing.SwingResource;
 import io.github.jonestimd.swing.filter.BasicFilterParser;
@@ -46,8 +48,6 @@ import io.github.jonestimd.swing.filter.FilterSource;
 import io.github.jonestimd.swing.table.sort.BeanModelRowSorter;
 import io.github.jonestimd.util.Resources;
 import io.github.jonestimd.util.Streams;
-
-import static io.github.jonestimd.swing.ComponentFactory.*;
 
 /**
  * A text pane that allows the user to enter a filter expression.  When the text changes it is parsed by a
@@ -67,10 +67,6 @@ import static io.github.jonestimd.swing.ComponentFactory.*;
 public class FilterField<T> extends JTextPane implements FilterSource {
     /** Property name for predicate property change events. */
     public static final String PREDICATE_PROPERTY = "FilterField.predicate";
-    private static final String OPERATOR_KEYS = Resources.join(DEFAULT_BUNDLE, "filter.operator.key.");
-    private static final String SYMBOLS = Resources.join(DEFAULT_BUNDLE, "filter.operator.symbol.");
-    private static final char GROUP_START = (char) SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_START.getChar();
-    private static final char GROUP_END = (char) SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_END.getChar();
     private final Style plainStyle = getStyle("default");
     private final Style boldStyle = addStyle("bold", plainStyle);
     private final HighlightPainter highlightPainter = new DefaultHighlightPainter(Color.CYAN);
@@ -80,6 +76,10 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     private final Color normalBackground;
     private final Color errorBackground;
     private Predicate<T> predicate;
+    private final String operatorKeys;
+    private final String operatorSymbols;
+    private final char groupStart;
+    private final char groupEnd;
 
     /**
      * Construct a filter field using {@link BasicFilterParser}.
@@ -87,7 +87,17 @@ public class FilterField<T> extends JTextPane implements FilterSource {
      * @param errorBackground the background color to use when parsing fails
      */
     public FilterField(Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
-        this(new BasicFilterParser<>(predicateFactory), errorBackground);
+        this(ComponentResources.BUNDLE, predicateFactory, errorBackground);
+    }
+
+    /**
+     * Construct a filter field using {@link BasicFilterParser}.
+     * @param bundle provides filter operator keys and symbols
+     * @param predicateFactory a function for creating a predicate for a single term
+     * @param errorBackground the background color to use when parsing fails
+     */
+    public FilterField(ResourceBundle bundle, Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
+        this(bundle, new BasicFilterParser<>(predicateFactory), errorBackground);
     }
 
     /**
@@ -96,9 +106,23 @@ public class FilterField<T> extends JTextPane implements FilterSource {
      * @param errorBackground the background color to use when parsing fails
      */
     public FilterField(FilterParser<T> filterParser, Color errorBackground) {
+        this(ComponentResources.BUNDLE, filterParser, errorBackground);
+    }
+
+    /**
+     * Construct a filter field using the specified {@code filterParser}.
+     * @param bundle provides filter operator keys and symbols
+     * @param filterParser the filter parser
+     * @param errorBackground the background color to use when parsing fails
+     */
+    public FilterField(ResourceBundle bundle, FilterParser<T> filterParser, Color errorBackground) {
         this.filterParser = filterParser;
         this.normalBackground = getBackground();
         this.errorBackground = errorBackground;
+        this.operatorKeys = Resources.join(ComponentResources.BUNDLE, "filter.operator.key.");
+        this.operatorSymbols = Resources.join(ComponentResources.BUNDLE, "filter.operator.symbol.");
+        this.groupStart = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_START.getChar();
+        this.groupEnd = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_END.getChar();
         StyleConstants.setBold(boldStyle, true);
         StyleConstants.setForeground(boldStyle, Color.BLUE);
         addCaretListener(this::caretUpdate);
@@ -114,10 +138,10 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         if (dot > 0) {
             try {
                 if (getText(dot - 1, 1).equals("(") && isOperator(dot - 1)) {
-                    highlight(IntStream.range(dot, getText().length()).iterator(), GROUP_END, GROUP_START);
+                    highlight(IntStream.range(dot, getText().length()).iterator(), groupEnd, groupStart);
                 }
                 else if (getText(dot - 1, 1).equals(")") && isOperator(dot - 1)) {
-                    highlight(Streams.reverseRange(dot - 1, 0).iterator(), GROUP_START, GROUP_END);
+                    highlight(Streams.reverseRange(dot - 1, 0).iterator(), groupStart, groupEnd);
                 }
             } catch (BadLocationException e) {
                 throw new RuntimeException(e);
@@ -166,10 +190,10 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     @Override
     protected void processComponentKeyEvent(KeyEvent e) {
         if (e.getID() == KeyEvent.KEY_TYPED) {
-            int index = OPERATOR_KEYS.indexOf(e.getKeyChar());
+            int index = operatorKeys.indexOf(e.getKeyChar());
             if (index >= 0 && e.isControlDown()) {
                 setInputAttributes(boldStyle);
-                replaceSelection(SYMBOLS.substring(index, index + 1));
+                replaceSelection(operatorSymbols.substring(index, index + 1));
                 setInputAttributes(plainStyle);
                 e.consume();
             }

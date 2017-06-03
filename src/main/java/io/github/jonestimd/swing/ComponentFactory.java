@@ -59,7 +59,6 @@ import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.swing.component.IconBorder.Side;
 
 public class ComponentFactory {
-    public static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("io.github.jonestimd.swing.ComponentResources");
     public static final char NO_MNEMONIC = ' ';
     public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
     public static final String TOOLBAR_BUTTON_ACTION_KEY = "doClick";
@@ -67,7 +66,7 @@ public class ComponentFactory {
     protected final ResourceBundle bundle;
 
     public ComponentFactory() {
-        this(DEFAULT_BUNDLE);
+        this(ComponentResources.BUNDLE);
     }
 
     public ComponentFactory(ResourceBundle bundle) {
@@ -75,28 +74,13 @@ public class ComponentFactory {
     }
 
     /**
-     * Get a string value from the resource bundle with fallback to {@link #DEFAULT_BUNDLE}.
+     * Get a string value from the resource bundle with fallback to {@link ComponentResources#BUNDLE}.
      * @param key the resource key
-     * @return the value from the resource bundle if it exists, otherwise the value from {@link #DEFAULT_BUNDLE}
+     * @return the value from the resource bundle if it exists, otherwise the value from {@link ComponentResources#BUNDLE}
      * @throws MissingResourceException if the key is not defined in either bundle
      */
     public String getString(String key) {
-        return getString(bundle, key);
-    }
-
-    /**
-     * Get a string value from a resource bundle with fallback to {@link #DEFAULT_BUNDLE}.
-     * @param bundle the resource bundle
-     * @param key the resource key
-     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #DEFAULT_BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
-     */
-    public static String getString(ResourceBundle bundle, String key) {
-        try {
-            return bundle.getString(key);
-        } catch (MissingResourceException ex) {
-            return DEFAULT_BUNDLE.getString(key);
-        }
+        return ComponentResources.getString(bundle, key);
     }
 
     public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {

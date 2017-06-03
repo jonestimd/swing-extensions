@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import static io.github.jonestimd.swing.ComponentFactory.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class CalendarPanelTest {
@@ -142,7 +142,7 @@ public class CalendarPanelTest {
         assertThat(component.getBackground()).isEqualTo(table.getSelectionBackground());
         assertThat(component.getForeground()).isEqualTo(table.getSelectionForeground());
         assertThat(component.getBorder()).isInstanceOf(LineBorder.class);
-        assertThat(((LineBorder) component.getBorder()).getLineColor()).isEqualTo(DEFAULT_BUNDLE.getObject("calendarPanel.selected.border"));
+        assertThat(((LineBorder) component.getBorder()).getLineColor()).isEqualTo(ComponentResources.BUNDLE.getObject("calendarPanel.selected.border"));
     }
 
     @Test
@@ -153,8 +153,8 @@ public class CalendarPanelTest {
 
         JComponent component = (JComponent) renderer.getTableCellRendererComponent(table, startOfWeek(date), false, false, 0, 0);
 
-        assertThat(component.getBackground()).isEqualTo(DEFAULT_BUNDLE.getObject("calendarPanel.month.adjacent.background"));
-        assertThat(component.getForeground()).isEqualTo(DEFAULT_BUNDLE.getObject("calendarPanel.month.adjacent.foreground"));
+        assertThat(component.getBackground()).isEqualTo(ComponentResources.BUNDLE.getObject("calendarPanel.month.adjacent.background"));
+        assertThat(component.getForeground()).isEqualTo(ComponentResources.BUNDLE.getObject("calendarPanel.month.adjacent.foreground"));
         assertThat(component.getBorder()).isInstanceOf(EmptyBorder.class);
     }
 
@@ -166,8 +166,8 @@ public class CalendarPanelTest {
 
         JComponent component = (JComponent) renderer.getTableCellRendererComponent(table, date, false, false, 0, 0);
 
-        assertThat(component.getBackground()).isEqualTo(DEFAULT_BUNDLE.getObject("calendarPanel.month.background"));
-        assertThat(component.getForeground()).isEqualTo(DEFAULT_BUNDLE.getObject("calendarPanel.month.foreground"));
+        assertThat(component.getBackground()).isEqualTo(ComponentResources.BUNDLE.getObject("calendarPanel.month.background"));
+        assertThat(component.getForeground()).isEqualTo(ComponentResources.BUNDLE.getObject("calendarPanel.month.foreground"));
         assertThat(component.getBorder()).isInstanceOf(EmptyBorder.class);
     }
 

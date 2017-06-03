@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +22,11 @@
 package io.github.jonestimd.swing.dialog;
 
 import java.awt.Container;
+import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
 
-import static io.github.jonestimd.swing.ComponentFactory.*;
+import io.github.jonestimd.swing.ComponentResources;
 
 /**
  * Factory class for common dialogs.
@@ -35,12 +38,22 @@ public class Dialogs {
      * @return true if the user chose to discard unsaved data
      */
     public static boolean confirmDiscardChanges(Container owner) {
+        return confirmDiscardChanges(ComponentResources.BUNDLE, owner);
+    }
+
+    /**
+     * Display a dialog to confirm closing a window with unsaved data.
+     * @param bundle provides title and button text
+     * @param owner the owner for the dialog (e.g. the window being closed)
+     * @return true if the user chose to discard unsaved data
+     */
+    public static boolean confirmDiscardChanges(ResourceBundle bundle, Container owner) {
         String[] options = {
-                DEFAULT_BUNDLE.getString("confirm.unsavedChanges.option.confirm"),
-                DEFAULT_BUNDLE.getString("confirm.unsavedChanges.option.cancel")
+                bundle.getString("confirm.unsavedChanges.option.confirm"),
+                bundle.getString("confirm.unsavedChanges.option.cancel")
         };
-        return JOptionPane.showOptionDialog(owner, DEFAULT_BUNDLE.getString("confirm.unsavedChanges.message"),
-                DEFAULT_BUNDLE.getString("confirm.unsavedChanges.title"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE,
+        return JOptionPane.showOptionDialog(owner, bundle.getString("confirm.unsavedChanges.message"),
+                bundle.getString("confirm.unsavedChanges.title"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE,
                 null, options, options[1]) == JOptionPane.OK_OPTION;
     }
 }

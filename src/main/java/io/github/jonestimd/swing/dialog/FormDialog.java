@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +40,7 @@ import javax.swing.border.EmptyBorder;
 
 import io.github.jonestimd.swing.ButtonBarFactory;
 import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.action.CancelAction;
 import io.github.jonestimd.swing.action.MnemonicAction;
 import io.github.jonestimd.swing.validation.FieldChangeTracker;
@@ -70,7 +73,7 @@ public class FormDialog extends MessageDialog {
 
     public FormDialog(Window owner, String title, ModalityType modalityType, ResourceBundle bundle) {
         super(owner, title, modalityType);
-        this.saveAction = new MnemonicAction(ComponentFactory.getString(bundle, "action.save.mnemonicAndName")) {
+        this.saveAction = new MnemonicAction(ComponentResources.getString(bundle, "action.save.mnemonicAndName")) {
             public void actionPerformed(ActionEvent e) {
                 onSave();
             }

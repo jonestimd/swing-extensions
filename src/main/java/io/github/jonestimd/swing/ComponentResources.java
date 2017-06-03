@@ -23,6 +23,8 @@ package io.github.jonestimd.swing;
 
 import java.awt.Color;
 import java.util.ListResourceBundle;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 
@@ -30,6 +32,27 @@ import static io.github.jonestimd.swing.SwingResource.*;
 
 @SuppressWarnings({"MagicCharacter", "MagicNumber"})
 public class ComponentResources extends ListResourceBundle {
+    public static final ResourceBundle BUNDLE = ResourceBundle.getBundle(ComponentResources.class.getName());
+
+    /**
+     * Get a string value from a resource bundle with fallback to {@link #BUNDLE}.
+     * @param bundle the resource bundle
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public static String getString(ResourceBundle bundle, String key) {
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException ex) {
+            return ComponentResources.BUNDLE.getString(key);
+        }
+    }
+
+    public static int getInt(String key) {
+        return (int) BUNDLE.getObject(key);
+    }
+
     @Override
     protected Object[][] getContents() {
         return new Object[][] {

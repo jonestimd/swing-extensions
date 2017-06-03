@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +30,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 import javax.swing.JFormattedTextField;
 
-import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 
 /**
  * The border for a {@link DateField}.  This border contains a calendar "button" that allows the user to select a
@@ -39,16 +42,20 @@ import io.github.jonestimd.swing.ComponentFactory;
  */
 public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextField, CalendarPanel> {
     public CalendarButtonBorder(JFormattedTextField textField) {
-        this(textField, new CalendarPanel((Date) textField.getValue()));
-        setTooltip(ComponentFactory.DEFAULT_BUNDLE.getString("calendar.button.tooltip"));
+        this(textField, ComponentResources.BUNDLE);
     }
 
-    private CalendarButtonBorder(final JFormattedTextField textField, final CalendarPanel calendarPanel) {
+    public CalendarButtonBorder(JFormattedTextField textField, ResourceBundle bundle) {
+        this(textField, new CalendarPanel((Date) textField.getValue()), bundle);
+    }
+
+    private CalendarButtonBorder(final JFormattedTextField textField, final CalendarPanel calendarPanel, ResourceBundle bundle) {
         super(textField, calendarPanel, Side.RIGHT);
         calendarPanel.addPropertyChangeListener(CalendarPanel.DATE_PROPERTY, event -> {
             textField.setValue(event.getNewValue());
             hidePopup();
         });
+        setTooltip(bundle.getString("calendar.button.tooltip"));
     }
 
     @Override

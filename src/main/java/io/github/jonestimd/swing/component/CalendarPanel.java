@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +55,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 
 /**
  * A panel that displays a calendar for selecting a date.  The calendar shows a single month and indicates the current
@@ -105,7 +107,7 @@ public class CalendarPanel extends Box {
     private JTable calendarTable;
 
     public CalendarPanel(Date initialValue) {
-        this(ComponentFactory.DEFAULT_BUNDLE, initialValue);
+        this(ComponentResources.BUNDLE, initialValue);
     }
 
     public CalendarPanel(ResourceBundle bundle, Date initialValue) {
@@ -241,14 +243,13 @@ public class CalendarPanel extends Box {
         return calendar.getTime();
     }
 
-    private Calendar updateNavigationCalendar(Date date) {
+    private void updateNavigationCalendar(Date date) {
         navigationCalendar.setTime(date);
         navigationCalendar.set(Calendar.DATE, 1);
         navigationCalendar.set(Calendar.HOUR_OF_DAY, 0);
         navigationCalendar.set(Calendar.MINUTE, 0);
         navigationCalendar.set(Calendar.SECOND, 0);
         navigationCalendar.set(Calendar.MILLISECOND, 0);
-        return navigationCalendar;
     }
 
     private class MonthHandler implements PreviousNextListener {

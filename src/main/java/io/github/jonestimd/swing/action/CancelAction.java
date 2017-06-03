@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +25,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -33,7 +36,7 @@ import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.WindowConstants;
 
-import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 
 public class CancelAction extends AbstractAction {
     private static final String CLOSE = "close";
@@ -42,8 +45,12 @@ public class CancelAction extends AbstractAction {
     private boolean cancelled = false;
 
     public static CancelAction install(JDialog dialog) {
+        return install(ComponentResources.BUNDLE, dialog);
+    }
+
+    public static CancelAction install(ResourceBundle bundle, JDialog dialog) {
         dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        return initialize(dialog, new CancelAction(dialog));
+        return initialize(dialog, new CancelAction(bundle, dialog));
     }
 
     protected static <T extends Window & RootPaneContainer> CancelAction initialize(T window, CancelAction action) {
@@ -54,8 +61,8 @@ public class CancelAction extends AbstractAction {
         return action;
     }
 
-    protected CancelAction(Window window) {
-        super(ComponentFactory.DEFAULT_BUNDLE.getString("action.cancel.name"));
+    protected CancelAction(ResourceBundle bundle, Window window) {
+        super(bundle.getString("action.cancel.name"));
         this.window = window;
         window.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {

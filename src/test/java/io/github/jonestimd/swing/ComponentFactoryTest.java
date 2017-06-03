@@ -251,7 +251,7 @@ public class ComponentFactoryTest {
 
         field.setText("invalid");
 
-        assertThat(field.getBackground()).isEqualTo(ComponentFactory.DEFAULT_BUNDLE.getObject("filter.invalid.background"));
+        assertThat(field.getBackground()).isEqualTo(ComponentResources.BUNDLE.getObject("filter.invalid.background"));
         field.setText("");
         assertThat(field.getBackground()).isEqualTo(background);
     }
