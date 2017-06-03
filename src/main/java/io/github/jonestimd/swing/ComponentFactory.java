@@ -128,11 +128,7 @@ public class ComponentFactory {
         statusArea.setRows(rows);
         statusArea.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED), new EmptyBorder(2, 2, 2, 2)));
         statusArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, statusArea.getHeight()));
-        try {
-            statusArea.setBackground(ColorFactory.createColor(bundle.getString(SwingResource.VALIDATION_MESSAGE_BACKGROUND.key())));
-        } catch (MissingResourceException ex) {
-            statusArea.setBackground((Color) DEFAULT_BUNDLE.getObject(SwingResource.VALIDATION_MESSAGE_BACKGROUND.key()));
-        }
+        statusArea.setBackground(SwingResource.VALIDATION_MESSAGE_BACKGROUND.getColor(bundle));
         return statusArea;
     }
 
@@ -187,7 +183,7 @@ public class ComponentFactory {
             else {
                 acceleratorKey.append(accelerator.getKeyChar());
             }
-            tooltip += String.format(DEFAULT_BUNDLE.getString("button.tooltip.accelerator.format"), acceleratorKey.toString());
+            tooltip += String.format(SwingResource.BUTTON_TOOLTIP_ACCELERATOR_FORMAT.getString(), acceleratorKey.toString());
         }
         button.setToolTipText(tooltip);
         button.setText(null);

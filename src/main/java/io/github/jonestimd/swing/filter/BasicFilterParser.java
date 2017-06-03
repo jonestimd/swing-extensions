@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import io.github.jonestimd.swing.SwingResource;
+
 /**
  * A {@link FilterParser} that generates a compound predicate from the filter text.  The filter text may contain terms
  * separated by logical operators.  The following logical operators are supported.  The operators are listed in the
@@ -34,11 +38,16 @@ import java.util.function.Predicate;
  *   <li>grouping: ()</li>
  *   <li>not: !</li>
  *   <li>and: &amp;</li>
- *   <li>or: | or &#x2502;</li>
+ *   <li>or: &#x2502;</li>
  * </ul>
  * <strong>Note:</strong>  This class is not thread safe.  It is intended for use on the Swing event thread.
  */
 public class BasicFilterParser<T> implements FilterParser<T> {
+    private static final char AND = SwingResource.FILTER_OPERATOR_SYMBOL_AND.getChar();
+    private static final char OR = SwingResource.FILTER_OPERATOR_SYMBOL_OR.getChar();
+    private static final char NOT = SwingResource.FILTER_OPERATOR_SYMBOL_NOT.getChar();
+    private static final char GROUP_START = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_START.getChar();
+    private static final char GROUP_END = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_END.getChar();
     private final Function<String, Predicate<T>> predicateFactory;
     private final StringBuilder buffer = new StringBuilder();
     private List<Operation<T>> stack = new LinkedList<>();
@@ -61,31 +70,18 @@ public class BasicFilterParser<T> implements FilterParser<T> {
         String text = source.getText();
         for (int i = 0; i < text.length(); i++) {
             if (source.isOperator(i)) {
-                switch (text.charAt(i)) {
-                    case '&':
-                        squashStack(getTerm(), Operator.And);
-                        break;
-                    case '\u2502':
-                    case '|':
-                        squashStack(getTerm(), Operator.Or);
-                        break;
-                    case '!':
-                        stack.add(0, Operation.not());
-                        break;
-                    case '(':
-                        stack.add(0, Operation.group());
-                        break;
-                    case ')':
-                        closeParenthesis();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("unknown operator: " + text.charAt(i));
-                }
+                if (text.charAt(i) == AND) squashStack(Operator.And);
+                else if (text.charAt(i) == OR) squashStack(Operator.Or);
+                else if (text.charAt(i) == NOT) stack.add(0, Operation.not());
+                else if (text.charAt(i) == GROUP_START) stack.add(0, Operation.group());
+                else if (text.charAt(i) == GROUP_END) closeParenthesis();
+                else throw new IllegalArgumentException("unknown operator: " + text.charAt(i));
             }
             else {
                 buffer.append(text.charAt(i));
             }
         }
+        if (buffer.toString().trim().isEmpty() && groupTerm == null && stack.isEmpty()) return null;
         Predicate<T> predicate = getTerm();
         while (! stack.isEmpty()) predicate = pop(predicate);
         return predicate;
@@ -125,7 +121,8 @@ public class BasicFilterParser<T> implements FilterParser<T> {
         return new IllegalStateException(s);
     }
 
-    private void squashStack(Predicate<T> leftTerm, Operator operator) {
+    private void squashStack(Operator operator) {
+        Predicate<T> leftTerm = getTerm();
         while (! stack.isEmpty() && stack.get(0).operator.preceeds(operator)) leftTerm = pop(leftTerm);
         stack.add(0, operator.operateOn(leftTerm));
     }

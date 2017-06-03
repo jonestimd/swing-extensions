@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +39,15 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
 import io.github.jonestimd.swing.DocumentConsumerAdapter;
+import io.github.jonestimd.swing.SwingResource;
 import io.github.jonestimd.swing.filter.BasicFilterParser;
 import io.github.jonestimd.swing.filter.FilterParser;
 import io.github.jonestimd.swing.filter.FilterSource;
 import io.github.jonestimd.swing.table.sort.BeanModelRowSorter;
+import io.github.jonestimd.util.Resources;
 import io.github.jonestimd.util.Streams;
+
+import static io.github.jonestimd.swing.ComponentFactory.*;
 
 /**
  * A text pane that allows the user to enter a filter expression.  When the text changes it is parsed by a
@@ -61,8 +67,10 @@ import io.github.jonestimd.util.Streams;
 public class FilterField<T> extends JTextPane implements FilterSource {
     /** Property name for predicate property change events. */
     public static final String PREDICATE_PROPERTY = "FilterField.predicate";
-    private static final String OPERATORS = "()&|!";
-    private static final String SYMBOLS = "()&\u2502!";
+    private static final String OPERATOR_KEYS = Resources.join(DEFAULT_BUNDLE, "filter.operator.key.");
+    private static final String SYMBOLS = Resources.join(DEFAULT_BUNDLE, "filter.operator.symbol.");
+    private static final char GROUP_START = (char) SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_START.getChar();
+    private static final char GROUP_END = (char) SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_END.getChar();
     private final Style plainStyle = getStyle("default");
     private final Style boldStyle = addStyle("bold", plainStyle);
     private final HighlightPainter highlightPainter = new DefaultHighlightPainter(Color.CYAN);
@@ -106,10 +114,10 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         if (dot > 0) {
             try {
                 if (getText(dot - 1, 1).equals("(") && isOperator(dot - 1)) {
-                    highlight(IntStream.range(dot, getText().length()).iterator(), ')', '(');
+                    highlight(IntStream.range(dot, getText().length()).iterator(), GROUP_END, GROUP_START);
                 }
                 else if (getText(dot - 1, 1).equals(")") && isOperator(dot - 1)) {
-                    highlight(Streams.reverseRange(dot - 1, 0).iterator(), '(', ')');
+                    highlight(Streams.reverseRange(dot - 1, 0).iterator(), GROUP_START, GROUP_END);
                 }
             } catch (BadLocationException e) {
                 throw new RuntimeException(e);
@@ -120,7 +128,7 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     private void updateFilter(String text) {
         setToolTipText(null);
         try {
-            predicate = text.trim().isEmpty() ? null : filterParser.parse(FilterField.this);
+            predicate = filterParser.parse(this);
             firePropertyChange(PREDICATE_PROPERTY, null, predicate);
             setBackground(normalBackground);
         } catch (Exception ex) {
@@ -136,7 +144,6 @@ public class FilterField<T> extends JTextPane implements FilterSource {
      * @param iterator character indexes to search for the match
      * @param highlight parenthesis to find and highlight
      * @param pair opposing parenthesis
-     * @throws BadLocationException
      */
     private void highlight(OfInt iterator, char highlight, char pair) throws BadLocationException {
         int depth = 0;
@@ -159,7 +166,7 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     @Override
     protected void processComponentKeyEvent(KeyEvent e) {
         if (e.getID() == KeyEvent.KEY_TYPED) {
-            int index = OPERATORS.indexOf(e.getKeyChar());
+            int index = OPERATOR_KEYS.indexOf(e.getKeyChar());
             if (index >= 0 && e.isControlDown()) {
                 setInputAttributes(boldStyle);
                 replaceSelection(SYMBOLS.substring(index, index + 1));

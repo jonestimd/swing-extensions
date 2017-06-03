@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,6 +88,20 @@ public class FilterFieldTest {
         assertThat(field.getToolTipText()).isEqualTo(error);
         assertThat(field.getBackground()).isEqualTo(Color.red);
         verify(listener).propertyChange(event(null, field.getFilter()));
+    }
+
+    @Test
+    public void clearsTermsWhenTextIsEmpty() throws Exception {
+        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        field.addPropertyChangeListener(FilterField.PREDICATE_PROPERTY, listener);
+        field.setText("abc");
+
+        field.setText("");
+
+        assertThat(field.getTerms()).isEmpty();
+        assertThat(field.getFilter()).isNull();
+        assertThat(field.getToolTipText()).isNull();
+        verify(listener).propertyChange(event(null, null));
     }
 
     @Test

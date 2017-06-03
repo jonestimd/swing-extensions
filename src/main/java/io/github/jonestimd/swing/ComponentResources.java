@@ -26,13 +26,26 @@ import java.util.ListResourceBundle;
 
 import javax.swing.ImageIcon;
 
+import static io.github.jonestimd.swing.SwingResource.*;
+
+@SuppressWarnings({"MagicCharacter", "MagicNumber"})
 public class ComponentResources extends ListResourceBundle {
     @Override
     protected Object[][] getContents() {
         return new Object[][] {
-            { "button.tooltip.accelerator.format", " (%s)" },
+            { BUTTON_TOOLTIP_ACCELERATOR_FORMAT.key, " (%s)" },
             { "filter.iconImage", new ImageIcon(getClass().getResource("/io/github/jonestimd/swing/component/filter.png")) },
             { "filter.invalid.background", new Color(255, 210, 210) },
+            { FILTER_OPERATOR_SYMBOL_AND.key, '&' },
+            { FILTER_OPERATOR_SYMBOL_OR.key, '\u2502' },
+            { FILTER_OPERATOR_SYMBOL_NOT.key, '!' },
+            { FILTER_OPERATOR_SYMBOL_GROUP_START.key, '(' },
+            { FILTER_OPERATOR_SYMBOL_GROUP_END.key, ')' },
+            { "filter.operator.key.and", '&' },
+            { "filter.operator.key.or", '|' },
+            { "filter.operator.key.not", '!' },
+            { "filter.operator.key.group.start", '(' },
+            { "filter.operator.key.group.end", ')' },
 
             { "exceptionDialog.title", "Unexpected Exception" },
             { "exceptionDialog.noStackTrace", "Stack trace is unavailable" },
@@ -48,7 +61,7 @@ public class ComponentResources extends ListResourceBundle {
             { "confirm.unsavedChanges.option.confirm", "Discard Changes" },
             { "confirm.unsavedChanges.option.cancel", "Cancel" },
 
-            { "validation.message.background", new Color(255,255,200) },
+            { VALIDATION_MESSAGE_BACKGROUND.key, new Color(255,255,200) },
 
             { "calendar.button.tooltip", "Select a date from the calendar" },
             { "calendar.tooltip", "Select a date" },
