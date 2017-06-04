@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,12 @@ package io.github.jonestimd.swing.table;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -35,11 +37,14 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -48,6 +53,9 @@ import io.github.jonestimd.swing.table.model.BeanListTableModel;
 import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.TestColumnAdapter;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.KeyEvent.*;
@@ -55,9 +63,12 @@ import static java.util.Collections.*;
 import static javax.swing.JComponent.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.eq;
 
+@RunWith(MockitoJUnitRunner.class)
 public class DecoratedTableTest {
+    @Mock
+    private ComboBoxModel<String> comboBoxModel;
+
     private TestColumnAdapter<TestBean, String> columnAdapter1 = new TestColumnAdapter<>("Column 1", String.class, TestBean::getValue, TestBean::setValue);
     private TestColumnAdapter<TestBean, Boolean> columnAdapter2 = new TestColumnAdapter<>("Column 2", Boolean.class, TestBean::isFlag, TestBean::setFlag);
     private Color evenBackground = ComponentDefaults.getColor("Table.alternateRowColor");
@@ -204,10 +215,19 @@ public class DecoratedTableTest {
         });
     }
 
+    private TableRowSorter<BeanListTableModel<TestBean>> newRowSorter(DecoratedTable<TestBean, BeanListTableModel<TestBean>> table) {
+        TableRowSorter<BeanListTableModel<TestBean>> sorter = new TableRowSorter<>(table.getModel());
+        sorter.setSortKeys(Collections.singletonList(new SortKey(0, SortOrder.ASCENDING)));
+        sorter.setSortsOnUpdates(true);
+        return sorter;
+    }
+
     @Test
     public void processKeyBindingEndsEditOnEnter() throws Exception {
-        final JComboBox<String> editor = new JComboBox<>(new String[]{"abc", "def"});
-        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+        when(comboBoxModel.getSelectedItem()).thenReturn("xyz");
+        final JComboBox<String> editor = new JComboBox<>(comboBoxModel);
+        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("abc", "def");
+        table.setRowSorter(newRowSorter(table));
         table.setDefaultEditor(String.class, new DefaultCellEditor(editor));
         selectCell(table, 0, 0);
         table.editCellAt(0, 0);
@@ -218,7 +238,7 @@ public class DecoratedTableTest {
         });
 
         assertThat(table.getEditorComponent()).isNull();
-        assertThat(table.getSelectedRow()).isEqualTo(0);
+        assertThat(table.getSelectedRow()).isEqualTo(table.convertRowIndexToView(0));
         assertThat(table.getSelectedColumn()).isEqualTo(0);
     }
 

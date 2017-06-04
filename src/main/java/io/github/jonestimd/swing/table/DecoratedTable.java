@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -151,6 +153,10 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         putClientProperty("JTable.autoStartsEdit", isAutoStartEdit(e));
+        int row = -1;
+        if (getCellEditor() != null) {
+            row = convertRowIndexToModel(getSelectedRow());
+        }
         boolean result = super.processKeyBinding(ks, e, condition, pressed);
         // pass key that started the edit to editor
         if (condition == WHEN_FOCUSED && getEditorField() instanceof JComboBox) {
@@ -163,14 +169,22 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
                 editorComponent.selectWithKeyChar(e.getKeyChar());
             }
         }
-        if (e.getKeyCode() == KeyEvent.VK_ENTER && getCellEditor() != null) {
-            int row = getSelectedRow();
-            int column = getSelectedColumn();
-            getCellEditor().stopCellEditing();
-            setRowSelectionInterval(row, row);
-            setColumnSelectionInterval(column, column);
+        if (getCellEditor() != null) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                int column = getSelectedColumn();
+                getCellEditor().stopCellEditing();
+                selectViewRow(row);
+                setColumnSelectionInterval(column, column);
+            }
         }
+        else if (row >= 0) selectViewRow(row);
         return result;
+    }
+
+    private void selectViewRow(int modelRow) {
+        int viewRow = convertRowIndexToView(modelRow);
+        setRowSelectionInterval(viewRow, viewRow);
+        scrollRectToVisible(getCellRect(viewRow, getSelectedColumn(), true));
     }
 
     /**
