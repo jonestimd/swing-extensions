@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
@@ -40,9 +41,10 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 
 import io.github.jonestimd.swing.border.OblongBorder;
 import io.github.jonestimd.swing.component.FilterField;
@@ -134,6 +136,20 @@ public class ComponentFactoryTest {
     }
 
     @Test
+    public void newMenuToolBarSetsLayoutForSynthUI() throws Exception {
+        LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.synth.SynthLookAndFeel");
+
+            JToolBar toolBar = ComponentFactory.newMenuToolBar();
+
+            assertThat(toolBar.getLayout()).isInstanceOf(BoxLayout.class);
+        } finally {
+            UIManager.setLookAndFeel(lookAndFeel);
+        }
+    }
+
+    @Test
     public void newToolbarToggleButton() throws Exception {
         Action action = mock(Action.class);
         when(action.getValue(Action.NAME)).thenReturn("action");
@@ -165,7 +181,7 @@ public class ComponentFactoryTest {
 
         JToggleButton button = ComponentFactory.newToolbarToggleButton(action);
 
-        assertThat(button.getToolTipText()).isEqualTo("action (Ctrl-B)");
+        assertThat(button.getToolTipText()).isEqualTo("action (Ctrl" + ACCELERATOR_DELIMITER + "B)");
     }
 
     @Test
@@ -204,7 +220,7 @@ public class ComponentFactoryTest {
 
         JButton button = ComponentFactory.newToolbarButton(action);
 
-        assertThat(button.getToolTipText()).isEqualTo("action (Ctrl-B)");
+        assertThat(button.getToolTipText()).isEqualTo("action (Ctrl" + ACCELERATOR_DELIMITER + "B)");
         assertThat(button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).get(keyStroke)).isEqualTo(TOOLBAR_BUTTON_ACTION_KEY);
         assertThat(button.getActionMap().get(TOOLBAR_BUTTON_ACTION_KEY)).isSameAs(action);
     }
@@ -231,9 +247,7 @@ public class ComponentFactoryTest {
 
         assertThat(field.getBorder()).isInstanceOf(CompoundBorder.class);
         assertThat(getOutsideBorder(field.getBorder())).isInstanceOf(OblongBorder.class);
-        assertThat(getInsideBorder(field.getBorder())).isInstanceOf(CompoundBorder.class);
-        assertThat(getOutsideBorder(getInsideBorder(field.getBorder()))).isInstanceOf(EmptyBorder.class);
-        assertThat(getInsideBorder(getInsideBorder(field.getBorder()))).isInstanceOf(IconBorder.class);
+        assertThat(getInsideBorder(field.getBorder())).isInstanceOf(IconBorder.class);
     }
 
     private Border getOutsideBorder(Border border) {
@@ -246,7 +260,7 @@ public class ComponentFactoryTest {
 
     @Test
     public void newFilterFieldSetsErrorBackgroundForParseError() throws Exception {
-        FilterField<String> field = new ComponentFactory().newFilterField(ComponentFactoryTest::parseFilter);
+        FilterField<String> field = new ComponentFactory().newFilterField(ComponentFactoryTest::parseFilter, 0, 0);
         Color background = field.getBackground();
 
         field.setText("invalid");

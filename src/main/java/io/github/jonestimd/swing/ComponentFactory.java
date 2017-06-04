@@ -32,6 +32,7 @@ import java.util.function.Predicate;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -50,6 +51,7 @@ import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.text.JTextComponent;
 
 import com.google.common.base.MoreObjects;
@@ -127,6 +129,9 @@ public class ComponentFactory {
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
         toolbar.setBorderPainted(false);
+        if (UIManager.getLookAndFeel() instanceof SynthLookAndFeel) {
+            toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
+        }
         return toolbar;
     }
 
@@ -187,20 +192,22 @@ public class ComponentFactory {
      * Create a {@link JTextField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
      */
     public JTextField newFilterField() {
-        return initializeFilterField(new JTextField());
+        return initializeFilterField(new JTextField(), 0, 0);
     }
 
     /**
      * Create a {@link FilterField} with an {@link OblongBorder} and an {@link IconBorder} using the filter icon.
+     * @param predicateFactory filter string parser
+     * @param paddingTop padding between top of border and input field
+     * @param paddingBottom padding between bottom of border and input field
      */
-    public <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory) {
-        return initializeFilterField(new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")));
+    public <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory, int paddingTop, int paddingBottom) {
+        return initializeFilterField(new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")), paddingTop, paddingBottom);
     }
 
-    private <T extends JTextComponent> T initializeFilterField(T field) {
+    private <T extends JTextComponent> T initializeFilterField(T field, int paddingTop, int paddingBottom) {
         ImageIcon filterIcon = (ImageIcon) bundle.getObject("filter.iconImage");
-        field.setBorder(new CompoundBorder(new OblongBorder(2, Color.GRAY),
-                new CompoundBorder(new EmptyBorder(0, 4, 0, 0), new IconBorder(Side.LEFT, filterIcon))));
+        field.setBorder(new CompoundBorder(new OblongBorder(1, Color.GRAY, paddingTop, 4, paddingBottom, 0), new IconBorder(Side.LEFT, filterIcon)));
         return field;
     }
 

@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -30,16 +31,20 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.swing.BorderFactory;
+import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter;
 
-import io.github.jonestimd.swing.border.OblongBorder;
+import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.filter.FilterParser;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -194,25 +199,36 @@ public class FilterFieldTest {
             }
         });
     }
+
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+//            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+//            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+//            UIManager.setLookAndFeel("javax.swing.plaf.synth.SynthLookAndFeel");
             SwingUtilities.invokeAndWait(() -> {
-                FilterField<?> filterField = new FilterField<String>(term -> term::contains, Color.PINK);
-                Dimension size = filterField.getPreferredSize();
-                size.width = Integer.MAX_VALUE;
-                filterField.setMaximumSize(size);
+                FilterField<?> filterField = new ComponentFactory().newFilterField(term -> term::contains, 3, 1);
+//                JTextField filterField = new ComponentFactory().newFilterField();
                 JFrame frame = new JFrame("Filter FIeld");
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 frame.setPreferredSize(new Dimension(400, 100));
-                Box contentPane = Box.createVerticalBox();
-                contentPane.add(Box.createVerticalStrut(20));
-                contentPane.add(filterField);
-                contentPane.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-                filterField.setBorder(new OblongBorder(2, Color.black));
-                frame.setContentPane(contentPane);
+                JToolBar toolbar = ComponentFactory.newMenuToolBar();
+                toolbar.add(ComponentFactory.newToolbarButton(
+                    new AbstractAction("Action", new ImageIcon(FilterFieldTest.class.getResource("/io/github/jonestimd/swing/component/filter.png"))) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {}
+                    }
+                ));
+                toolbar.add(ComponentFactory.newMenuBarSeparator());
+                toolbar.add(filterField);
+                toolbar.add(Box.createHorizontalStrut(5));
+                frame.setJMenuBar(new JMenuBar());
+                frame.getJMenuBar().add(new JMenu("Actions"));
+                frame.getJMenuBar().add(ComponentFactory.newMenuBarSeparator());
+                frame.getJMenuBar().add(toolbar);
                 frame.pack();
                 frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
                 filterField.requestFocus();
             });
         } catch (Exception e) {

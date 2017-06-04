@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +27,12 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 
-import javax.swing.JComponent;
 import javax.swing.border.Border;
-import javax.swing.plaf.synth.ColorType;
-import javax.swing.plaf.synth.SynthContext;
-import javax.swing.plaf.synth.SynthUI;
-import javax.swing.text.JTextComponent;
-
-import sun.swing.SwingUtilities2;
 
 /**
  * A line border drawn with semi-circles for the left and right sides of the component.
@@ -42,10 +40,16 @@ import sun.swing.SwingUtilities2;
 public class OblongBorder implements Border {
     private final int lineWidth;
     private final Color lineColor;
+    private final Insets insets;
 
     public OblongBorder(int lineWidth, Color lineColor) {
+        this(lineWidth, lineColor, 1, 0, 1, 0);
+    }
+
+    public OblongBorder(int lineWidth, Color lineColor, int paddingTop, int paddingLeft, int paddingBottom, int paddingRight) {
         this.lineWidth = lineWidth;
         this.lineColor = lineColor;
+        this.insets = new Insets(lineWidth + paddingTop, lineWidth + paddingLeft, lineWidth + paddingBottom, lineWidth + paddingRight);
     }
 
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
@@ -53,32 +57,24 @@ public class OblongBorder implements Border {
         g2d.setStroke(new BasicStroke(lineWidth));
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2d.setColor(getBackground(c));
-        g2d.clearRect(x, y, height/2, height);
-        g2d.clearRect(x+width-height/2, y, height/2, height);
-        g2d.fillArc(x + lineWidth / 2, y + lineWidth / 2, height - lineWidth, height - lineWidth, 90, 180);
-        g2d.fillArc(x + width - height - lineWidth / 2, y + lineWidth / 2, height - lineWidth, height - lineWidth, -90, 180);
-
-        g2d.setColor(lineColor);
-        g2d.drawRoundRect(x+lineWidth/2, y+lineWidth/2, width-lineWidth, height-lineWidth, height, height);
-        g2d.dispose();
-    }
-
-    private Color getBackground(Component c) {
-        if (c instanceof JTextComponent) {
-            JComponent jc = (JComponent) c;
-            Object ui = jc.getClientProperty(SwingUtilities2.COMPONENT_UI_PROPERTY_KEY);
-            if (ui instanceof SynthUI) {
-                SynthContext context = ((SynthUI) ui).getContext(jc);
-                return context.getStyle().getColor(context, ColorType.TEXT_BACKGROUND);
-            }
+        RoundRectangle2D.Double outline = new RoundRectangle2D.Double(0, 0, width-lineWidth, height-lineWidth, height, height);
+        Component parent  = c.getParent();
+        if (parent!=null) {
+            Area borderRegion = new Area(new Rectangle(0,0,width, height));
+            borderRegion.subtract(new Area(outline));
+            g2d.setClip(borderRegion);
+            g2d.setColor(parent.getBackground());
+            g2d.fillRect(x, y, width, height);
+            g2d.setClip(null);
         }
-        return c.getBackground();
+        g2d.setColor(lineColor);
+        g2d.draw(outline);
+        g2d.dispose();
     }
 
     @Override
     public Insets getBorderInsets(Component c) {
-        return new Insets(lineWidth+1, lineWidth, lineWidth, lineWidth);
+        return (Insets) insets.clone();
     }
 
     @Override

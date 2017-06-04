@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.plaf.synth.SynthContext;
 import javax.swing.plaf.synth.SynthStyle;
@@ -36,12 +40,14 @@ import javax.swing.plaf.synth.SynthTextFieldUI;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -64,6 +70,8 @@ public class OblongBorderTest {
     private SynthContext context;
     @Mock
     private SynthStyle style;
+    @Captor
+    private ArgumentCaptor<Shape> shapeCaptor;
 
     @Test
     public void paint() throws Exception {
@@ -75,19 +83,17 @@ public class OblongBorderTest {
         verify(g).create(X, Y, WIDTH, HEIGHT);
         verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
         verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        verify(g2d).setColor(component.getBackground());
-        verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
-        verify(g2d).fillArc(X + WIDTH - HEIGHT - LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, -90, 180);
         verify(g2d).setColor(Color.black);
-        verify(g2d).drawRoundRect(X+LINE_WIDTH/2, Y+LINE_WIDTH/2, WIDTH-LINE_WIDTH, HEIGHT-LINE_WIDTH, HEIGHT, HEIGHT);
+        verify(g2d).draw(isA(RoundRectangle2D.Double.class));
         verify(g2d).dispose();
     }
 
     @Test
-    public void paintUsesTextBackgroundForTextField() throws Exception {
+    public void paintUsesParentBackgroundForTextField() throws Exception {
+        final JPanel parent = new JPanel();
+        parent.setBackground(Color.RED);
         final JTextField textField = new JTextField();
+        parent.add(textField);
         when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
 
         new OblongBorder(LINE_WIDTH, Color.black).paintBorder(textField, g, X, Y, WIDTH, HEIGHT);
@@ -95,38 +101,13 @@ public class OblongBorderTest {
         verify(g).create(X, Y, WIDTH, HEIGHT);
         verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
         verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        verify(g2d).setColor(textField.getBackground());
-        verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
-        verify(g2d).fillArc(X + WIDTH - HEIGHT - LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, -90, 180);
+        verify(g2d).setColor(parent.getBackground());
+        verify(g2d, times(2)).setClip(shapeCaptor.capture());
+        assertThat(shapeCaptor.getAllValues().get(0)).isInstanceOfAny(Area.class);
+        assertThat(shapeCaptor.getAllValues().get(1)).isNull();
+        verify(g2d).fillRect(X, Y, WIDTH, HEIGHT);
         verify(g2d).setColor(Color.black);
-        verify(g2d).drawRoundRect(X+LINE_WIDTH/2, Y+LINE_WIDTH/2, WIDTH-LINE_WIDTH, HEIGHT-LINE_WIDTH, HEIGHT, HEIGHT);
-        verify(g2d).dispose();
-    }
-
-    @Test
-    public void paintUsesTextBackgroundForTextFieldWithSynthUI() throws Exception {
-        final Color backgroundColor = new Color(1, 2, 3);
-        final JTextField textField = new JTextField();
-        textField.setUI(synthUI);
-        when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
-        when(synthUI.getContext(textField)).thenReturn(context);
-        when(context.getStyle()).thenReturn(style);
-        when(style.getColor(any(), any())).thenReturn(backgroundColor);
-
-        new OblongBorder(LINE_WIDTH, Color.black).paintBorder(textField, g, X, Y, WIDTH, HEIGHT);
-
-        verify(g).create(X, Y, WIDTH, HEIGHT);
-        verify(g2d).setStroke(new BasicStroke(LINE_WIDTH));
-        verify(g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        verify(g2d).setColor(backgroundColor);
-        verify(g2d).clearRect(X, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).clearRect(X+WIDTH-HEIGHT/2, Y, HEIGHT/2, HEIGHT);
-        verify(g2d).fillArc(X + LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, 90, 180);
-        verify(g2d).fillArc(X + WIDTH - HEIGHT - LINE_WIDTH / 2, Y + LINE_WIDTH / 2, HEIGHT - LINE_WIDTH, HEIGHT - LINE_WIDTH, -90, 180);
-        verify(g2d).setColor(Color.black);
-        verify(g2d).drawRoundRect(X+LINE_WIDTH/2, Y+LINE_WIDTH/2, WIDTH-LINE_WIDTH, HEIGHT-LINE_WIDTH, HEIGHT, HEIGHT);
+        verify(g2d).draw(isA(RoundRectangle2D.Double.class));
         verify(g2d).dispose();
     }
 
@@ -134,7 +115,7 @@ public class OblongBorderTest {
     public void insetsUsesLineWidth() throws Exception {
         OblongBorder border = new OblongBorder(LINE_WIDTH, Color.black);
 
-        assertThat(border.getBorderInsets(null)).isEqualTo(new Insets(LINE_WIDTH +1, LINE_WIDTH, LINE_WIDTH, LINE_WIDTH));
+        assertThat(border.getBorderInsets(null)).isEqualTo(new Insets(LINE_WIDTH+1, LINE_WIDTH, LINE_WIDTH+1, LINE_WIDTH));
     }
 
     @Test
