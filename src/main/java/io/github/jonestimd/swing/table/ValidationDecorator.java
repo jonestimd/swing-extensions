@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +29,9 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.ValidatedTableModel;
 import io.github.jonestimd.swing.validation.ValidationBorder;
 
+/**
+ * A {@link TableDecorator} that highlights cells with validation errors.
+ */
 public class ValidationDecorator implements TableDecorator {
     private ValidationBorder validationBorder = new ValidationBorder();
 
@@ -34,7 +39,7 @@ public class ValidationDecorator implements TableDecorator {
         String errors = ((ValidatedTableModel) table.getModel()).validateAt(row, column);
         validationBorder.setValid(errors == null);
         addValidationBorder(renderer);
-        renderer.setToolTipText(errors == null ? null : errors);
+        renderer.setToolTipText(errors);
     }
 
     private void addValidationBorder(JComponent component) {

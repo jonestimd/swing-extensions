@@ -52,7 +52,8 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.ColumnIdentifier;
 
 /**
- * Extends {@link JTable} to provide the following:
+ * A table that uses decorators to prepare cell renderers to enable consistent styling of cell values without creating
+ * custom renderers.  Extends {@link JTable} to provide the following:
  * <ul>
  *     <li>apply a list of {@link TableDecorator}s to cell renderers</li>
  *     <li>handle multiline column headers</li>

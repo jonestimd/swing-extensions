@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +24,34 @@ package io.github.jonestimd.util;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Utility methods for predicates.
+ */
 public class JavaPredicates {
+    /**
+     * Chain a function and a predicate.  Useful for combining method references.
+     */
     public static <T, R> Predicate<T> onResult(Function<T, ? extends R> function, Predicate<R> predicate) {
         return input -> predicate.test(function.apply(input));
     }
 
+    /**
+     * Invert the result of a predicate.
+     */
     public static <T> Predicate<T> not(Predicate<T> methodRef) {
         return methodRef.negate();
     }
 
+    /**
+     * Return a predicate that always returns true.
+     */
     public static <T> Predicate<T> alwaysTrue() {
         return (input) -> true;
     }
 
+    /**
+     * Return a predicate that always returns false.
+     */
     public static <T> Predicate<T> alwaysFalse() {
         return (input) -> false;
     }

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,9 @@ package io.github.jonestimd.swing;
 
 import javax.swing.JComponent;
 
+/**
+ * An interface for a saving component settings to be used to restore UI state.
+ */
 public interface SettingsPersister {
     static void saveSettings(JComponent component) {
         SettingsPersister persister = (SettingsPersister) component.getClientProperty(ClientProperty.SETTINGS_PERSISTER);

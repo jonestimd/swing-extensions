@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +23,16 @@ package io.github.jonestimd.lang;
 
 import java.util.List;
 
+/**
+ * Utility methods for {@link Comparable}s.
+ */
 public class Comparables {
+    /**
+     * Find the minimum value of a group of items.
+     * @param c1 the first item
+     * @param others the remaining items
+     * @return the minimum item
+     */
     @SafeVarargs
     public static <T extends Comparable<? super T>> T min(T c1, T... others) {
         T min = c1;
@@ -31,6 +42,10 @@ public class Comparables {
         return min;
     }
 
+    /**
+     * Compare two possibly null objects.  A {@code null} is considered "less than" any non-{@code null} value.
+     * @return the comparison result
+     */
     public static <T extends Comparable<? super T>> int nullFirst(T c1, T c2) {
         if (c1 == null) {
             return c2 == null ? 0 : -1;
@@ -38,6 +53,10 @@ public class Comparables {
         return c2 == null ? 1 : c1.compareTo(c2);
     }
 
+    /**
+     * Compare two possibly null objects.  A {@code null} is considered "greater than" any non-{@code null} value.
+     * @return the comparison result
+     */
     public static <T extends Comparable<? super T>> int nullLast(T c1, T c2) {
         if (c1 == null) {
             return c2 == null ? 0 : 1;

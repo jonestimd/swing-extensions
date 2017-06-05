@@ -38,6 +38,10 @@ import javax.swing.WindowConstants;
 
 import io.github.jonestimd.swing.ComponentResources;
 
+/**
+ * A UI action that closes a window.  Can be used with {@link ConfirmClose} to display a confirmation dialog before
+ * closing the window.
+ */
 public class CancelAction extends AbstractAction {
     private static final String CLOSE = "close";
     private final Window window;

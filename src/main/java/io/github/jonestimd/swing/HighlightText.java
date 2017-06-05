@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,11 @@ package io.github.jonestimd.swing;
 
 import java.util.Collection;
 
+import io.github.jonestimd.swing.table.HighlightTableCellRenderer;
+
+/**
+ * An interface for a component that provides highlight text for a {@link HighlightTableCellRenderer}.
+ */
 public interface HighlightText {
     Collection<String> getHighlightText();
 }

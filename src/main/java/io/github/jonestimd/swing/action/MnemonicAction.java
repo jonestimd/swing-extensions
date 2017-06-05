@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +30,19 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+/**
+ * An abstract class for an action that is configured using values from a resource bundle.  The following values
+ * are used from the resource bundle:
+ * <ul>
+ *     <li>{@code resourcePrefix + ".mnemonicAndName"} (required)</li>
+ *     <ul>
+ *         <li>First character provides the mnemonic</li>
+ *         <li>Remainder provides the name</li>
+ *     </ul>
+ *     <li>{@code resourcePrefix + ".iconImage"} (optional, path to image resource)</li>
+ *     <li>{@code resourcePrefix + ".accelerator"} (optional, keystroke string)</li>
+ * </ul>
+ */
 public abstract class MnemonicAction extends AbstractAction {
     public static MnemonicAction forListener(ActionListener handler, ResourceBundle bundle, String resourcePrefix) {
         return new MnemonicAction(bundle, resourcePrefix) {

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,9 @@ package io.github.jonestimd.beans;
 
 import java.beans.PropertyChangeListener;
 
+/**
+ * An interface for beans that provide property change events.
+ */
 public interface ObservableBean {
     void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
     void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);

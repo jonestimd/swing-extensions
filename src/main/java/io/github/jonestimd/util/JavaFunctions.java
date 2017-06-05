@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +23,16 @@ package io.github.jonestimd.util;
 
 import java.util.function.Function;
 
+/**
+ * Utility methods for functional interfaces.
+ */
 public class JavaFunctions {
+    /**
+     * Add a null check to a function.
+     * @param function the function to guard against null input
+     * @return a function that returns {@code null} for a {@code null} input or the result of {@code function}
+     * for a non-{@code null} input
+     */
     public static <T, R> Function<T, R> nullGuard(Function<T, R> function) {
         return input -> input == null ? null : function.apply(input);
     }

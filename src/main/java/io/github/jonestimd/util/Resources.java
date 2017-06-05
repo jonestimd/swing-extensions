@@ -28,7 +28,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
- * This class provides utilities for accessing resource bundles.
+ * Utility methods for accessing resource bundles.
  */
 public class Resources {
     private Resources() {}

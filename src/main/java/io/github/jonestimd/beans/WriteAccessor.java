@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +21,11 @@
 // SOFTWARE.
 package io.github.jonestimd.beans;
 
+/**
+ * A functional interface for updating a property of a bean.
+ * @param <Bean> the bean class
+ * @param <Value> the property class
+ */
 public interface WriteAccessor<Bean, Value> {
     void setValue(Bean bean, Value value);
 }

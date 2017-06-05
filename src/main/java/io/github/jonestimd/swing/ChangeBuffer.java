@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,8 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+/**
+ * An interface for managing unsaved changes.
+ */
 public interface ChangeBuffer {
+    /**
+     * @return true if there are pending changes
+     */
     boolean isChanged();
+
+    /**
+     * Undo any pending changes.
+     */
     void revert();
+
+    /**
+     * Save any pending changes.
+     */
     void commit();
 }

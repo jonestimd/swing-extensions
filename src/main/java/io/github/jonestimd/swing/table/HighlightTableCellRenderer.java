@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +31,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.HighlightText;
 
+/**
+ * A table cell renderer that highlights substrings within the cell value.  An ancestor component that implements
+ * {@link HighlightText} is used to provide the substrings to be highlighted.
+ */
 public class HighlightTableCellRenderer extends DefaultTableCellRenderer {
     private final Highlighter highlighter;
     private Collection<String> highlightText;

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,7 @@ package io.github.jonestimd.swing;
 import java.awt.Component;
 
 /**
- * This interface is for providing UI feedback while a background task is running.
+ * An interface for providing UI feedback while a background task is running.
  */
 public interface StatusIndicator {
     /**

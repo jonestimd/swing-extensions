@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +29,9 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
+/**
+ * A UI action that transfers focus to a component.  Can be used to create a keyboard shortcut to change the input focus.
+ */
 public class FocusAction extends AbstractAction {
     protected enum KeyAction { FocusFilter }
 
@@ -41,8 +46,8 @@ public class FocusAction extends AbstractAction {
         component.requestFocusInWindow();
     }
 
-    public static void install(JComponent focusField, JTable table, ResourceBundle bundle, String accelleratorKey) {
+    public static void install(JComponent focusField, JTable table, ResourceBundle bundle, String acceleratorKey) {
         table.getActionMap().put(KeyAction.FocusFilter, new FocusAction(focusField));
-        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(bundle.getString(accelleratorKey)), KeyAction.FocusFilter);
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(bundle.getString(acceleratorKey)), KeyAction.FocusFilter);
     }
 }
