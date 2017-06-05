@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static io.github.jonestimd.swing.ComponentFactory.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -112,7 +113,7 @@ public class ValidatedTablePanelTest {
         JToolBar toolBar = (JToolBar) frame.getJMenuBar().getComponent(0);
         assertThat(((JButton) toolBar.getComponentAtIndex(0)).getToolTipText()).isEqualTo("Add");
         assertThat(((JButton) toolBar.getComponentAtIndex(1)).getToolTipText()).isEqualTo("Delete");
-        assertThat(((JButton) toolBar.getComponentAtIndex(2)).getToolTipText()).isEqualTo("Save (Ctrl-S)");
+        assertThat(((JButton) toolBar.getComponentAtIndex(2)).getToolTipText()).isEqualTo("Save (Ctrl" + ACCELERATOR_DELIMITER + "S)");
         assertThat(((JButton) toolBar.getComponentAtIndex(3)).getToolTipText()).isEqualTo("Reload");
     }
 
@@ -138,10 +139,10 @@ public class ValidatedTablePanelTest {
         assertThat(frame.getJMenuBar().getComponent(1)).isInstanceOf(JSeparator.class);
         JToolBar toolBar = (JToolBar) frame.getJMenuBar().getComponent(2);
         assertThat(toolBar.getComponentCount()).isEqualTo(4);
-        assertThat(((JButton) toolBar.getComponentAtIndex(0)).getToolTipText()).isEqualTo("Add (Ctrl-A)");
-        assertThat(((JButton) toolBar.getComponentAtIndex(1)).getToolTipText()).isEqualTo("Delete (Ctrl-D)");
-        assertThat(((JButton) toolBar.getComponentAtIndex(2)).getToolTipText()).isEqualTo("Save (Ctrl-S)");
-        assertThat(((JButton) toolBar.getComponentAtIndex(3)).getToolTipText()).isEqualTo("Reload (Ctrl-R)");
+        assertThat(((JButton) toolBar.getComponentAtIndex(0)).getToolTipText()).isEqualTo("Add (Ctrl" + ACCELERATOR_DELIMITER + "A)");
+        assertThat(((JButton) toolBar.getComponentAtIndex(1)).getToolTipText()).isEqualTo("Delete (Ctrl" + ACCELERATOR_DELIMITER + "D)");
+        assertThat(((JButton) toolBar.getComponentAtIndex(2)).getToolTipText()).isEqualTo("Save (Ctrl" + ACCELERATOR_DELIMITER + "S)");
+        assertThat(((JButton) toolBar.getComponentAtIndex(3)).getToolTipText()).isEqualTo("Reload (Ctrl" + ACCELERATOR_DELIMITER + "R)");
     }
 
     @Test
