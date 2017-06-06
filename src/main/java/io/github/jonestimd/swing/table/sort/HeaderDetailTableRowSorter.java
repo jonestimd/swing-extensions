@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +31,13 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.BufferedHeaderDetailTableModel;
 import io.github.jonestimd.swing.table.sort.HeaderDetailTableRowSorter.HeaderDetailViewToModel;
 
-public class HeaderDetailTableRowSorter<H, M extends BufferedHeaderDetailTableModel<H>> extends BeanModelRowSorter<H, M, HeaderDetailViewToModel<H>> implements MixedRowTableRowSorter {
+/**
+ * A row sorter for header/detail table.
+ * @param <H> the class of the header beans in the table
+ * @param <M> the class of the table model
+ */
+public class HeaderDetailTableRowSorter<H, M extends BufferedHeaderDetailTableModel<H>> extends BeanModelRowSorter<H, M, HeaderDetailViewToModel<H>>
+        implements MixedRowTableRowSorter {
     public HeaderDetailTableRowSorter(MixedRowTable<H, M> table) {
         super(table, new HeaderDetailTableRowComparator<>(table));
     }
@@ -131,6 +139,10 @@ public class HeaderDetailTableRowSorter<H, M extends BufferedHeaderDetailTableMo
         return modelRows;
     }
 
+    /**
+     * A mapping between the view and the model.
+     * @param <BEAN> the class of the header beans in the table
+     */
     public static class HeaderDetailViewToModel<BEAN> implements ViewToModel<BEAN> {
         private int beanIndex;
         private int modelIndex;
@@ -170,6 +182,10 @@ public class HeaderDetailTableRowSorter<H, M extends BufferedHeaderDetailTableMo
         }
     }
 
+    /**
+     * A helper class for updating the view/model mappings.  It represents a change to the model that
+     * needs to be reflected in the view.
+     */
     protected class ModelChange {
         protected final int firstBean;
         protected final int endBean;
@@ -191,15 +207,26 @@ public class HeaderDetailTableRowSorter<H, M extends BufferedHeaderDetailTableMo
             }
         }
 
+        /**
+         * Is this change for header/detail groups or just details?
+         * @return true if the change is for header/detail groups
+         */
         public boolean isBeanChange() {
             return firstDetail == 0;
         }
 
+        /**
+         * Get the number of header/detail groups involved in the change.
+         */
         public int deltaBeans() {
             return endBean - firstBean + 1;
         }
     }
 
+    /**
+     * The comparator used to sort rows of a header/detail table.
+     * @param <H> the class of the header beans in the table
+     */
     protected static class HeaderDetailTableRowComparator<H> extends TableRowComparator<H, HeaderDetailViewToModel<H>> {
         private final Comparator<HeaderDetailViewToModel<H>> beanComparator = (row1, row2) ->
                 row1.beanIndex == row2.beanIndex ? row1.getModelIndex() - row2.getModelIndex() : 0;

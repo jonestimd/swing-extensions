@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +26,16 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import io.github.jonestimd.swing.table.DecoratedTable;
+import io.github.jonestimd.swing.table.SectionTable;
 import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.SectionTableModel;
 import io.github.jonestimd.swing.table.sort.SectionTableRowSorter.ViewRow;
 
+/**
+ * A row sorter for a {@link SectionTable}.
+ * @param <BEAN> the class of beans in the table
+ * @param <MODEL> the class of the table model
+ */
 public class SectionTableRowSorter<BEAN, MODEL extends SectionTableModel<BEAN> & BeanTableModel<BEAN>> extends BeanModelRowSorter<BEAN, MODEL, ViewRow<BEAN>> {
     public static <T, M extends SectionTableModel<T> & BeanTableModel<T>> SectionTableRowSorter<T, M> create(DecoratedTable<T, M> table) {
         return new SectionTableRowSorter<>(table);
@@ -42,7 +50,7 @@ public class SectionTableRowSorter<BEAN, MODEL extends SectionTableModel<BEAN> &
         final Predicate<ViewRow<BEAN>> viewFilter = super.createViewFilter(rowFilter);
         return input -> {
             if (input.sectionHeader) {
-                return getModel().getGroup(input.groupNumber).stream().filter(rowFilter).findAny().isPresent();
+                return getModel().getGroup(input.groupNumber).stream().anyMatch(rowFilter);
             }
             return viewFilter.test(input);
         };
@@ -96,6 +104,10 @@ public class SectionTableRowSorter<BEAN, MODEL extends SectionTableModel<BEAN> &
     protected void postSort() {
     }
 
+    /**
+     * A mapping between the view and the model.
+     * @param <BEAN> the class of the beans in the table
+     */
     protected static class ViewRow<BEAN> implements ViewToModel<BEAN> {
         private final boolean sectionHeader;
         private int groupNumber;
@@ -126,6 +138,10 @@ public class SectionTableRowSorter<BEAN, MODEL extends SectionTableModel<BEAN> &
         }
     }
 
+    /**
+     * The comparator used to sort rows of a section table.
+     * @param <BEAN> the class of the beans in the table
+     */
     protected static class SectionTableRowComparator<BEAN> extends TableRowComparator<BEAN, ViewRow<BEAN>> {
         public SectionTableRowComparator(DecoratedTable<BEAN, ? extends BeanTableModel<BEAN>> table) {
             super(table);

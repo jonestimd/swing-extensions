@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,10 @@ import javax.swing.text.Document;
 
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
+/**
+ * Extends {@link JPasswordField} to add validation.  Uses {@link ValidationBorder} to provide visual feedback when
+ * there is a validation error.  Validation is disabled when the component is not editable.
+ */
 public class ValidatedPasswordField extends JPasswordField implements ValidatedComponent {
     private ValidationTooltipBorder validationBorder;
     private final ValidationSupport<char[]> validationSupport;

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +26,7 @@ import java.io.Serializable;
 /**
  * This interface provides information about an application window and is typically implemented by an {@code enum}.
  * <p>
- * See {@link FrameManager}.
+ * @see FrameManager
  */
 public interface WindowInfo extends Serializable {
     /**

@@ -34,6 +34,12 @@ import io.github.jonestimd.swing.table.DecoratedTable;
 import io.github.jonestimd.swing.table.model.BeanListTableModel;
 import io.github.jonestimd.swing.table.model.BufferedBeanListTableModel;
 
+/**
+ * An abstract UI action for reloading the data in a table.  Displays a confirmation dialog if the table contains
+ * unsaved changes.
+ * @param <T> the class of the beans displayed in the table
+ * @see BufferedBeanListTableModel
+ */
 public abstract class ReloadTableAction<T> extends BackgroundAction<List<T>> {
     private final JTable table;
     private final BufferedBeanListTableModel<T> tableModel;

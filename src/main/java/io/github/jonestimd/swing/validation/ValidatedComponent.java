@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +23,30 @@ package io.github.jonestimd.swing.validation;
 
 import java.beans.PropertyChangeListener;
 
+/**
+ * An interface for input components that provide validation feedback.
+ */
 public interface ValidatedComponent {
     String VALIDATION_MESSAGES = "validationMessages";
 
+    /**
+     * Perform validation of the current value.
+     */
     void validateValue();
 
+    /**
+     * Get the validation result.
+     * @return a string describing the validation errors.
+     */
     String getValidationMessages();
 
+    /**
+     * Add a listener to receive notification when the validation changes.
+     */
     void addValidationListener(PropertyChangeListener listener);
 
+    /**
+     * Remove a listener that is receiving notification when the validation changes.
+     */
     void removeValidationListener(PropertyChangeListener listener);
 }

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +49,7 @@ import javax.swing.text.JTextComponent;
 
 /**
  * This class tracks changes to input fields within a component hierarchy and notifies a listener when any of the
- * input fields has been modified.  It can be used to enable a save action only when some of the fields on a form
+ * input fields has been modified.  It can be used to enable a save action when some of the fields on a form
  * have been modified.
  */
 public class FieldChangeTracker extends ContainerTracker {
@@ -207,6 +209,9 @@ public class FieldChangeTracker extends ContainerTracker {
         }
     }
 
+    /**
+     * The interface for receiving notifications when the form has changes.
+     */
     public interface FieldChangeHandler {
         /**
          * Notification of a change in a tracked input field.

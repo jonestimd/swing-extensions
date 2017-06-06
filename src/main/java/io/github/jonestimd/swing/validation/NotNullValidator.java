@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +21,10 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.validation;
 
+/**
+ * A validation that returns an error if the value is {@code null}.
+ * @param <V> the class of the value
+ */
 public class NotNullValidator<V> implements Validator<V> {
     private final String message;
 

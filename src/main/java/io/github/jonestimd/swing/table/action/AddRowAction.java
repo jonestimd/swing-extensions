@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +30,11 @@ import javax.swing.JTable;
 import io.github.jonestimd.swing.action.MnemonicAction;
 import io.github.jonestimd.swing.table.model.BufferedBeanListTableModel;
 
+/**
+ * A UI action that adds a new row to a table.
+ * @param <T> the class of the beans displayed in the table
+ * @see BufferedBeanListTableModel
+ */
 public class AddRowAction<T> extends MnemonicAction {
     private final BufferedBeanListTableModel<T> tableModel;
     private final JTable table;

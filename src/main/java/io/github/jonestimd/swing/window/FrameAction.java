@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +28,11 @@ import javax.swing.Icon;
 
 import io.github.jonestimd.swing.action.MnemonicAction;
 
+/**
+ * A UI action that opens a new window.
+ * @param <E> the class providing information about the requested window
+ * @see WindowEventPublisher
+ */
 public class FrameAction<E extends WindowInfo> extends MnemonicAction {
     private ApplicationWindowEvent<E> event;
     private WindowEventPublisher<E> eventPublisher;

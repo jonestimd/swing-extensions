@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +27,9 @@ import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
 
+/**
+ * Extends {@link ValidationBorder} to display the validation error as a tooltip.
+ */
 public class ValidationTooltipBorder extends ValidationBorder {
     private JComponent component;
     private boolean mouseOverIndicator;

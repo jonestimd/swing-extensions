@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +21,27 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.validation;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 
+/**
+ * An interface for providing validation of an input value.
+ * @param <T> the class of the input value
+ */
 public interface Validator<T> {
     static <T> Validator<T> empty() {
         return bean -> null;
     }
 
+    /**
+     * Validate a value.
+     * @param value the value to validate
+     * @return a description of the validation errors or {@code null}
+     */
     String validate(T value);
 
     /**
@@ -75,7 +87,7 @@ public interface Validator<T> {
      */
     default Validator<T> add(Validator<T> other, String separator) {
         return value -> Strings.emptyToNull(Stream.of(validate(value), other.validate(value))
-                .filter(message -> message != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.joining(separator)));
     }
 }

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +30,33 @@ import javax.swing.table.TableRowSorter;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.table.model.BeanTableModel;
 
+/**
+ * A predicate based row filter.  Uses a text field to provide the filter criteria.
+ * @param <T> the class of the beans in the table
+ * @see BeanTableModel
+ */
 public class PredicateRowFilter<T> extends RowFilter<BeanTableModel<T>, Integer> {
     private final BiPredicate<T, String> predicate;
     private final JTextField filterField;
 
+    /**
+     * Install a row filter on a table.
+     * @param rowSorter the table's row sorter
+     * @param filterField the text field to use for the filter criteria
+     * @param predicate the predicate to evaluate using the filter field text
+     * @param <T> the class of the beans in the table
+     */
     public static <T> void install(TableRowSorter<? extends BeanTableModel<T>> rowSorter, JTextField filterField, BiPredicate<T, String> predicate) {
         PredicateRowFilter<T> rowFilter = new PredicateRowFilter<>(filterField, predicate);
         rowSorter.setRowFilter(rowFilter);
         filterField.getDocument().addDocumentListener(new DocumentChangeHandler(rowSorter::allRowsChanged));
     }
 
+    /**
+     * Create a new row filter.
+     * @param filterField the text field to use for the filter criteria
+     * @param predicate the predicate to evaluate using the filter field text
+     */
     public PredicateRowFilter(JTextField filterField, BiPredicate<T, String> predicate) {
         this.filterField = filterField;
         this.predicate = predicate;

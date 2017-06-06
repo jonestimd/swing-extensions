@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,11 @@ package io.github.jonestimd.swing.window;
 
 import java.util.EventObject;
 
+/**
+ * An event fired by a {@link FrameAction} to indicate that the user has requested a new window.
+ * @param <E> the class providing information about the requested window
+ * @see FrameManager
+ */
 public class ApplicationWindowEvent<E extends WindowInfo> extends EventObject {
     private final E windowInfo;
 

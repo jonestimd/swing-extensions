@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,15 @@ import java.text.Format;
 import java.util.function.Supplier;
 
 import io.github.jonestimd.swing.table.PropertyAdapter;
+import io.github.jonestimd.swing.table.TableSummary;
+import io.github.jonestimd.swing.table.TableSummaryPanel;
 
+/**
+ * A property adapter based on functions (or method references).
+ * @param <T> the class of the property value
+ * @see TableSummary
+ * @see TableSummaryPanel
+ */
 public class FunctionPropertyAdapter<T> implements PropertyAdapter<T> {
     private final String name;
     private final String label;

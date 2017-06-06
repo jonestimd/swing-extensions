@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +23,6 @@ package io.github.jonestimd.swing.table.sort;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -34,6 +35,12 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.util.JavaPredicates;
 import io.github.jonestimd.util.Streams;
 
+/**
+ * An abstract {@link RowSorter} for tables that use a {@link BeanTableModel}.
+ * @param <BEAN> the class of the beans in the table
+ * @param <MODEL> the class of the table model
+ * @param <V> the class of the view/model mappings
+ */
 public abstract class BeanModelRowSorter<BEAN, MODEL extends BeanTableModel<BEAN>, V extends ViewToModel<BEAN>> extends RowSorter<MODEL> {
     private final Function<V, BEAN> getBean = new Function<V, BEAN>() {
         @Override
@@ -125,7 +132,7 @@ public abstract class BeanModelRowSorter<BEAN, MODEL extends BeanTableModel<BEAN
             int deltaRows = endRow - firstRow + 1;
             updateModelIndex(firstRow, deltaRows);
             List<V> addedRows = newModelRows(firstRow, endRow);
-            Collections.sort(addedRows, comparator);
+            addedRows.sort(comparator);
             insertInOrder(addedRows.stream().filter(viewFiter)::iterator);
             buildModelToView();
             fireRowSorterChanged(oldViewToModel);
@@ -153,6 +160,12 @@ public abstract class BeanModelRowSorter<BEAN, MODEL extends BeanTableModel<BEAN
         return modelIndexes;
     }
 
+    /**
+     * Create a list of view/model mappings.
+     * @param firstRow the starting model index (inclusive)
+     * @param lastRow the ending model index (inclusive)
+     * @return a new list of view/model mappings
+     */
     protected abstract List<V> newModelRows(int firstRow, int lastRow);
 
     protected void updateModelIndex(int firstRow, int deltaRows) {
@@ -205,7 +218,7 @@ public abstract class BeanModelRowSorter<BEAN, MODEL extends BeanTableModel<BEAN
 
     private void sort(int[] oldViewToModel) {
         if (! comparator.isEmpty()) {
-            Collections.sort(viewToModel, comparator);
+            viewToModel.sort(comparator);
             postSort();
         }
         buildModelToView();
