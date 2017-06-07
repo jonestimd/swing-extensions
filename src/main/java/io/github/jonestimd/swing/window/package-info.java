@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 /**
- * This package contains classes for managing application windows.  The steps for using the classes are
+ * Classes for managing application windows.  The steps for using the classes are
  * <ul>
  *     <li>Create a {@link io.github.jonestimd.swing.window.WindowEventPublisher}</li>
  *     <li>Create a {@link io.github.jonestimd.swing.window.FrameManager} and register it with the event publisher</li>

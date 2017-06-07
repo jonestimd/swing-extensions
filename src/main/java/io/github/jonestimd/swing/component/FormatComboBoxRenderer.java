@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +27,30 @@ import java.text.Format;
 import javax.swing.JList;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
+/**
+ * A combo box renderer that uses a {@link Format} to convert the value to a string.  If an {@link IconSource} is
+ * provided then an icon will also be displayed for the combo box values.
+ */
 public class FormatComboBoxRenderer extends BasicComboBoxRenderer {
     private final Format format;
     private final IconSource iconSource;
 
+    /**
+     * Create a combo box renderer. Will display an icon if the format implements {@link IconSource}.
+     * @param format the value format
+     */
     public FormatComboBoxRenderer(Format format) {
+        this(format, format instanceof IconSource ? (IconSource) format : IconSource.DEFAULT_ICON_SOURCE);
+    }
+
+    /**
+     * Create a combo box renderer.
+     * @param format the value format
+     * @param iconSource provides an icon to display in the combo box
+     */
+    public FormatComboBoxRenderer(Format format, IconSource iconSource) {
         this.format = format;
-        this.iconSource = format instanceof IconSource ? (IconSource) format : IconSource.DEFAULT_ICON_SOURCE;
+        this.iconSource = iconSource != null ? iconSource : IconSource.DEFAULT_ICON_SOURCE;
     }
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

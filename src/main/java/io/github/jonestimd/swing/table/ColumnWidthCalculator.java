@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@ package io.github.jonestimd.swing.table;
 
 import javax.swing.table.TableColumn;
 
+/**
+ * An interface for calculating table column widths.
+ * @see ColumnResizeHandler
+ */
 public interface ColumnWidthCalculator {
     /**
      * Indicates whether the column should be resized when the table is resized or other columns are resized.
@@ -31,5 +35,10 @@ public interface ColumnWidthCalculator {
      */
     boolean isFixedWidth(TableColumn column);
 
+    /**
+     * Calculate the preferred width of a column.
+     * @param column the table column
+     * @return the preferred width of the column
+     */
     int preferredWidth(TableColumn column);
 }

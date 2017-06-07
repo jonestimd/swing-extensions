@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +33,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+/**
+ * A table column for a {@link MixedRowTable}.  Provides a header value for each sub-row of the table.
+ */
 public class MixedRowTableColumn extends TableColumn {
     private List<TableColumn> subColumns = new ArrayList<>();
 

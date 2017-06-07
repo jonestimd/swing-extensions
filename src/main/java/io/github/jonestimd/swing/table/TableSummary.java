@@ -24,11 +24,9 @@ package io.github.jonestimd.swing.table;
 import java.util.List;
 
 import io.github.jonestimd.beans.ObservableBean;
-import io.github.jonestimd.swing.table.model.TableDataProvider;
 
 /**
- * Interface for a {@link javax.swing.table.TableModel} or {@link TableDataProvider} that provides summary
- * information for the table data.
+ * An interface for a providing summary information for a table.
  * @see TableSummaryPanel
  * @see PropertyAdapter
  */

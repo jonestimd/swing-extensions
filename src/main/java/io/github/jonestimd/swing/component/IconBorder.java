@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +28,12 @@ import java.awt.Insets;
 import javax.swing.ImageIcon;
 import javax.swing.border.Border;
 
+/**
+ * A border that displays an icon to the left or right of the component.
+ */
 public class IconBorder implements Border {
-    public static enum Side { LEFT, RIGHT };
+    /** Available sides for displaying the icon. */
+    public enum Side { LEFT, RIGHT };
     private final ImageIcon icon;
     private final Side side;
 

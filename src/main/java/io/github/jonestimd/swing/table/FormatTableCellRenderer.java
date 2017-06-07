@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +26,33 @@ import java.text.NumberFormat;
 
 import io.github.jonestimd.swing.component.IconSource;
 
+/**
+ * A table cell renderer that uses a {@link Format} to convert the value to a string.  If an {@link IconSource} is
+ * provided then an icon will also be displayed in the cell.
+ */
 public class FormatTableCellRenderer extends HighlightTableCellRenderer {
     private final Format format;
     private final IconSource iconSource;
 
+    /**
+     * Create a table cell renderer. Will display an icon if the format implements {@link IconSource}.
+     * @param format the value format
+     * @param highlighter the value highlighter
+     */
     public FormatTableCellRenderer(Format format, Highlighter highlighter) {
+        this(format, format instanceof IconSource ? (IconSource) format : IconSource.DEFAULT_ICON_SOURCE, highlighter);
+    }
+
+    /**
+     * Create a table cell renderer.
+     * @param format the value format
+     * @param iconSource provides an icon to display in the cell
+     * @param highlighter the value highlighter
+     */
+    public FormatTableCellRenderer(Format format, IconSource iconSource, Highlighter highlighter) {
         super(highlighter);
         this.format = format;
-        this.iconSource = format instanceof IconSource ? (IconSource) format : IconSource.DEFAULT_ICON_SOURCE;
+        this.iconSource = iconSource != null ? iconSource : IconSource.DEFAULT_ICON_SOURCE;
         if (format instanceof NumberFormat) {
             setHorizontalAlignment(RIGHT);
         }

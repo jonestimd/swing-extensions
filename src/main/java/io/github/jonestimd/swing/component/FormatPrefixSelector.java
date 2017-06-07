@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +28,10 @@ import java.util.List;
 
 import javax.swing.ListModel;
 
+/**
+ * A {@link PrefixSelector} that uses a format to convert the beans to strings.
+ * @param <T> the class of the beans in the model
+ */
 public class FormatPrefixSelector<T> implements PrefixSelector<T> {
     private final Format format;
     private final Comparator<? super T> selectionOrdering;

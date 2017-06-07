@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +23,20 @@ package io.github.jonestimd.swing.layout;
 
 import java.awt.GridBagConstraints;
 
+/**
+ * An interface for generating {@link GridBagConstraints}.
+ * @see GridBagBuilder
+ */
 public interface GridBagFormula {
+    /**
+     * Get the constraints to use for the label associated with the current component.
+     */
     GridBagFormula getLabelConstraints();
+
+    /**
+     * Apply the constraints for the current component.
+     * @param gbc the constraints to be updated
+     * @return the updated {@code gbc} parameter
+     */
     GridBagConstraints setConstraints(GridBagConstraints gbc);
 }

@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +24,9 @@ package io.github.jonestimd.swing.filter;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Logical operators for combining/modifying predicates.
+ */
 @SuppressWarnings("unchecked")
 public enum Operator {
     Not(null), And(Operation::and), Or(Operation::or), Group(null);
@@ -32,7 +37,7 @@ public enum Operator {
         this.operationFactory = operationFactory;
     }
 
-    public boolean preceeds(Operator that) {
+    public boolean precedes(Operator that) {
         return ordinal() < that.ordinal();
     }
 

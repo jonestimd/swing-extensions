@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +23,20 @@ package io.github.jonestimd.swing.table;
 
 import java.util.Collection;
 
+/**
+ * An interface for highlighting portions of a string.
+ */
 public interface Highlighter {
+    /**
+     * A highlighter that does nothing.
+     */
     Highlighter NOOP_HIGHLIGHTER = (value, highlights) -> value;
 
+    /**
+     * Apply highlighting to a string.
+     * @param value the string to highlight
+     * @param highlights the substrings to highlight within {@code value}
+     * @return a new string with highlighting
+     */
     String highlight(String value, Collection<String> highlights);
 }

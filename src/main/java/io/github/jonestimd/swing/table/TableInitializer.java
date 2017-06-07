@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +45,9 @@ import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.MixedRowTableModel;
 import io.github.jonestimd.swing.table.model.ValidatedTableModel;
 
+/**
+ * Initializes table cell renderers and editors.
+ */
 public class TableInitializer {
     public static final String UNDO_CHANGE_ACTION_KEY = "io.github.jonestimd.swing.table.undoChange";
 

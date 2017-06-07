@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Interface for parsing the text of a {@link FilterSource} and creating a {@link Predicate}.
+ * An interface for parsing the text of a {@link FilterSource} and creating a {@link Predicate}.
  * @param <T> the parameter type of the generated predicate.
  */
 public interface FilterParser<T> {

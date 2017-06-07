@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +31,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+/**
+ * A panel that displays a component between previous and next buttons.  A listener can be added to handle
+ * clicks on the previous and next buttons.
+ */
 public class PreviousNextPanel extends JPanel {
     private static final ImageIcon previousIcon = new ImageIcon(PreviousNextPanel.class.getResource("previous.png"));
     private static final ImageIcon nextIcon = new ImageIcon(PreviousNextPanel.class.getResource("next.png"));

@@ -19,15 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-package io.github.jonestimd.swing.table;
-
-import java.text.SimpleDateFormat;
-
 /**
- * A table cell renderer that uses {@link SimpleDateFormat} to convert the value to a string.
+ * Custom collections.
  */
-public class DateTableCellRenderer extends FormatTableCellRenderer {
-    public DateTableCellRenderer(String pattern) {
-        super(new SimpleDateFormat(pattern), Highlighter.NOOP_HIGHLIGHTER);
-    }
-}
+package io.github.jonestimd.collection;

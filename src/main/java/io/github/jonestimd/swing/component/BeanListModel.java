@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +29,12 @@ import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.ListModel;
 
+/**
+ * A {@link ListModel} that contains beans.
+ * @param <T> the class of the beans in the model
+ */
 public class BeanListModel<T> extends AbstractListModel<T> implements ComboBoxModel<T>, Iterable<T> {
     private final List<T> elements = new ArrayList<>();
     private T selectedElement;

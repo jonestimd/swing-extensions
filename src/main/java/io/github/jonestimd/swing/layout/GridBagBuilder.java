@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +46,22 @@ import io.github.jonestimd.swing.LabelBuilder;
 
 import static java.awt.GridBagConstraints.*;
 
+/**
+ * A form builder that simplifies usage of {@link GridBagLayout}.  The initial constraints are as follows
+ * <ul>
+ * <li><code>(gridx, gridy) =</code> (0, 0)
+ * <li><code>fill = HORIZONTAL</code>
+ * <li><code>weightx, weighty =</code> 1.0
+ * <li><code>anchor = WEST</code>
+ * </ul>
+ * The constraints are updated using a {@link GridBagFormula} when each component is added.
+ * <p>The following components are automatically wrapped in a {@link JScrollPane}:
+ * <ul>
+ *     <li>{@link JTable}</li>
+ *     <li>{@link JList}</li>
+ *     <li>{@link JTextArea}</li>
+ * </ul>
+ */
 public class GridBagBuilder {
     public static final int RELATED_GAP = 2;
     public static final int UNRELATED_GAP = 10;
@@ -76,18 +94,24 @@ public class GridBagBuilder {
     private final int columns;
 
     /**
-     * Create a new builder. The constraints are initialized as follows
-     * <ul>
-     * <li><code>(gridx, gridy) =</code> (0, 0)
-     * <li><code>fill = HORIZONTAL</code>
-     * <li><code>weightx, weighty =</code> 1.0
-     * <li><code>anchor = WEST</code>
-     * </ul>
+     * Create a new builder using 2 columns and the default {@link GridBagFormula}s.
+     * @param container the form container
+     * @param bundle provides label text
+     * @param resourcePrefix prefix for resource bundle keys
+     * @see FormElement
      */
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix) {
         this(container, bundle, resourcePrefix, 2, DEFAULT_CONSTRAINTS);
     }
 
+    /**
+     * Create a new builder using specific {@link GridBagFormula}s.
+     * @param container the form container
+     * @param bundle provides label text
+     * @param resourcePrefix prefix for resource bundle keys
+     * @param columns the number of grid columns
+     * @param fieldConstraints map of component class to {@link GridBagFormula}
+     */
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix,
             int columns, Map<Class<?>, GridBagFormula> fieldConstraints) {
         this.fieldConstrains = fieldConstraints;
@@ -98,14 +122,26 @@ public class GridBagBuilder {
         container.setLayout(new GridBagLayout());
     }
 
+    /**
+     * Use the horizontal and vertical {@link #RELATED_GAP} for the next component.
+     * @return this builder
+     */
     public GridBagBuilder relatedGap() {
         return insets(RELATED_GAP, 0, 0, RELATED_GAP);
     }
 
+    /**
+     * Use the vertical {@link #UNRELATED_GAP} and horizontal {@link #RELATED_GAP} for the next component.
+     * @return this builder
+     */
     public GridBagBuilder unrelatedVerticalGap() {
         return insets(UNRELATED_GAP, 0, 0, RELATED_GAP);
     }
 
+    /**
+     * Set the insets for the next component.
+     * @return this builder
+     */
     public GridBagBuilder insets(int top, int left, int bottom, int right) {
         gbc.insets.set(top, left, bottom, right);
         return this;
@@ -120,6 +156,13 @@ public class GridBagBuilder {
         return constraints == null ? EMPTY_CONSTRAINT : constraints;
     }
 
+    /**
+     * Append a labeled component to the form.
+     * @param labelKey the resource key for the label
+     * @param field the component
+     * @param <T> the class of the component
+     * @return the component
+     */
     public <T extends JComponent> T append(String labelKey, T field) {
         GridBagFormula constraints = getConstraints(field.getClass());
         relatedGap();
@@ -129,10 +172,23 @@ public class GridBagBuilder {
         return append(field, constraints);
     }
 
+    /**
+     * Append an unlabeled component to the form.
+     * @param field the component
+     * @param <T> the class of the component
+     * @return the component
+     */
     public <T extends JComponent> T append(T field) {
         return append(field, getConstraints(field.getClass()));
     }
 
+    /**
+     * Append an unlabeled component to the form.
+     * @param field the component
+     * @param formula the constraints calculator for the component
+     * @param <T> the class of the component
+     * @return the component
+     */
     public  <T extends JComponent> T append(T field, GridBagFormula formula) {
         if (field instanceof JTextArea || field instanceof JTable || field instanceof JList) {
             container.add(new JScrollPane(field), formula.setConstraints(gbc));
@@ -144,6 +200,10 @@ public class GridBagBuilder {
         return field;
     }
 
+    /**
+     * Append a group of radio buttons in a horizontal box.
+     * @param buttons the buttons to append
+     */
     public void append(JRadioButton ... buttons) {
         Box box = Box.createHorizontalBox();
         for (JRadioButton button : buttons) {
@@ -153,6 +213,10 @@ public class GridBagBuilder {
         append(box, FormElement.BUTTON_GROUP);
     }
 
+    /**
+     * Move to the next cell.  If there are columns left in the row then moves to the next column.
+     * Otherwise, moves to the first column of the next row.
+     */
     public void nextCell() {
         gbc.gridx += gbc.gridwidth;
         if (gbc.gridx >= columns) {

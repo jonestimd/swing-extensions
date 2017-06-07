@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +61,7 @@ import io.github.jonestimd.swing.action.ActionAdapter;
  * @param <P> the class of the panel used for the content of the popup window
  */
 public abstract class AbstractButtonBorder<C extends JComponent, P extends JComponent> implements Border {
+    /** Available sides for displaying the button. */
     public enum Side { LEFT, RIGHT }
     private static final String SHOW_POPUP = "showPopup";
 

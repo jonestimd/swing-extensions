@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +34,9 @@ import io.github.jonestimd.beans.ObservableBean;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.DocumentConsumerAdapter;
 
+/**
+ * Utiltiy methods for binding {@link ObservableBean}s and change handlers to UI components.
+ */
 public class ComponentBinder {
     private static final String LISTENER_PROPERTY = "io.github.jonestimd.swing.component.ComponentBinder.listener";
     private static final String SOURCE_PROPERTY = "io.github.jonestimd.swing.component.ComponentBinder.source";

@@ -21,6 +21,10 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+/**
+ * The model class for a {@link SuggestField}.
+ * @param <T> the class of the beans in the field
+ */
 public abstract class SuggestModel<T> extends BeanListModel<T> {
     /**
      * Update the elements in this model and return the selected item.

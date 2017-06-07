@@ -123,7 +123,7 @@ public class BasicFilterParser<T> implements FilterParser<T> {
 
     private void squashStack(Operator operator) {
         Predicate<T> leftTerm = getTerm();
-        while (! stack.isEmpty() && stack.get(0).operator.preceeds(operator)) leftTerm = pop(leftTerm);
+        while (! stack.isEmpty() && stack.get(0).operator.precedes(operator)) leftTerm = pop(leftTerm);
         stack.add(0, operator.operateOn(leftTerm));
     }
 

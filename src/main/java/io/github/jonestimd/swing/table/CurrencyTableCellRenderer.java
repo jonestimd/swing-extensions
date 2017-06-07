@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +25,9 @@ import java.awt.Color;
 import java.math.BigDecimal;
 import java.text.Format;
 
+/**
+ * A table cell renderer that uses different colors for positive and negative numbers.
+ */
 public class CurrencyTableCellRenderer extends FormatTableCellRenderer {
     private final Color positiveColor;
     private final Color negativeColor;

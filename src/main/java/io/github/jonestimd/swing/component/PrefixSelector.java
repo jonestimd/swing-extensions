@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,10 @@ package io.github.jonestimd.swing.component;
 
 import javax.swing.ListModel;
 
+/**
+ * An interface for selecting an item in a {@link ListModel} based on the prefix.
+ * @param <T>
+ */
 public interface PrefixSelector<T> {
     T selectMatch(ListModel<T> model, String prefix);
 }

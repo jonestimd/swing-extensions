@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +24,11 @@ package io.github.jonestimd.swing.filter;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * A logical operation to apply to one or more predicates.
+ * @param <T> the parameter class of the predicate(s)
+ * @see BasicFilterParser
+ */
 public abstract class Operation<T> {
     public final Operator operator;
 
@@ -31,6 +38,10 @@ public abstract class Operation<T> {
 
     public abstract Predicate<T> apply(Predicate<T> operand);
 
+    /**
+     * A logical operation that combines 2 predicates.
+     * @param <T> the parameter class of the predicates
+     */
     public static class BinaryOperation<T> extends Operation<T> {
         public final Function<Predicate<T>, Predicate<T>> leftOperand;
 
