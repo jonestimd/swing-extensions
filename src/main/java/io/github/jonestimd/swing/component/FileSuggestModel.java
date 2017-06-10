@@ -29,13 +29,16 @@ import java.util.function.Predicate;
 
 import io.github.jonestimd.util.Streams;
 
+import static java.util.Collections.*;
+
 /**
  * The model for a {@link FileSuggestField}.  Provides a list of files and/or directories based on the current
  * field value.
  */
 public class FileSuggestModel extends SuggestModel<File> {
-    private static final String TRAILING_DOT = "(\\" + File.separator + "\\.)+$";
+    private static final String TRAILING_DOT = String.format("(\\%s\\.)+$", File.separator);
     private final Predicate<File> filePredicate;
+    private List<File> roots = unmodifiableList(Arrays.asList(File.listRoots()));
     private File directory;
 
     public FileSuggestModel(File startDirectory, Predicate<File> filePredicate) {
@@ -56,15 +59,27 @@ public class FileSuggestModel extends SuggestModel<File> {
     @Override
     public File updateSuggestions(String editorText) {
         File currentDir = getParent(editorText.replaceAll(TRAILING_DOT, ""));
-        if (currentDir != null && !currentDir.getAbsolutePath().equals(directory.getAbsolutePath())) {
+        if (currentDir == null && editorText.isEmpty()) {
+            directory = null;
+            if (roots.size() == 1) currentDir = roots.get(0);
+            else setElements(roots, false);
+        }
+        if (currentDir != null && !currentDir.equals(directory)) {
             directory = currentDir;
             setElements(getFiles(), true);
         }
-        return new File(editorText);
+        File file = new File(editorText);
+        return file.equals(currentDir) ? currentDir : file;
     }
 
     private File getParent(String text) {
         File file = new File(text);
-        return text.endsWith(File.separator) ? file : file.getParentFile();
+        if (text.endsWith(File.separator)) {
+            for (File item : this) {
+                if (item.equals(file)) return item;
+            }
+            return file;
+        }
+        return file.getParentFile();
     }
 }

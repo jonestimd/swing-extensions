@@ -21,12 +21,17 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JFrame;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 
 import io.github.jonestimd.swing.SwingEdtRule;
@@ -42,6 +47,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileSuggestFieldTest {
+    private final int SEPARATOR_KEY_CODE = KeyStroke.getKeyStroke(File.separatorChar).getKeyCode();
+
     @Rule
     public final SwingEdtRule swingEdtRule = new SwingEdtRule();
 
@@ -51,7 +58,11 @@ public class FileSuggestFieldTest {
     private String requiredMessage = "File is required";
 
     private KeyEvent newKeyEvent(FileSuggestField field, int keyCode, char keyChar) {
-        return new KeyEvent(field.getEditorComponent(), KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, keyCode, keyChar);
+        return newKeyEvent(field, keyCode, keyChar, 0);
+    }
+
+    private KeyEvent newKeyEvent(FileSuggestField field, int keyCode, char keyChar, int modifiers) {
+        return new KeyEvent(field.getEditorComponent(), KeyEvent.KEY_RELEASED, System.currentTimeMillis(), modifiers, keyCode, keyChar);
     }
 
     private KeyListener getKeyListener(FileSuggestField field) {
@@ -184,14 +195,51 @@ public class FileSuggestFieldTest {
     }
 
     @Test
-    public void doesNotUpdateSuggestionsForEmptyInput() throws Exception {
+    public void keyListenerRetainsTrailingFileSeparator() throws Exception {
+        FileSuggestField field = new FileSuggestField(false, startDir);
+        field.getEditorComponent().setText(startDir.toString());
+        field.setUI(comboBoxUI);
+
+        getKeyListener(field).keyReleased(newKeyEvent(field, SEPARATOR_KEY_CODE, File.separatorChar));
+
+        assertThat(field.getEditorText()).endsWith(File.separator);
+    }
+
+    @Test
+    public void ctrlPlusFileSeparatorDoesNotAppendText() throws Exception {
+        FileSuggestField field = new FileSuggestField(false, startDir);
+        field.getEditorComponent().setText(startDir.toString());
+        field.setUI(comboBoxUI);
+
+        getKeyListener(field).keyReleased(newKeyEvent(field, SEPARATOR_KEY_CODE, File.separatorChar, KeyEvent.CTRL_DOWN_MASK));
+
+        assertThat(field.getEditorText()).isEqualTo(startDir.toString());
+    }
+
+    @Test
+    public void typingFileSeparatorRetainsCursorPosition() throws Exception {
+        String text = "/#xyz123";
+        FileSuggestField field = new FileSuggestField(false, new File(text));
+        field.getEditorComponent().setText(text);
+        field.setUI(comboBoxUI);
+        field.getEditorComponent().setCaretPosition(4);
+
+        getKeyListener(field).keyReleased(newKeyEvent(field, SEPARATOR_KEY_CODE, File.separatorChar));
+
+        assertThat(field.getEditorComponent().getCaretPosition()).isEqualTo(4);
+        assertThat(field.getEditorText()).isEqualTo(text);
+    }
+
+    @Test
+    public void usesRootFileForEmptyInput() throws Exception {
         FileSuggestField field = new FileSuggestField(false, startDir);
         field.getEditorComponent().setText("");
         field.setUI(comboBoxUI);
 
         getKeyListener(field).keyReleased(newKeyEvent(field, KeyEvent.VK_DELETE, (char)0));
 
-        assertThat(field.getModel()).hasSize(startDir.list().length + 1);
+        int count = File.listRoots()[0].listFiles().length;
+        assertThat(field.getModel()).hasSize(count + 1);
     }
 
     @Test
@@ -214,5 +262,21 @@ public class FileSuggestFieldTest {
         field.setSelectedItem(selectedItem);
 
         assertThat(field.getSelectedItem()).isEqualTo(selectedItem);
+    }
+
+    public static void main(String ...args) {
+        try {
+            FileSuggestField field = new FileSuggestField(false, new File(".").getCanonicalFile());
+            JFrame frame = new JFrame("test");
+            frame.getContentPane().setLayout(new BorderLayout());
+            frame.getContentPane().add(field, BorderLayout.SOUTH);
+            frame.pack();
+            frame.setSize(400, 100);
+            frame.setLocationRelativeTo(null);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

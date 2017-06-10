@@ -21,6 +21,7 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -30,6 +31,7 @@ import java.util.function.Predicate;
 import javax.swing.ComboBoxEditor;
 
 import io.github.jonestimd.swing.validation.RequiredValidator;
+import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.util.JavaPredicates;
 
@@ -37,6 +39,7 @@ import io.github.jonestimd.util.JavaPredicates;
  * File selection field that displays files and sub-directories in a popup menu.
  */
 public class FileSuggestField extends SuggestField<File> {
+    private static final int MODIFIER_MASK = KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK;
     private static final Format FORMAT = new Format() {
         @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
@@ -82,6 +85,19 @@ public class FileSuggestField extends SuggestField<File> {
         String text = getEditorText();
         if (anItem == null || !text.equals(anItem.toString() + File.separator)) {
             super.configureEditor(anEditor, anItem);
+        }
+    }
+
+    @Override
+    protected void processEditorKeyEvent(KeyEvent event) {
+        ValidatedTextField editor = getEditorComponent();
+        int position = editor.getCaretPosition();
+        super.processEditorKeyEvent(event);
+        if (event.getKeyChar() == File.separatorChar && (event.getModifiersEx() & MODIFIER_MASK) == 0) {
+            String text = editor.getText();
+            if (position >= text.length() && ! text.endsWith(File.separator)) {
+                editor.setText(text + File.separator);
+            }
         }
     }
 }
