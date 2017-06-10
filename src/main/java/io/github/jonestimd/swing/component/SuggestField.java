@@ -45,13 +45,10 @@ public class SuggestField<T> extends BeanListComboBox<T> {
         super(format, validator, model);
         getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
-                public void keyReleased(KeyEvent event) {
-                    updateSuggestions(getEditorText());
-                    int keyCode = event.getKeyCode();
-                    if (keyCode == KeyEvent.VK_SPACE && event.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK) moveToEnd();
-                    else if (keyCode != KeyEvent.VK_ENTER && keyCode != KeyEvent.VK_ESCAPE && ! isPopupVisible()) setPopupVisible(true);
-                }
-            });
+            public void keyReleased(KeyEvent event) {
+                SuggestField.this.processEditorKeyEvent(event);
+            }
+        });
         getEditorComponent().addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -75,12 +72,21 @@ public class SuggestField<T> extends BeanListComboBox<T> {
         editorComponent.setSelectionEnd(length);
     }
 
-    /**
-     * Called whenever the input text changes.  Must be implemented to update the model based on the editor text.
-     * @param editorText the current text from the editor
-     */
-    protected void updateSuggestions(String editorText) {
-        setSelectedItem(getModel().updateSuggestions(editorText));
+    protected void processEditorKeyEvent(KeyEvent event) {
+        int position = getEditorComponent().getCaretPosition();
+        int selectionStart = getEditorComponent().getSelectionStart();
+        int selectionEnd = getEditorComponent().getSelectionEnd();
+        setSelectedItem(getModel().updateSuggestions(getEditorText()));
+        if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+            int length = getEditorText().length();
+            getEditorComponent().setCaretPosition(Math.min(position, length));
+            getEditorComponent().setSelectionStart(Math.min(selectionStart, length));
+            getEditorComponent().setSelectionEnd(Math.min(selectionEnd, length));
+        }
+
+        int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.VK_SPACE && event.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK) moveToEnd();
+        else if (keyCode != KeyEvent.VK_ENTER && keyCode != KeyEvent.VK_ESCAPE && !isPopupVisible()) setPopupVisible(true);
     }
 
     @Override
