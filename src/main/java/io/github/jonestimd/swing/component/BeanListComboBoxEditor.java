@@ -167,12 +167,13 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
 
     private void autoCompleteFirstMatch(String text) {
         if (text.length() > 0) {
+            int position = editor.getCaretPosition();
             String match = getFirstMatch(text);
             if (match != null) {
                 editor.getDocument().removeDocumentListener(documentHandler);
                 editor.setText(text + match.substring(text.length()));
                 editor.setCaretPosition(text.length());
-                editor.setSelectionStart(text.length());
+                editor.setSelectionStart(Math.min(position, text.length()));
                 editor.setSelectionEnd(match.length());
                 editor.getDocument().addDocumentListener(documentHandler);
             }
