@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +97,18 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param model     the model containing the list of items
      */
     public BeanListComboBox(Format format, Validator<String> validator, BeanListModel<T> model) {
-        this(format, validator, model, new FormatPrefixSelector<>(format));
+        this(format, format, validator, model, new FormatPrefixSelector<>(format));
+    }
+
+    /**
+     * Create an editable combo box.
+     * @param format     display format for the popup items
+     * @param itemFormat display format for the selected item
+     * @param validator  validator for new items (applied to the editor value)
+     * @param model      the model containing the list of items
+     */
+    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, BeanListModel<T> model) {
+        this(format, itemFormat, validator, model, new FormatPrefixSelector<>(itemFormat));
     }
 
     /**
@@ -106,19 +119,20 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param prefixSelector selector for the best matching item for the editor content
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items, PrefixSelector<T> prefixSelector) {
-        this(format, validator, new BeanListModel<>(items), prefixSelector);
+        this(format, format, validator, new BeanListModel<>(items), prefixSelector);
     }
 
     /**
      * Create an editable combo box.
-     * @param format         display format for the items
+     * @param format         display format for the popup items
+     * @param itemFormat     display format for the selected item
      * @param validator      validator for new items (applied to the editor value)
      * @param model          the model containing the list of items
      * @param prefixSelector selector for the best matching item for the editor content
      */
-    public BeanListComboBox(Format format, Validator<String> validator, BeanListModel<T> model, PrefixSelector<T> prefixSelector) {
+    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, BeanListModel<T> model, PrefixSelector<T> prefixSelector) {
         this(format, model);
-        setEditor(new BeanListComboBoxEditor<>(this, format, validator, prefixSelector));
+        setEditor(new BeanListComboBoxEditor<>(this, itemFormat, validator, prefixSelector));
         getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
         setEditable(true);
     }

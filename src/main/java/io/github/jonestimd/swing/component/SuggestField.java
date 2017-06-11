@@ -42,7 +42,11 @@ import io.github.jonestimd.swing.validation.Validator;
  */
 public class SuggestField<T> extends BeanListComboBox<T> {
     public SuggestField(Format format, Validator<String> validator, SuggestModel<T> model) {
-        super(format, validator, model);
+        this(format, format, validator, model);
+    }
+
+    public SuggestField(Format format, Format itemFormat, Validator<String> validator, SuggestModel<T> model) {
+        super(format, itemFormat, validator, model);
         getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent event) {
