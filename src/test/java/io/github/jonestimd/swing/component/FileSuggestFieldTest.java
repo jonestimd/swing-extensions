@@ -30,11 +30,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.plaf.basic.ComboPopup;
 
 import io.github.jonestimd.swing.SwingEdtRule;
+import io.github.jonestimd.swing.validation.Validator;
+import io.github.jonestimd.util.JavaPredicates;
 import io.github.jonestimd.util.Streams;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +59,7 @@ public class FileSuggestFieldTest {
 
     @Mock
     private BasicComboBoxUI comboBoxUI;
-    private File startDir = new File(".");
+    private File startDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
     private String requiredMessage = "File is required";
 
     private KeyEvent newKeyEvent(FileSuggestField field, int keyCode, char keyChar) {
@@ -70,18 +75,21 @@ public class FileSuggestFieldTest {
         return listeners[listeners.length-1];
     }
 
+    private void verifyField(FileSuggestField field) {
+        List<File> children = Arrays.asList(startDir.getParentFile().listFiles());
+        String text = startDir.toString();
+        assertThat(field.getEditorComponent().getText()).isEqualTo(text);
+        assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(text.length());
+        assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(text.length());
+        assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
+        assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir.getParentFile());
+        assertThat(field.getModel()).containsAll(children);
+    }
+
     @Test
     public void createFieldForFilesWithoutValidation() throws Exception {
-        List<File> children = Arrays.asList(startDir.listFiles());
-
         FileSuggestField field = new FileSuggestField(false, startDir);
-
-        assertThat(field.getEditorComponent().getText()).isEqualTo(".");
-        assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(1);
-        assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
-        assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
-        assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).containsAll(children);
+        verifyField(field);
 
         field.getEditorComponent().setText("");
 
@@ -89,17 +97,29 @@ public class FileSuggestFieldTest {
     }
 
     @Test
+    public void createFieldForFilesWithoutValidationShowingThreeParents() throws Exception {
+        FileSuggestField field = new FileSuggestField(3, JavaPredicates.alwaysTrue(), startDir, Validator.empty());
+
+        verifyField(field);
+        verifyListFormat(field, 3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void verifyListFormat(FileSuggestField field, int parentDepth) {
+        ComboPopup popup = (ComboPopup) field.getUI().getAccessibleChild(field, 0);
+        JList list = popup.getList();
+        File basePath = startDir.getParentFile();
+        for (int i = 0; i < parentDepth; i++) {
+            basePath = basePath.getParentFile();
+        }
+        JLabel renderer = (JLabel) list.getCellRenderer().getListCellRendererComponent(list, startDir, 0, false, false);
+        assertThat(renderer.getText()).isEqualTo(new RelativePathFileFormat(basePath).format(startDir));
+    }
+
+    @Test
     public void createFieldForFilesWithValidation() throws Exception {
-        List<File> children = Arrays.asList(startDir.listFiles());
-
         FileSuggestField field = new FileSuggestField(false, startDir, requiredMessage);
-
-        assertThat(field.getEditorComponent().getText()).isEqualTo(".");
-        assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(1);
-        assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
-        assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
-        assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).containsAll(children);
+        verifyField(field);
 
         field.getEditorComponent().setText("");
 
@@ -108,16 +128,8 @@ public class FileSuggestFieldTest {
 
     @Test
     public void createFieldForDirectoriesWithoutValidation() throws Exception {
-        List<File> children = Streams.filter(Arrays.asList(startDir.listFiles()), File::isDirectory);
-
         FileSuggestField field = new FileSuggestField(true, startDir);
-
-        assertThat(field.getEditorComponent().getText()).isEqualTo(".");
-        assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(1);
-        assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
-        assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
-        assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).containsAll(children);
+        verifyField(field);
 
         field.getEditorComponent().setText("");
 
@@ -126,20 +138,22 @@ public class FileSuggestFieldTest {
 
     @Test
     public void createFieldForDirectoriesWithValidation() throws Exception {
-        List<File> children = Streams.filter(Arrays.asList(startDir.listFiles()), File::isDirectory);
-
         FileSuggestField field = new FileSuggestField(true, startDir, requiredMessage);
-
-        assertThat(field.getEditorComponent().getText()).isEqualTo(".");
-        assertThat(field.getEditorComponent().getSelectionStart()).isEqualTo(1);
-        assertThat(field.getEditorComponent().getSelectionEnd()).isEqualTo(1);
-        assertThat(field.getModel().getSize()).isEqualTo(children.size() + 1);
-        assertThat(field.getModel().getElementAt(0)).isEqualTo(startDir);
-        assertThat(field.getModel()).containsAll(children);
+        verifyField(field);
 
         field.getEditorComponent().setText("");
 
         assertThat(field.getValidationMessages()).isEqualTo(requiredMessage);
+    }
+
+    @Test
+    public void createFieldWithFilterAndValidator() throws Exception {
+        FileSuggestField field = new FileSuggestField(JavaPredicates.alwaysTrue(), startDir, Validator.empty());
+        verifyField(field);
+
+        field.getEditorComponent().setText("");
+
+        assertThat(field.getValidationMessages()).isNull();
     }
 
     @Test
@@ -152,12 +166,12 @@ public class FileSuggestFieldTest {
     }
 
     @Test
-    public void includeCurrentDirectoryInSuggestions() throws Exception {
+    public void setsSelectedItemToStartingDirectory() throws Exception {
         File directory = new File("unknown");
 
         FileSuggestField field = new FileSuggestField(false, directory);
 
-        assertThat(field.getModel()).contains(directory);
+        assertThat(field.getSelectedItem()).isEqualTo(directory.getCanonicalFile());
     }
 
     @Test
@@ -266,7 +280,7 @@ public class FileSuggestFieldTest {
 
     public static void main(String ...args) {
         try {
-            FileSuggestField field = new FileSuggestField(false, new File(".").getCanonicalFile());
+            FileSuggestField field = new FileSuggestField(false, new File("."));
             JFrame frame = new JFrame("test");
             frame.getContentPane().setLayout(new BorderLayout());
             frame.getContentPane().add(field, BorderLayout.SOUTH);
