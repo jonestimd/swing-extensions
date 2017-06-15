@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +40,8 @@ import io.github.jonestimd.swing.BackgroundTask;
 import io.github.jonestimd.util.Streams;
 
 /**
- * Provides a cell editor ({@link BeanListComboBox}) for selecting from a list of beans.
+ * Provides a cell editor ({@link BeanListComboBox}) for selecting from a list of beans.  Provides the option to load
+ * the list items lazily the first time a cell is edited.
  * @param <T> list item class
  */
 public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>> extends ComboBoxCellEditor {
@@ -64,6 +67,10 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         getComboBoxModel().addElement(null);
     }
 
+    /**
+     * Overridden start a background thread to load the list values if they haven't been loaded yet,
+     * @see #getComboBoxValues()
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
@@ -71,6 +78,10 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         return super.getTableCellEditorComponent(table, value, isSelected, row, column);
     }
 
+    /**
+     * Overridden start a background thread to load the list values if they haven't been loaded yet,
+     * @see #getComboBoxValues()
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded,
@@ -88,11 +99,17 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         return getComboBox().getModel();
     }
 
+    /**
+     * Set the list items.  Disables background loading of the list items.
+     */
     public void setListItems(List<T> items) {
         status = LoadStatus.DONE;
         addListItems(items);
     }
 
+    /**
+     * Add items to the drop down list.
+     */
     public void addListItems(Collection<T> newItems) {
         List<T> items = Streams.filter(getComboBoxModel(), Objects::nonNull);
         items.addAll(newItems);
@@ -129,6 +146,12 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         }
     }
 
+    /**
+     * Must be implemented to provide the list items.  Called from a background thread the first time a cell
+     * is edited unless the items have been set using {@link #setListItems(List)}.
+     * @see #getTableCellEditorComponent(JTable, Object, boolean, int, int)
+     * @see #getTreeCellEditorComponent(JTree, Object, boolean, boolean, boolean, int)
+     */
     protected abstract List<T> getComboBoxValues();
 
     private class LoadComboBoxTask extends BackgroundTask<List<T>> {
