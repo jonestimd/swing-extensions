@@ -95,7 +95,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         return (BeanListComboBox<T>) getComponent();
     }
 
-    protected BeanListModel<T> getComboBoxModel() {
+    protected LazyLoadComboBoxModel<T> getComboBoxModel() {
         return getComboBox().getModel();
     }
 
@@ -114,8 +114,8 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
         List<T> items = Streams.filter(getComboBoxModel(), Objects::nonNull);
         items.addAll(newItems);
         Collections.sort(items);
+        items.add(0, null);
         getComboBoxModel().setElements(items, getComboBox().isEditable());
-        getComboBoxModel().insertElementAt(null, 0);
     }
 
     private void initializeList(JComponent container, T selectedValue) {
@@ -133,14 +133,7 @@ public abstract class BeanListComboBoxCellEditor<T extends Comparable<? super T>
     private void setListItemsOnComboBox(List<T> items) {
         JComboBox comboBox = getComboBox();
         String editorText = comboBox.isEditable() ? ((JTextComponent)comboBox.getEditor().getEditorComponent()).getText() : "";
-        BeanListModel<T> comboBoxModel = getComboBoxModel();
-        int index = 1;
-        for (T item : items) {
-            if (comboBoxModel.indexOf(item) < 0) {
-                comboBoxModel.insertElementAt(item, index);
-            }
-            index++;
-        }
+        getComboBoxModel().addMissingElements(items);
         if (! editorText.isEmpty()) {
             ((JTextComponent) comboBox.getEditor().getEditorComponent()).setText(editorText);
         }

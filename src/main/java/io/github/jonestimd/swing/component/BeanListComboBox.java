@@ -76,7 +76,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param items  the list of items
      */
     public BeanListComboBox(Format format, Collection<? extends T> items) {
-        this(format, new BeanListModel<>(items));
+        this(format, new BeanListComboBoxModel<>(items));
         setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
     }
 
@@ -87,7 +87,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param items     the list of items
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items) {
-        this(format, validator, new BeanListModel<>(items));
+        this(format, validator, new BeanListComboBoxModel<>(items));
     }
 
     /**
@@ -96,7 +96,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param validator validator for new items (applied to the editor value)
      * @param model     the model containing the list of items
      */
-    public BeanListComboBox(Format format, Validator<String> validator, BeanListModel<T> model) {
+    public BeanListComboBox(Format format, Validator<String> validator, LazyLoadComboBoxModel<T> model) {
         this(format, format, validator, model, new FormatPrefixSelector<>(format));
     }
 
@@ -107,7 +107,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param validator  validator for new items (applied to the editor value)
      * @param model      the model containing the list of items
      */
-    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, BeanListModel<T> model) {
+    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, LazyLoadComboBoxModel<T> model) {
         this(format, itemFormat, validator, model, new FormatPrefixSelector<>(itemFormat));
     }
 
@@ -119,7 +119,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param prefixSelector selector for the best matching item for the editor content
      */
     public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items, PrefixSelector<T> prefixSelector) {
-        this(format, format, validator, new BeanListModel<>(items), prefixSelector);
+        this(format, format, validator, new BeanListComboBoxModel<>(items), prefixSelector);
     }
 
     /**
@@ -130,7 +130,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * @param model          the model containing the list of items
      * @param prefixSelector selector for the best matching item for the editor content
      */
-    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, BeanListModel<T> model, PrefixSelector<T> prefixSelector) {
+    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, LazyLoadComboBoxModel<T> model, PrefixSelector<T> prefixSelector) {
         this(format, model);
         setEditor(new BeanListComboBoxEditor<>(this, itemFormat, validator, prefixSelector));
         getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
@@ -138,24 +138,24 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     }
 
     @SuppressWarnings("unchecked")
-    private BeanListComboBox(Format format, BeanListModel<T> model) {
+    private BeanListComboBox(Format format, LazyLoadComboBoxModel<T> model) {
         super(model);
         setRenderer(new Renderer(format));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public BeanListModel<T> getModel() {
-        return (BeanListModel<T>) super.getModel();
+    public LazyLoadComboBoxModel<T> getModel() {
+        return (LazyLoadComboBoxModel<T>) super.getModel();
     }
 
     /**
-     * @throws IllegalArgumentException if {@code aModel} is not an instance of {@link BeanListModel}
+     * @throws IllegalArgumentException if {@code aModel} is not an instance of {@link BeanListComboBoxModel}
      */
     @Override
     public void setModel(ComboBoxModel<T> aModel) {
-        if (!(aModel instanceof BeanListModel)) {
-            throw new IllegalArgumentException("not a BeanListModel");
+        if (!(aModel instanceof LazyLoadComboBoxModel)) {
+            throw new IllegalArgumentException("not a LazyLoadComboBoxModel");
         }
         super.setModel(aModel);
     }

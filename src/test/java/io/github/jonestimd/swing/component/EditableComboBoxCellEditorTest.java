@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void checkModel(BeanListModel<TestBean> model, TestBean... otherBeans) {
+    private void checkModel(LazyLoadComboBoxModel<TestBean> model, TestBean... otherBeans) {
         List<TestBean> items = Streams.toList(model);
         assertThat(items).hasSize(comboBoxValues.size() + 1 + otherBeans.length);
         assertThat(items.get(0)).isNull();

@@ -38,7 +38,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class BeanListComboBoxEditorTest {
-    private BeanListModel<String> model = new BeanListModel<>(Arrays.asList("Apple", "Banana", "Cherry"));
+    private BeanListComboBoxModel<String> model = new BeanListComboBoxModel<>(Arrays.asList("Apple", "Banana", "Cherry"));
     private JComboBox<String> comboBox = new JComboBox<>(model);
     private BeanListComboBoxEditor<String> editor = new BeanListComboBoxEditor<>(comboBox, new StringFormat(), Validator.empty());
 

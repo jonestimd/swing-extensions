@@ -35,7 +35,7 @@ import static java.util.Collections.*;
  * The model for a {@link FileSuggestField}.  Provides a list of files and/or directories based on the current
  * field value.
  */
-public class FileSuggestModel extends SuggestModel<File> {
+public class FileSuggestModel extends BeanListComboBoxModel<File> implements SuggestModel<File> {
     private static final String TRAILING_DOT = String.format("(\\%s\\.)+$", File.separator);
     private final Predicate<File> filePredicate;
     private List<File> roots = unmodifiableList(Arrays.asList(File.listRoots()));

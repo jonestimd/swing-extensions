@@ -79,7 +79,7 @@ public class SuggestFieldRobotTest extends JFrameRobotTest {
         return panel;
     }
 
-    private class Model extends SuggestModel<String> {
+    private class Model extends BeanListComboBoxModel<String> implements SuggestModel<String> {
         public Model() {
             setElements(items, false);
         }

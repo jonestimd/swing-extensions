@@ -21,15 +21,38 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.util.Collection;
+
+import javax.swing.ComboBoxModel;
+
 /**
- * The model class for a {@link SuggestField}.
- * @param <T> the class of the beans in the field
+ * A combo box model that supports loading the list items lazily.
+ * @param <T> the class of the combo box items
  */
-public interface SuggestModel<T> extends LazyLoadComboBoxModel<T> {
+public interface LazyLoadComboBoxModel<T> extends ComboBoxModel<T>, Iterable<T> {
     /**
-     * Update the elements in this model and return the selected item.
-     * @param editorText the current editor text
-     * @return the selected item based on the editor text
+     * Replace the items in the list.
+     * @param items the new items
+     * @param keepSelection if true then the selected item is not changed, if false then the selected item is cleared
+     *        if it is not in {@code items}
      */
-    T updateSuggestions(String editorText);
+    void setElements(Collection<? extends T> items, boolean keepSelection);
+
+    /**
+     * Append an item to the list.
+     * @param item the item to append
+     */
+    void addElement(T item);
+
+    /**
+     * Add items to the list, skipping items that are already in the list.
+     * @param items the items to add
+     */
+    void addMissingElements(Collection<? extends T> items);
+
+    /**
+     * Get the index of an item in the list.
+     * @return the index of the item or -1 if it is not in the list
+     */
+    int indexOf(Object item);
 }
