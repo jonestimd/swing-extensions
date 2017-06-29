@@ -196,13 +196,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         }
 
         @Override
-        public void setBorder(Border b) {
-            if (!(b instanceof javax.swing.plaf.UIResource)) {
-                super.setBorder(b);
-            }
-        }
-
-        @Override
         public void validateValue() {
             super.validateValue();
             if (getToolTipText() == null) {
