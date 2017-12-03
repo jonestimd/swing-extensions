@@ -235,6 +235,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         if (renderer instanceof JComponent) {
+            ((JComponent) renderer).setToolTipText(null);
             // force DefaultTableCellRenderer to use table background and foreground
             ((JComponent) renderer).setBackground(getRowBackground(row));
             ((JComponent) renderer).setForeground(getForeground());

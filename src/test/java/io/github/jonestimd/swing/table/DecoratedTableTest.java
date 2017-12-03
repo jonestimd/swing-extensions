@@ -54,6 +54,7 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
 import io.github.jonestimd.swing.table.model.TestColumnAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -326,13 +327,31 @@ public class DecoratedTableTest {
         table.prepareRenderer(renderer2, 0, 0);
         table.prepareRenderer(renderer2, 1, 0);
 
-        verify(renderer1).getTableCellRendererComponent(same(table), any(), anyBoolean(), anyBoolean(), anyInt(), anyInt());
+        verify(renderer1).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
         verifyNoMoreInteractions(renderer1);
-        verify((JComponent) renderer2).setBackground(evenBackground);
-        verify((JComponent) renderer2).setBackground(oddBackground);
-        verify((JComponent) renderer2, times(2)).setForeground(table.getForeground());
-        verify(renderer2, times(2)).getTableCellRendererComponent(same(table), anyString(), anyBoolean(), anyBoolean(), anyInt(), eq(0));
-        verifyNoMoreInteractions(renderer2);
+        InOrder inOrder = inOrder(renderer2);
+        inOrder.verify((JComponent) renderer2).setBackground(evenBackground);
+        inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
+        inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
+        inOrder.verify((JComponent) renderer2).setBackground(oddBackground);
+        inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
+        inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean2", false, false, 1, 0);
+    }
+
+    @Test
+    public void prepareRendererInitializesTooltipText() throws Exception {
+        final TableCellRenderer renderer1 = mock(TableCellRenderer.class);
+        final TableCellRenderer renderer2 = mock(DefaultTableCellRenderer.class);
+        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+
+        table.prepareRenderer(renderer1, 0, 0);
+        table.prepareRenderer(renderer2, 1, 0);
+
+        verify(renderer1).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
+        verifyNoMoreInteractions(renderer1);
+        InOrder inOrder = inOrder(renderer2);
+        inOrder.verify((JComponent) renderer2).setToolTipText(null);
+        inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean2", false, false, 1, 0);
     }
 
     @Test
