@@ -39,7 +39,7 @@ public class ValidationDecorator implements TableDecorator {
         String errors = ((ValidatedTableModel) table.getModel()).validateAt(row, column);
         validationBorder.setValid(errors == null);
         addValidationBorder(renderer);
-        renderer.setToolTipText(errors);
+        if (errors != null) renderer.setToolTipText(errors);
     }
 
     private void addValidationBorder(JComponent component) {

@@ -78,7 +78,7 @@ public class ValidationDecoratorTest {
     }
 
     @Test
-    public void prepareRendererResetsTooltip() throws Exception {
+    public void prepareRendererDoesNotResetTooltip() throws Exception {
         doReturn(model).when(table).getModel();
         when(model.validateAt(anyInt(), anyInt())).thenReturn(null);
         when(renderer.getBorder()).thenReturn(null);
@@ -88,7 +88,7 @@ public class ValidationDecoratorTest {
         verify(renderer).setBorder(borderCaptor.capture());
         assertThat(borderCaptor.getValue()).isInstanceOf(ValidationBorder.class);
         assertThat(((ValidationBorder) borderCaptor.getValue()).isValid()).isTrue();
-        verify(renderer).setToolTipText(null);
+        verify(renderer, never()).setToolTipText(null);
     }
 
     @Test
