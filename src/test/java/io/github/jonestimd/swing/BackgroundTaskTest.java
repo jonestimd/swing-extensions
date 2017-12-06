@@ -61,7 +61,7 @@ public class BackgroundTaskTest {
     @Mock
     private Function<Throwable, Boolean> onException;
     private CompletableFuture<String> future;
-    private String threadName;
+    private boolean swingEventThread;
 
     private StatusFrame window;
     private JPanel owner = new JPanel();
@@ -129,7 +129,7 @@ public class BackgroundTaskTest {
     @Test
     public void runAddsVisibilityHandlerToShowStatus() throws Exception {
         when(supplier.get()).thenAnswer(invocation -> {
-            threadName = Thread.currentThread().getName();
+            swingEventThread = SwingUtilities.isEventDispatchThread();
             return THE_STRING;
         });
 
@@ -139,14 +139,14 @@ public class BackgroundTaskTest {
         assertThat(listeners).filteredOn("class", VisibilityHandler.class).isNotEmpty();
         assertThat(future.get()).isEqualTo(THE_STRING);
         verify(consumer, timeout(1000)).accept(THE_STRING);
-        assertThat(threadName).startsWith("ForkJoinPool.");
+        assertThat(swingEventThread).isFalse();
     }
 
     @Test
     public void runStartsTaskOnNewThread() throws Exception {
         TestStatusIndicator indicator = mock(TestStatusIndicator.class);
         when(supplier.get()).thenAnswer(invocation -> {
-            threadName = Thread.currentThread().getName();
+            swingEventThread = SwingUtilities.isEventDispatchThread();
             return THE_STRING;
         });
 
@@ -156,7 +156,7 @@ public class BackgroundTaskTest {
         verify(indicator, timeout(1000)).disableUI(STATUS_MESSAGE);
         verify(indicator, timeout(1000)).enableUI();
         verify(consumer, timeout(1000)).accept(THE_STRING);
-        assertThat(threadName).startsWith("ForkJoinPool.");
+        assertThat(swingEventThread).isFalse();
     }
 
     @Test
