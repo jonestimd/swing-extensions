@@ -19,6 +19,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
@@ -85,6 +88,16 @@ public class BeanListTableModel<T> extends AbstractTableModel implements ColumnI
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return beanTableAdapter.isCellEditable(getRow(rowIndex), columnIndex);
+    }
+
+    @Override
+    public Cursor getCursor(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        return getColumnAdapter(columnIndex).getCursor(event, table, getBean(rowIndex));
+    }
+
+    @Override
+    public void handleClick(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        getColumnAdapter(columnIndex).handleClick(event, table, getBean(rowIndex));
     }
 
     public T getRow(int index) {

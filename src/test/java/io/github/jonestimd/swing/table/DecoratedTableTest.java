@@ -23,7 +23,11 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +55,7 @@ import com.google.common.collect.Lists;
 import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.table.model.BeanListTableModel;
 import io.github.jonestimd.swing.table.model.BeanTableModel;
+import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.TestColumnAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,8 +77,107 @@ public class DecoratedTableTest {
 
     private TestColumnAdapter<TestBean, String> columnAdapter1 = new TestColumnAdapter<>("Column 1", String.class, TestBean::getValue, TestBean::setValue);
     private TestColumnAdapter<TestBean, Boolean> columnAdapter2 = new TestColumnAdapter<>("Column 2", Boolean.class, TestBean::isFlag, TestBean::setFlag);
+    @Mock
+    private TestColumnAdapter<TestBean, Boolean> mockAdapter1;
     private Color evenBackground = ComponentDefaults.getColor("Table.alternateRowColor");
     private Color oddBackground = ComponentDefaults.getColor("Table.background");
+
+    @Test
+    public void mouseMovedSetsCursor() throws Exception {
+        MouseEvent event = mockEvent(0, 0);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
+
+        listeners[listeners.length-1].mouseMoved(event);
+
+        verify(mockAdapter1).getCursor(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseMovedIgnoredForXOutOfBounds() throws Exception {
+        MouseEvent event = mockEvent(-10, 0);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
+
+        listeners[listeners.length-1].mouseMoved(event);
+
+        verify(mockAdapter1, never()).getCursor(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseMovedIgnoredForYOutOfBounds() throws Exception {
+        MouseEvent event = mockEvent(0, -50);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
+
+        listeners[listeners.length-1].mouseMoved(event);
+
+        verify(mockAdapter1, never()).getCursor(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseDraggedSetsCursor() throws Exception {
+        MouseEvent event = mockEvent(0, 0);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
+
+        listeners[listeners.length-1].mouseDragged(event);
+
+        verify(mockAdapter1).getCursor(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseClickCallsColumnHandler() throws Exception {
+        MouseEvent event = mockEvent(0, 0);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseListener[] listeners = table.getListeners(MouseListener.class);
+
+        listeners[listeners.length-1].mouseClicked(event);
+
+        verify(mockAdapter1).handleClick(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseClickIgnoredForXOutOfBounds() throws Exception {
+        MouseEvent event = mockEvent(-10, 0);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseListener[] listeners = table.getListeners(MouseListener.class);
+
+        listeners[listeners.length-1].mouseClicked(event);
+
+        verify(mockAdapter1, never()).handleClick(event, table, table.getModel().getBean(0));
+    }
+
+    @Test
+    public void mouseClickIgnoredForYOutOfBounds() throws Exception {
+        MouseEvent event = mockEvent(0, -50);
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseListener[] listeners = table.getListeners(MouseListener.class);
+
+        listeners[listeners.length-1].mouseClicked(event);
+
+        verify(mockAdapter1, never()).handleClick(event, table, table.getModel().getBean(0));
+    }
+
+    private MouseEvent mockEvent(int x, int y) {
+        MouseEvent event = mock(MouseEvent.class);
+        when(event.getPoint()).thenReturn(new Point(x, y));
+        return event;
+    }
 
     @Test
     public void alternateRowColors() throws Exception {
@@ -135,7 +239,7 @@ public class DecoratedTableTest {
 
     @Test
     public void getSelectedItems() throws Exception {
-        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable();
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable();
         table.getModel().setBeans(Lists.newArrayList(new TestBean("bean1"), new TestBean("bean2"), new TestBean("bean2")));
         assertThat(table.getSelectedItems()).isEmpty();
         table.getSelectionModel().setSelectionInterval(1, 2);
@@ -145,7 +249,7 @@ public class DecoratedTableTest {
 
     @Test
     public void processKeyBindingSetsAutoStartEdit() throws Exception {
-        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable();
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable();
 
         table.processKeyBinding(KeyStroke.getKeyStroke('x'), new KeyEvent(table, KEY_TYPED, 0L, 0, VK_UNDEFINED, 'x'), WHEN_FOCUSED, true);
         assertThat(table.getClientProperty("JTable.autoStartsEdit")).isEqualTo(true);
@@ -375,7 +479,7 @@ public class DecoratedTableTest {
     }
 
     private DecoratedTable<TestBean, BeanListTableModel<TestBean>> newTable(String... beanValues) {
-        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable();
+        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable();
         table.getModel().setBeans(createBeans(beanValues));
         return table;
     }
@@ -384,8 +488,12 @@ public class DecoratedTableTest {
         return Stream.of(beanValues).map(TestBean::new).collect(Collectors.toList());
     }
 
-    private DecoratedTable<TestBean, BeanListTableModel<TestBean>> newTable() {
-        return new DecoratedTable<>(new BeanListTableModel<>(ImmutableList.of(columnAdapter1, columnAdapter2)));
+    private DecoratedTable<TestBean, BeanListTableModel<TestBean>> createTable() {
+        return createTable(ImmutableList.of(columnAdapter1, columnAdapter2));
+    }
+
+    private DecoratedTable<TestBean, BeanListTableModel<TestBean>> createTable(List<ColumnAdapter<TestBean, ?>> columnAdapters) {
+        return new DecoratedTable<>(new BeanListTableModel<>(columnAdapters));
     }
 
     private static class TestBean {

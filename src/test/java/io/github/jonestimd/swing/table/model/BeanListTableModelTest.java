@@ -1,11 +1,13 @@
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -178,5 +180,29 @@ public class BeanListTableModelTest {
         model.notifyDataProviders(bean, columnId, oldValue);
 
         verify(dataProvider).updateBean(bean, columnId, oldValue);
+    }
+
+    @Test
+    public void getCursorCallsColumnAdapter() throws Exception {
+        final MouseEvent event = mock(MouseEvent.class);
+        final JTable table = mock(JTable.class);
+        model.addRow("one");
+        model.addRow("two");
+
+        model.getCursor(event, table, 1, 0);
+
+        verify(columnAdapter).getCursor(event, table, "two");
+    }
+
+    @Test
+    public void handleClickCallsColumnAdapter() throws Exception {
+        final MouseEvent event = mock(MouseEvent.class);
+        final JTable table = mock(JTable.class);
+        model.addRow("one");
+        model.addRow("two");
+
+        model.handleClick(event, table, 1, 0);
+
+        verify(columnAdapter).handleClick(event, table, "two");
     }
 }

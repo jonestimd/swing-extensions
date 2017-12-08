@@ -46,7 +46,7 @@ public class BeanTableAdapter<T> {
     private final List<TableDataProvider<T>> dataProviders = new LinkedList<>();
 
     public BeanTableAdapter(AbstractTableModel tableModel, List<? extends ColumnAdapter<T, ?>> columnAdapters) {
-        this(tableModel, columnAdapters, Collections.<TableDataProvider<T>>emptyList());
+        this(tableModel, columnAdapters, Collections.emptyList());
     }
 
     public BeanTableAdapter(AbstractTableModel tableModel, List<? extends ColumnAdapter<? super T, ?>> columnAdapters, Iterable<? extends TableDataProvider<T>> dataProviders) {

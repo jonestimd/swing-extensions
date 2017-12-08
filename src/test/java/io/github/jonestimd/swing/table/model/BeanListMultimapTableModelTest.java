@@ -1,5 +1,6 @@
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -33,6 +35,8 @@ public class BeanListMultimapTableModelTest {
     private TableDataProvider<TestBean> dataProvider;
     @Mock
     private TableModelListener modelListener;
+    @Mock
+    private ColumnAdapter<TestBean, String> mockColumnAdapter;
 
     private TestGroup group1 = new TestGroup("group1");
     private TestGroup group2 = new TestGroup("group2");
@@ -363,6 +367,38 @@ public class BeanListMultimapTableModelTest {
     }
 
     @Test
+    public void getCursorCallsColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        TestBean bean1 = new TestBean(group1, "bean1b", "y");
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel(mockColumnAdapter);
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(beans);
+
+        tableModel.getCursor(event, table, 1, 0);
+
+        verify(mockColumnAdapter).getCursor(event, table, beans.get(0));
+    }
+
+    @Test
+    public void handleClickCallsColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        TestBean bean1 = new TestBean(group1, "bean1b", "y");
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel(mockColumnAdapter);
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(beans);
+
+        tableModel.handleClick(event, table, 1, 0);
+
+        verify(mockColumnAdapter).handleClick(event, table, beans.get(0));
+    }
+
+    @Test
     public void notifyDataProviders() throws Exception {
         TestBean bean1 = new TestBean(group1, "bean1b", "y");
         BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel();
@@ -409,6 +445,15 @@ public class BeanListMultimapTableModelTest {
     private BeanListMultimapTableModel<TestGroup, TestBean> newTableModel() {
         BeanListMultimapTableModel<TestGroup, TestBean> model = new BeanListMultimapTableModel<>(
                 Arrays.asList(BEAN_NAME_ADAPTER, BEAN_VALUE_ADAPTER),
+                Collections.singleton(dataProvider), TestBean::getGroup, TestGroup::getGroupName);
+        model.addTableModelListener(modelListener);
+        return model;
+    }
+
+    @SafeVarargs
+    private final BeanListMultimapTableModel<TestGroup, TestBean> newTableModel(ColumnAdapter<TestBean, ?>... columnAdapters) {
+        BeanListMultimapTableModel<TestGroup, TestBean> model = new BeanListMultimapTableModel<>(
+                Arrays.asList(columnAdapters),
                 Collections.singleton(dataProvider), TestBean::getGroup, TestGroup::getGroupName);
         model.addTableModelListener(modelListener);
         return model;

@@ -19,9 +19,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.function.BiPredicate;
 
+import javax.swing.JTable;
 import javax.swing.table.TableModel;
 
 /**
@@ -57,4 +60,20 @@ public interface BeanTableModel<T> extends TableModel {
      * @param isEqual used to determine if a row is already in the model
      */
     void updateBeans(Collection<T> beans, BiPredicate<T, T> isEqual);
+
+    /**
+     * Get the mouse cursor to display for a cell.
+     * @param rowIndex the row index of the cell
+     * @param columnIndex the column index of the cell
+     * @return the mouse cursor to use for the cell or {@code null} to use the default cursor.
+     */
+    Cursor getCursor(MouseEvent event, JTable table, int rowIndex, int columnIndex);
+
+    /**
+     * Handle a mouse click on a cell.
+     * @param event the click event
+     * @param rowIndex the row containing the cell
+     * @param columnIndex the column index of the cell
+     */
+    void handleClick(MouseEvent event, JTable table, int rowIndex, int columnIndex);
 }

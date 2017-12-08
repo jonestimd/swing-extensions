@@ -21,10 +21,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.function.Function;
 
+import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -88,5 +90,51 @@ public class HeaderDetailTableModelTest {
         verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 0, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE)));
         verify(tableModelListener).tableChanged(matches(new TableModelEvent(model, 2, 3, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT)));
         verifyNoMoreInteractions(tableModelListener);
+    }
+
+    @Test
+    public void getCursorCallsColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        model.setBeans(singletonList("one"));
+
+        model.getCursor(event, table, 0, 0);
+
+        verify(columnAdapter).getCursor(event, table, "one");
+    }
+
+    @Test
+    public void getCursorCallsDetailColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        model.setBeans(singletonList("one"));
+        when(detailAdapter.getDetail("one", 0)).thenReturn("detail one");
+
+        model.getCursor(event, table, 1, 0);
+
+        verify(detailColumnAdapter).getCursor(event, table, "detail one");
+    }
+
+    @Test
+    public void handleClickCallsColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        model.setBeans(singletonList("one"));
+
+        model.handleClick(event, table, 0, 0);
+
+        verify(columnAdapter).handleClick(event, table, "one");
+    }
+
+    @Test
+    public void handleClickCallsDetailColumnAdapter() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        model.setBeans(singletonList("one"));
+        when(detailAdapter.getDetail("one", 0)).thenReturn("detail one");
+
+        model.handleClick(event, table, 1, 0);
+
+        verify(detailColumnAdapter).handleClick(event, table, "detail one");
     }
 }

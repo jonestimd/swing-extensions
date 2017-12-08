@@ -19,6 +19,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +32,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -318,6 +321,16 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return beanTableAdapter.isCellEditable(getBean(rowIndex), columnIndex);
+    }
+
+    @Override
+    public Cursor getCursor(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        return beanTableAdapter.getColumnAdapter(columnIndex).getCursor(event, table, getBean(rowIndex));
+    }
+
+    @Override
+    public void handleClick(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        beanTableAdapter.getColumnAdapter(columnIndex).handleClick(event, table, getBean(rowIndex));
     }
 
     @Override

@@ -19,6 +19,11 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JTable;
+
 import io.github.jonestimd.beans.ReadWriteAccessor;
 
 /**
@@ -49,4 +54,24 @@ public interface ColumnAdapter<Bean, Value> extends ReadWriteAccessor<Bean, Valu
      * @return true if the property is editable for the specified bean.
      */
     boolean isEditable(Bean row);
+
+    /**
+     * Get the mouse cursor to display for a cell.  Return {@code null} to use the default cursor.
+     * The default implementation returns {@code null}.
+     * @param event the mouse event
+     * @param table the table that received the event
+     * @param row the row containing the cell
+     */
+    default Cursor getCursor(MouseEvent event, JTable table, Bean row) {
+        return null;
+    }
+
+    /**
+     * Handle a mouse click on a cell.
+     * @param event the click event
+     * @param table the table that received the event
+     * @param row the row containing the cell
+     */
+    default void handleClick(MouseEvent event, JTable table, Bean row) {
+    }
 }

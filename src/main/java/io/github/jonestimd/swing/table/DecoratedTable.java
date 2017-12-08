@@ -25,6 +25,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -78,6 +81,39 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         setSurrendersFocusOnKeystroke(true);
         // putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
         // putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent event) {
+                setCursor(event);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent event) {
+                setCursor(event);
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                handleClick(event);
+            }
+        });
+    }
+
+    private void setCursor(MouseEvent event) {
+        int hitColumnIndex = columnAtPoint(event.getPoint());
+        int hitRowIndex = rowAtPoint(event.getPoint());
+        if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
+            setCursor(getModel().getCursor(event, this, convertRowIndexToModel(hitRowIndex), convertColumnIndexToModel(hitColumnIndex)));
+        }
+    }
+
+    private void handleClick(MouseEvent event) {
+        int hitColumnIndex = columnAtPoint(event.getPoint());
+        int hitRowIndex = rowAtPoint(event.getPoint());
+        if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
+            getModel().handleClick(event, this, convertRowIndexToModel(hitRowIndex), convertColumnIndexToModel(hitColumnIndex));
+        }
     }
 
     /**

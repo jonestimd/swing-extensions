@@ -63,4 +63,14 @@ public class EmptyColumnAdapterTest {
     public void setValueDoesNothing() throws Exception {
         adapter.setValue(null, null);
     }
+
+    @Test
+    public void getCursorReturnsNull() throws Exception {
+        assertThat(adapter.getCursor(null, null, null)).isNull();
+    }
+
+    @Test
+    public void handleClickDoesNothing() throws Exception {
+        adapter.handleClick(null, null, null);
+    }
 }

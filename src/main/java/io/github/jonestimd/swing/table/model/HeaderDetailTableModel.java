@@ -19,6 +19,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table.model;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +31,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import io.github.jonestimd.collection.HashList;
@@ -445,6 +448,30 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
         int subRowIndex = rowIndex - rowOffset[-i - 2];
         return getDetailColumnAdapter(getRowTypeIndex(rowIndex)-1, columnIndex)
                 .isEditable(detailAdapter.getDetail(getBean(-i - 2), subRowIndex-1));
+    }
+
+    @Override
+    public Cursor getCursor(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        int i = Arrays.binarySearch(rowOffset, 0, beanCount, rowIndex);
+        if (i >= 0) {
+            return columnAdapters.get(columnIndex).getCursor(event, table, beans.get(i));
+        }
+        int subRowIndex = rowIndex - rowOffset[-i - 2];
+        return getDetailColumnAdapter(getRowTypeIndex(rowIndex)-1, columnIndex)
+                .getCursor(event, table, detailAdapter.getDetail(getBean(-i - 2), subRowIndex-1));
+    }
+
+    @Override
+    public void handleClick(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
+        int i = Arrays.binarySearch(rowOffset, 0, beanCount, rowIndex);
+        if (i >= 0) {
+            columnAdapters.get(columnIndex).handleClick(event, table, beans.get(i));
+        }
+        else {
+            int subRowIndex = rowIndex - rowOffset[-i - 2];
+            getDetailColumnAdapter(getRowTypeIndex(rowIndex) - 1, columnIndex)
+                    .handleClick(event, table, detailAdapter.getDetail(getBean(-i - 2), subRowIndex - 1));
+        }
     }
 
     /**
