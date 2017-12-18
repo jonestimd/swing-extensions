@@ -21,6 +21,7 @@ package io.github.jonestimd.swing.component;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 
 /**
  * Override {@link DefaultCellEditor} to fix undesirable Swing quirks for editing in tables.
@@ -32,5 +33,7 @@ public class ComboBoxCellEditor extends DefaultCellEditor {
         comboBox.removeActionListener(delegate);
         // update button/editor when list selection changes
         comboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.FALSE);
+        // the border is redundant in a table cell
+        ((JComponent) comboBox.getEditor().getEditorComponent()).setBorder(null);
     }
 }

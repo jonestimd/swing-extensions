@@ -41,9 +41,8 @@ public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>
 
     @SuppressWarnings("unchecked")
     protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector prefixSelector, String loadingMessage) {
-        super(new BeanListComboBox<T>(format, validator, Collections.<T>emptyList(), prefixSelector), loadingMessage);
+        super(new BeanListComboBox<T>(format, validator, Collections.emptyList(), prefixSelector), loadingMessage);
         editor = (BeanListComboBoxEditor<T>) getComboBox().getEditor();
-        editor.getEditorComponent().setBorder(null);
         editor.getEditorComponent().addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 getComboBox().setPopupVisible(true);

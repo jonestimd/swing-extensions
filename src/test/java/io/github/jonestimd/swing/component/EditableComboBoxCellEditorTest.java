@@ -43,7 +43,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EditableComboBoxCellEditorTest extends ComboBoxCellEditorTest {
+public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTest {
     @Mock
     private Validator<String> validator;
     @Mock

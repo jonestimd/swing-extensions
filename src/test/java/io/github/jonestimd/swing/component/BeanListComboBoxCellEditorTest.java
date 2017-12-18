@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class BeanListComboBoxCellEditorTest extends ComboBoxCellEditorTest {
+public class BeanListComboBoxCellEditorTest extends AbstractComboBoxCellEditorTest {
     private List<TestBean> comboBoxValues = ImmutableList.of(new TestBean("abc"), new TestBean("adf"), new TestBean("xyz"));
 
     @Test

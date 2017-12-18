@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2017 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,47 +21,20 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParsePosition;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class ComboBoxCellEditorTest {
-    protected static class TestBean implements Comparable<TestBean> {
-        public final String name;
+    @Test
+    public void setsEditorComponentBorderToNull() throws Exception {
+        JComboBox comboBox = new JComboBox();
 
-        public TestBean(String name) {
-            this.name = name;
-        }
+        ComboBoxCellEditor cellEditor = new ComboBoxCellEditor(comboBox);
 
-        @Override
-        public int compareTo(TestBean that) {
-            return name.compareTo(that.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof TestBean && ((TestBean)obj).name.equals(name);
-        }
-    }
-
-    protected static class TestFormat extends Format {
-        @Override
-        public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            if (obj != null) {
-                toAppendTo.append(((TestBean)obj).name);
-            }
-            return toAppendTo;
-        }
-
-        @Override
-        public Object parseObject(String source, ParsePosition pos) {
-            pos.setIndex(source.length() + 1);
-            return new TestBean(source);
-        }
+        assertThat(((JComponent) comboBox.getEditor().getEditorComponent()).getBorder()).isNull();
     }
 }
