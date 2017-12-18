@@ -325,12 +325,14 @@ public class BeanListMultimapTableModel<G, T> extends AbstractTableModel impleme
 
     @Override
     public Cursor getCursor(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
-        return beanTableAdapter.getColumnAdapter(columnIndex).getCursor(event, table, getBean(rowIndex));
+        T bean = getBean(rowIndex);
+        return bean == null ? null : beanTableAdapter.getColumnAdapter(columnIndex).getCursor(event, table, bean);
     }
 
     @Override
     public void handleClick(MouseEvent event, JTable table, int rowIndex, int columnIndex) {
-        beanTableAdapter.getColumnAdapter(columnIndex).handleClick(event, table, getBean(rowIndex));
+        T bean = getBean(rowIndex);
+        if (bean != null) beanTableAdapter.getColumnAdapter(columnIndex).handleClick(event, table, bean);
     }
 
     @Override

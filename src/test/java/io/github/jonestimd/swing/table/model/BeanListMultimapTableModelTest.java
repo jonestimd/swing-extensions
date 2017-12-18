@@ -367,6 +367,22 @@ public class BeanListMultimapTableModelTest {
     }
 
     @Test
+    public void getCursorDoesNothingOnSectionRow() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        TestBean bean1 = new TestBean(group1, "bean1b", "y");
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel(mockColumnAdapter);
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(beans);
+
+        tableModel.getCursor(event, table, 0, 0);
+
+        verifyZeroInteractions(mockColumnAdapter);
+    }
+
+    @Test
     public void getCursorCallsColumnAdapter() throws Exception {
         MouseEvent event = mock(MouseEvent.class);
         JTable table = mock(JTable.class);
@@ -380,6 +396,22 @@ public class BeanListMultimapTableModelTest {
         tableModel.getCursor(event, table, 1, 0);
 
         verify(mockColumnAdapter).getCursor(event, table, beans.get(0));
+    }
+
+    @Test
+    public void handleClickDoesNothingOnSectionRow() throws Exception {
+        MouseEvent event = mock(MouseEvent.class);
+        JTable table = mock(JTable.class);
+        TestBean bean1 = new TestBean(group1, "bean1b", "y");
+        BeanListMultimapTableModel<TestGroup, TestBean> tableModel = newTableModel(mockColumnAdapter);
+        List<TestBean> beans = Arrays.asList(
+                new TestBean(group1, "bean1a", "x"),
+                new TestBean(group1, "bean1b", "x"));
+        tableModel.setBeans(beans);
+
+        tableModel.handleClick(event, table, 0, 0);
+
+        verifyZeroInteractions(mockColumnAdapter);
     }
 
     @Test
