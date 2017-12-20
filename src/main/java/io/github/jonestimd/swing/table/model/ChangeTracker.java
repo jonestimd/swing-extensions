@@ -210,10 +210,10 @@ public abstract class ChangeTracker<T> {
         Map<Integer, Object> changes = originalValues.get(item);
         if (changes != null && changes.containsKey(index)) {
             Object originalValue = changes.remove(index);
-            revertItemChange(originalValue, item, index);
             if (changes.isEmpty()) {
                 originalValues.remove(item);
             }
+            revertItemChange(originalValue, item, index);
         }
     }
 
