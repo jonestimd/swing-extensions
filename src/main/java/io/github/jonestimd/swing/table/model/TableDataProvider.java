@@ -31,7 +31,7 @@ public interface TableDataProvider<Bean> {
     /**
      * The property name to be used for state change events.
      */
-    public static final String STATE_PROPERTY = "state";
+    String STATE_PROPERTY = "state";
 
     List<? extends ColumnAdapter<Bean, ?>> getColumnAdapters();
 
