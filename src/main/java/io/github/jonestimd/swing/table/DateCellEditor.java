@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.Component;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,7 +51,7 @@ public class DateCellEditor extends AbstractCellEditor implements TableCellEdito
         return editorComponent;
     }
 
-    public Object getCellEditorValue() {
+    public Date getCellEditorValue() {
         return editorComponent.getValue();
     }
 

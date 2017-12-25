@@ -54,6 +54,7 @@ import io.github.jonestimd.swing.ComponentTreeUtils;
 public class DateField extends JFormattedTextField {
     private static final int FORMATTED_LENGTH = 10;
     public static final String SEPARATOR_STRING = "/";
+    public static final String NULL_TEXT = SEPARATOR_STRING + SEPARATOR_STRING;
     public static final char SEPARATOR = SEPARATOR_STRING.charAt(0);
     public static final String FIELD_PATTERN = "([0-9]+/?)*";
     private CalendarButtonBorder calendarButtonBorder;
@@ -88,7 +89,11 @@ public class DateField extends JFormattedTextField {
     @Override
     public void setValue(Object value) {
         super.setValue(value);
-        selectField(0);
+        if (value == null) {
+            setText(NULL_TEXT);
+            setCaretPosition(0);
+        }
+        else selectField(0);
     }
 
     /**
@@ -101,8 +106,8 @@ public class DateField extends JFormattedTextField {
     }
 
     private void selectField(int dot) {
-        int from = getText().lastIndexOf('/', dot) + 1;
-        int to = getText().indexOf('/', from);
+        int from = getText().lastIndexOf(SEPARATOR, dot) + 1;
+        int to = getText().indexOf(SEPARATOR, from);
         setCaretPosition(from);
         moveCaretPosition(to > 0 ? to : getText().length());
     }

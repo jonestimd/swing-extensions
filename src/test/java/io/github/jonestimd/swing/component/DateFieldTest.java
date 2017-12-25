@@ -12,6 +12,16 @@ import static org.assertj.core.api.Assertions.*;
 
 public class DateFieldTest {
     @Test
+    public void setNullValue() throws Exception {
+        DateField dateField = new DateField("MM/dd/yyyy");
+
+        dateField.setValue(null);
+
+        assertThat(dateField.getText()).isEqualTo(DateField.NULL_TEXT);
+        assertThat(dateField.getCaretPosition()).isEqualTo(0);
+    }
+
+    @Test
     public void setValueSelectsFirstField() throws Exception {
         DateField dateField = new DateField("MM/dd/yyyy");
 
