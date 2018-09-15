@@ -57,7 +57,7 @@ public class UnsavedChangeDecoratorTest {
 
         decorator.prepareRenderer(table, renderer, 0, 0);
 
-        verify(renderer).setBackground(new Color(187, 129, 129));
+        verify(renderer).setBackground(new Color(190, 129, 129));
         ArgumentCaptor<Font> captor = ArgumentCaptor.forClass(Font.class);
         verify(renderer).setFont(captor.capture());
         assertThat(captor.getValue().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
@@ -72,7 +72,7 @@ public class UnsavedChangeDecoratorTest {
 
         decorator.prepareRenderer(table, renderer, 0, 0);
 
-        verify(renderer).setBackground(new Color(24, 190, 190));
+        verify(renderer).setBackground(new Color(10, 190, 190));
         verify(renderer, never()).setFont(any(Font.class));
     }
 }
