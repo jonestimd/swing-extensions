@@ -119,8 +119,8 @@ public class FilterField<T> extends JTextPane implements FilterSource {
         this.filterParser = filterParser;
         this.normalBackground = getBackground();
         this.errorBackground = errorBackground;
-        this.operatorKeys = Resources.join(ComponentResources.BUNDLE, "filter.operator.key.");
-        this.operatorSymbols = Resources.join(ComponentResources.BUNDLE, "filter.operator.symbol.");
+        this.operatorKeys = Resources.join(bundle, "filter.operator.key.");
+        this.operatorSymbols = Resources.join(bundle, "filter.operator.symbol.");
         this.groupStart = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_START.getChar();
         this.groupEnd = SwingResource.FILTER_OPERATOR_SYMBOL_GROUP_END.getChar();
         StyleConstants.setBold(boldStyle, true);
