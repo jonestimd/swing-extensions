@@ -107,12 +107,8 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
      */
     public void onWindowEvent(ApplicationWindowEvent<Key> windowEvent) {
         Key windowInfo = windowEvent.getWindowInfo();
-        if (windowInfo.isSingleton()) {
-            showSingletonFrame(windowInfo);
-        }
-        else {
-            createFrame(windowInfo, getPanelFactory(windowInfo).createPanel(windowEvent)).setVisible(true);
-        }
+        if (windowInfo.isSingleton()) showSingletonFrame(windowInfo);
+        else createFrame(windowEvent);
     }
 
     @SuppressWarnings("unchecked")
@@ -156,14 +152,30 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     }
 
     /**
+     * Make a non-singleton window visible or, if it is already visible, bring it to the front.
+     * @param event the window type
+     * @param matcher selects the frame to show
+     * @return the window
+     */
+    public JFrame showFrame(ApplicationWindowEvent<Key> event, Predicate<StatusFrame> matcher) {
+        return frames.stream().filter(matcher).findFirst()
+                .map(frame -> {
+                    frame.toFront();
+                    return frame;
+                })
+                .orElseGet(() -> createFrame(event));
+    }
+
+    /**
      * Create and display a non-singleton window.
-     * @param windowType the window type
-     * @param contentPane the window content pane
+     * @param event the window event specifying the type of window
      * @return the new window
      */
-    public StatusFrame createFrame(Key windowType, Container contentPane) {
+    protected StatusFrame createFrame(ApplicationWindowEvent<Key> event) {
+        Key windowType = event.getWindowInfo();
         StatusFrame frame = frameFactory.apply(bundle, windowType.getResourcePrefix());
-        addFrame(frame, contentPane);
+        addFrame(frame, getPanelFactory(windowType).createPanel(event));
+        frame.setVisible(true);
         return frame;
     }
 

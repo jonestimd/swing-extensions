@@ -82,8 +82,7 @@ public class FrameManagerTest {
         frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.SINGLETON1));
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
-        verify(frame).addWindowListener(any());
-        verify(frame).addPropertyChangeListener(eq("title"), any());
+        verifyInitializeFrame(frame);
         verify(frame).setContentPane(singletonPanels.get(Type.SINGLETON1));
         verify(frame).setVisible(true);
         checkJMenuBar(frame, frameTitle, windowsMenu);
@@ -102,8 +101,7 @@ public class FrameManagerTest {
         frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.MULTI));
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
-        verify(frame).addWindowListener(any());
-        verify(frame).addPropertyChangeListener(eq("title"), any());
+        verifyInitializeFrame(frame);
         verify(frame).setContentPane(panel);
         verify(frame).setVisible(true);
         checkJMenuBar(frame, frameTitle, windowsMenu);
@@ -206,17 +204,34 @@ public class FrameManagerTest {
     }
 
     @Test
-    public void testAddFrame() throws Exception {
+    public void testShowFrameShowsMatchingFrame() throws Exception {
+        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<>(this, Type.MULTI);
+        StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
+        JPanel contentPane = new JPanel();
+        when(panelFactory.createPanel()).thenReturn(contentPane);
+        frameManager.addFrame(frame, Type.MULTI);
+
+        assertThat(frameManager.showFrame(event, f -> f == frame)).isSameAs(frame);
+
+        assertThat(frameManager.getFrameCount()).isEqualTo(1);
+        verifyZeroInteractions(frameFactory);
+        verify(panelFactory).createPanel();
+        verifyNoMoreInteractions(panelFactory);
+    }
+
+    @Test
+    public void testShowFrameCreatesFrame() throws Exception {
+        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<>(this, Type.MULTI);
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         when(frameFactory.apply(bundle, "MULTI")).thenReturn(frame);
         JPanel contentPane = new JPanel();
+        when(panelFactory.createPanel(event)).thenReturn(contentPane);
 
-        assertThat(frameManager.createFrame(Type.MULTI, contentPane)).isSameAs(frame);
+        assertThat(frameManager.showFrame(event, f -> false)).isSameAs(frame);
 
-        verifyInitializeFrame(frame);
-        verify(frame).setContentPane(contentPane);
-        checkWindowsMenu(frame.getJMenuBar().getMenu(0), "frame1");
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
+        verify(frameFactory).apply(bundle, "MULTI");
+        verify(panelFactory).createPanel(event);
     }
 
     @Test
