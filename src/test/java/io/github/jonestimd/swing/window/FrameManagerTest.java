@@ -205,13 +205,17 @@ public class FrameManagerTest {
 
     @Test
     public void testShowFrameShowsMatchingFrame() throws Exception {
-        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<>(this, Type.MULTI);
+        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<Type>(this, Type.MULTI) {
+            public boolean matches(StatusFrame frame) {
+                return true;
+            }
+        };
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         JPanel contentPane = new JPanel();
         when(panelFactory.createPanel()).thenReturn(contentPane);
         frameManager.addFrame(frame, Type.MULTI);
 
-        assertThat(frameManager.showFrame(event, f -> f == frame)).isSameAs(frame);
+        assertThat(frameManager.showFrame(event)).isSameAs(frame);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verifyZeroInteractions(frameFactory);
@@ -227,7 +231,7 @@ public class FrameManagerTest {
         JPanel contentPane = new JPanel();
         when(panelFactory.createPanel(event)).thenReturn(contentPane);
 
-        assertThat(frameManager.showFrame(event, f -> false)).isSameAs(frame);
+        assertThat(frameManager.showFrame(event)).isSameAs(frame);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verify(frameFactory).apply(bundle, "MULTI");

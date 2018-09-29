@@ -54,18 +54,20 @@ import io.github.jonestimd.swing.action.MnemonicAction;
  * Manages an application's windows. This class creates window and initializes their menu bar with the {@code Windows}
  * and {@code Help} menus.  This class updates the {@code Windows} menu whenever another window is opened or closed.
  * Typically, an instance of this class is registered with a {@link WindowEventPublisher} and menu items for opening
- * new windows are created using {@link FrameAction}.
+ * new windows are created using {@link FrameAction}.  When used with a {@link WindowEventPublisher}, non-singleton
+ * windows can be reused by overriding {@link ApplicationWindowEvent#matches(StatusFrame)}.
+ *
  * @param <Key> The class defining the window types (typically an {@code enum})
  */
 public class FrameManager<Key extends WindowInfo> implements WindowEventListener<Key> {
     protected static final String WINDOWS_MENU_KEY = "menu.windows.mnemonicAndName";
     private static final Predicate<JMenu> IS_WINDOW_MENU = menu -> WINDOWS_MENU_KEY.equals(menu.getClientProperty(ClientProperty.MNEMONIC_AND_NAME_KEY));
     private final ResourceBundle bundle;
-    private final Map<Key,? extends Container> singletonPanels;
+    private final Map<Key, ? extends Container> singletonPanels;
     private final Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories;
-    private final Map<Key,StatusFrame> singletonFrames = new HashMap<>();
+    private final Map<Key, StatusFrame> singletonFrames = new HashMap<>();
     private final List<StatusFrame> frames = new ArrayList<>();
-    private final Map<StatusFrame,WindowAction> menuActions = new HashMap<>();
+    private final Map<StatusFrame, WindowAction> menuActions = new HashMap<>();
     private final FrameListener frameListener = new FrameListener();
     private final Function<Window, Dialog> aboutDialogSupplier;
     private final BiFunction<ResourceBundle, String, StatusFrame> frameFactory;
@@ -77,8 +79,8 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
      * @param panelFactories a map of the factories for the content panels of the non-singleton windows
      * @param aboutDialogSupplier a factory for creating the {@code About} dialog
      */
-    public FrameManager(ResourceBundle bundle, Map<Key,? extends Container> singletonPanels,
-            Map<Key,PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
+    public FrameManager(ResourceBundle bundle, Map<Key, ? extends Container> singletonPanels,
+            Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
             Function<Window, Dialog> aboutDialogSupplier) {
         this(bundle, singletonPanels, panelFactories, aboutDialogSupplier, StatusFrame::new);
     }
@@ -91,8 +93,8 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
      * @param aboutDialogSupplier a factory for creating the {@code About} dialog
      * @param frameFactory a factory for creating {@link StatusFrame}s for the windows
      */
-    public FrameManager(ResourceBundle bundle, Map<Key,? extends Container> singletonPanels,
-            Map<Key,PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
+    public FrameManager(ResourceBundle bundle, Map<Key, ? extends Container> singletonPanels,
+            Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
             Function<Window, Dialog> aboutDialogSupplier, BiFunction<ResourceBundle, String, StatusFrame> frameFactory) {
         this.bundle = bundle;
         this.singletonPanels = singletonPanels;
@@ -108,7 +110,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     public void onWindowEvent(ApplicationWindowEvent<Key> windowEvent) {
         Key windowInfo = windowEvent.getWindowInfo();
         if (windowInfo.isSingleton()) showSingletonFrame(windowInfo);
-        else createFrame(windowEvent);
+        else showFrame(windowEvent);
     }
 
     @SuppressWarnings("unchecked")
@@ -123,13 +125,13 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
      * @throws IllegalArgumentException if another window has already been registered for the specified {@code key}
      */
     public void addSingletonFrame(Key key, StatusFrame frame) {
-        if (! singletonFrames.containsKey(key)) {
+        if (!singletonFrames.containsKey(key)) {
             singletonFrames.put(key, frame);
             initializeFrame(frame);
             frame.setContentPane(singletonPanels.get(key));
         }
         else if (singletonFrames.get(key) != frame) {
-            throw new IllegalArgumentException("Duplicate JFrame ID: " + key.toString());
+            throw new IllegalArgumentException("Duplicate JFrame ID: "+key.toString());
         }
     }
 
@@ -153,17 +155,14 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
 
     /**
      * Make a non-singleton window visible or, if it is already visible, bring it to the front.
-     * @param event the window type
-     * @param matcher selects the frame to show
+     * @param event the event that identifies the window
      * @return the window
      */
-    public JFrame showFrame(ApplicationWindowEvent<Key> event, Predicate<StatusFrame> matcher) {
-        return frames.stream().filter(matcher).findFirst()
-                .map(frame -> {
-                    frame.toFront();
-                    return frame;
-                })
-                .orElseGet(() -> createFrame(event));
+    public JFrame showFrame(ApplicationWindowEvent<Key> event) {
+        return frames.stream().filter(event::matches).findFirst().map(frame -> {
+            frame.toFront();
+            return frame;
+        }).orElseGet(() -> createFrame(event));
     }
 
     /**
@@ -277,7 +276,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     }
 
     public int getFrameCount() {
-        return singletonFrames.size() + frames.size();
+        return singletonFrames.size()+frames.size();
     }
 
     private class WindowAction extends AbstractAction {

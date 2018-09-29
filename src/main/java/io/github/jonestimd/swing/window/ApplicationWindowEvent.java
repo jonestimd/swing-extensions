@@ -39,4 +39,14 @@ public class ApplicationWindowEvent<E extends WindowInfo> extends EventObject {
     public E getWindowInfo() {
         return windowInfo;
     }
+
+    /**
+     * Used to find an existing non-singleton window that matches this event.  If a match is found then that window
+     * is raised to the front instead of creating a new window.
+     * @param frame an existing non-singleton window
+     * @return the default implementation always returns false
+     */
+    public boolean matches(StatusFrame frame) {
+        return false;
+    }
 }
