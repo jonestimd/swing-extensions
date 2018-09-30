@@ -59,7 +59,6 @@ public class AbstractButtonBorderTest {
     @Mock
     private JPanel popupPanel;
 
-    private Boolean painted;
     private Boolean initializedPopup;
     private Point popupLocation;
 
@@ -123,7 +122,7 @@ public class AbstractButtonBorderTest {
     }
 
     @Test
-    public void hidsTooltipWhenMouseNotOverButton() throws Exception {
+    public void hidesTooltipWhenMouseNotOverButton() throws Exception {
         TestButtonBorder border = new TestButtonBorder(field, new JPanel(), Side.RIGHT);
         border.setTooltip("tooltip");
         triggerCreatePopupWindow();
@@ -175,6 +174,8 @@ public class AbstractButtonBorderTest {
             border.hidePopup();
 
             assertThat(popupLocation).isNotNull();
+            assertThat(initializedPopup).isTrue();
+            frame.dispose();
         });
     }
 
@@ -193,7 +194,6 @@ public class AbstractButtonBorderTest {
         @Override
         protected void paintBorder(Component c, Graphics g, int x, int y, int width, int height, int inset) {
             assertThat(inset).isEqualTo(fieldSize.height - fieldInsets.top - fieldInsets.bottom);
-            painted = true;
         }
 
         @Override
