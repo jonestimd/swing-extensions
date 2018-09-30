@@ -49,14 +49,13 @@ public class FrameActionTest {
         }
     }
     @Mock
-    private WindowEventPublisher<TestWindowInfo> eventPublisher;
+    private FrameManager<TestWindowInfo> frameManager;
 
     @Test
     public void initializeFromBundle() throws Exception {
-        ApplicationWindowEvent<TestWindowInfo> event = new ApplicationWindowEvent<>(this, TestWindowInfo.MultiFrame);
         ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
 
-        FrameAction<TestWindowInfo> action = new FrameAction<>(bundle, "FrameActionTest", eventPublisher, event);
+        FrameAction<TestWindowInfo> action = new FrameAction<>(bundle, "FrameActionTest", frameManager, TestWindowInfo.MultiFrame);
 
         assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'N');
         assertThat(action.getValue(Action.NAME)).isEqualTo("New Frame");
@@ -64,11 +63,10 @@ public class FrameActionTest {
 
     @Test
     public void actionPerformedPublishesEvent() throws Exception {
-        ApplicationWindowEvent<TestWindowInfo> event = new ApplicationWindowEvent<>(this, TestWindowInfo.MultiFrame);
-        FrameAction<TestWindowInfo> action = new FrameAction<>("NNew Window", null, eventPublisher, event);
+        FrameAction<TestWindowInfo> action = new FrameAction<>("NNew Window", null, frameManager, TestWindowInfo.MultiFrame);
 
         action.actionPerformed(null);
 
-        verify(eventPublisher).publishEvent(same(event));
+        verify(frameManager).onWindowEvent(same(action));
     }
 }

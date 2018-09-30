@@ -22,10 +22,20 @@
 package io.github.jonestimd.swing.window;
 
 /**
- * The interface for handling window events from {@link FrameAction}s.
- * @param <E> the class of the window events
- * @see WindowEventPublisher
+ * An event fired by a {@link FrameAction} to indicate that the user has requested a new window.
+ * @param <E> the class providing information about the requested window
+ * @see FrameManager
  */
-public interface WindowEventListener<E extends WindowInfo> {
-    void onWindowEvent(ApplicationWindowEvent<E> event);
+public interface ApplicationWindowAction<E extends WindowInfo> {
+    E getWindowInfo();
+
+    /**
+     * Used to find an existing non-singleton window that matches this event.  If a match is found then that window
+     * is raised to the front instead of creating a new window.
+     * @param frame an existing non-singleton window
+     * @return the default implementation always returns false
+     */
+    default boolean matches(StatusFrame frame) {
+        return false;
+    }
 }

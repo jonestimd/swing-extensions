@@ -31,25 +31,30 @@ import io.github.jonestimd.swing.action.MnemonicAction;
 /**
  * A UI action that opens a new window.
  * @param <E> the class providing information about the requested window
- * @see WindowEventPublisher
+ * @see FrameManager
  */
-public class FrameAction<E extends WindowInfo> extends MnemonicAction {
-    private ApplicationWindowEvent<E> event;
-    private WindowEventPublisher<E> eventPublisher;
+public class FrameAction<E extends WindowInfo> extends MnemonicAction implements ApplicationWindowAction<E> {
+    private final E windowInfo;
+    private FrameManager<E> frameManager;
 
-    public FrameAction(String mnemonicAndName, Icon icon, WindowEventPublisher<E> eventPublisher, ApplicationWindowEvent<E> event) {
+    public FrameAction(String mnemonicAndName, Icon icon, FrameManager<E> frameManager, E windowInfo) {
         super(mnemonicAndName, icon);
-        this.eventPublisher = eventPublisher;
-        this.event = event;
+        this.frameManager = frameManager;
+        this.windowInfo = windowInfo;
     }
 
-    public FrameAction(ResourceBundle bundle, String resourcePrefix, WindowEventPublisher<E> eventPublisher, ApplicationWindowEvent<E> event) {
+    public FrameAction(ResourceBundle bundle, String resourcePrefix, FrameManager<E> frameManager, E windowInfo) {
         super(bundle, resourcePrefix);
-        this.eventPublisher = eventPublisher;
-        this.event = event;
+        this.frameManager = frameManager;
+        this.windowInfo = windowInfo;
     }
 
     public void actionPerformed(ActionEvent e) {
-        eventPublisher.publishEvent(event);
+        frameManager.onWindowEvent(this);
+    }
+
+    @Override
+    public E getWindowInfo() {
+        return windowInfo;
     }
 }

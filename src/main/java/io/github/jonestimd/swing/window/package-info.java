@@ -22,7 +22,6 @@
 /**
  * Classes for managing application windows.  The steps for using the classes are
  * <ul>
- *     <li>Create a {@link io.github.jonestimd.swing.window.WindowEventPublisher}</li>
  *     <li>Create a {@link io.github.jonestimd.swing.window.FrameManager} and register it with the event publisher</li>
  *     <li>Add {@link io.github.jonestimd.swing.window.FrameAction}s to window menus/toolbars during content panel creation</li>
  *     <li>Use the {@code FrameManager} to display the first window</li>

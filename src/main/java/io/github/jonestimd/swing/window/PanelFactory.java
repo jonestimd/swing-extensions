@@ -28,8 +28,8 @@ import java.awt.Container;
  * @param <T> the class of the events used to request new panels
  * @see FrameManager
  */
-public interface PanelFactory<T extends ApplicationWindowEvent<?>> {
-    Container createPanel(T event);
+public interface PanelFactory<T extends ApplicationWindowAction<?>> {
+    Container createPanel(T action);
 
     Container createPanel();
 }

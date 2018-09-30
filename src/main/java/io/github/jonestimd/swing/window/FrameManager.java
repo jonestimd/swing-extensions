@@ -53,18 +53,18 @@ import io.github.jonestimd.swing.action.MnemonicAction;
 /**
  * Manages an application's windows. This class creates window and initializes their menu bar with the {@code Windows}
  * and {@code Help} menus.  This class updates the {@code Windows} menu whenever another window is opened or closed.
- * Typically, an instance of this class is registered with a {@link WindowEventPublisher} and menu items for opening
- * new windows are created using {@link FrameAction}.  When used with a {@link WindowEventPublisher}, non-singleton
- * windows can be reused by overriding {@link ApplicationWindowEvent#matches(StatusFrame)}.
+ * Typically, menu items for opening new windows are created using {@link FrameAction}.  Non-singleton
+ * windows can be reused by overriding {@link ApplicationWindowAction#matches(StatusFrame)}.
  *
  * @param <Key> The class defining the window types (typically an {@code enum})
  */
-public class FrameManager<Key extends WindowInfo> implements WindowEventListener<Key> {
+public class FrameManager<Key extends WindowInfo> {
     protected static final String WINDOWS_MENU_KEY = "menu.windows.mnemonicAndName";
     private static final Predicate<JMenu> IS_WINDOW_MENU = menu -> WINDOWS_MENU_KEY.equals(menu.getClientProperty(ClientProperty.MNEMONIC_AND_NAME_KEY));
     private final ResourceBundle bundle;
-    private final Map<Key, ? extends Container> singletonPanels;
-    private final Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories;
+    private final Map<Key, Container> singletonPanels = new HashMap<>();
+    private final Function<? super Key, ? extends Container> singletonPanelSupplier;
+    private final Map<Key, PanelFactory<? extends ApplicationWindowAction<Key>>> panelFactories;
     private final Map<Key, StatusFrame> singletonFrames = new HashMap<>();
     private final List<StatusFrame> frames = new ArrayList<>();
     private final Map<StatusFrame, WindowAction> menuActions = new HashMap<>();
@@ -75,29 +75,29 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
     /**
      * Create a FrameManager that uses default {@link StatusFrame}s.
      * @param bundle the {@link ResourceBundle} to use for localization of the windows
-     * @param singletonPanels a map of the content panels of the singleton windows
+     * @param singletonPanelSupplier a function that returns the content panels of the singleton windows
      * @param panelFactories a map of the factories for the content panels of the non-singleton windows
      * @param aboutDialogSupplier a factory for creating the {@code About} dialog
      */
-    public FrameManager(ResourceBundle bundle, Map<Key, ? extends Container> singletonPanels,
-            Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
+    public FrameManager(ResourceBundle bundle, Function<Key, ? extends Container> singletonPanelSupplier,
+            Map<Key, PanelFactory<? extends ApplicationWindowAction<Key>>> panelFactories,
             Function<Window, Dialog> aboutDialogSupplier) {
-        this(bundle, singletonPanels, panelFactories, aboutDialogSupplier, StatusFrame::new);
+        this(bundle, singletonPanelSupplier, panelFactories, aboutDialogSupplier, StatusFrame::new);
     }
 
     /**
      * Create a FrameManager that uses custom {@link StatusFrame}s.
      * @param bundle the {@link ResourceBundle} to use for localization of the windows
-     * @param singletonPanels a map of the content panels of the singleton windows
+     * @param singletonPanelSupplier a function that returns the content panels of the singleton windows
      * @param panelFactories a map of the factories for the content panels of the non-singleton windows
      * @param aboutDialogSupplier a factory for creating the {@code About} dialog
      * @param frameFactory a factory for creating {@link StatusFrame}s for the windows
      */
-    public FrameManager(ResourceBundle bundle, Map<Key, ? extends Container> singletonPanels,
-            Map<Key, PanelFactory<? extends ApplicationWindowEvent<Key>>> panelFactories,
+    public FrameManager(ResourceBundle bundle, Function<Key, ? extends Container> singletonPanelSupplier,
+            Map<Key, PanelFactory<? extends ApplicationWindowAction<Key>>> panelFactories,
             Function<Window, Dialog> aboutDialogSupplier, BiFunction<ResourceBundle, String, StatusFrame> frameFactory) {
         this.bundle = bundle;
-        this.singletonPanels = singletonPanels;
+        this.singletonPanelSupplier = singletonPanelSupplier;
         this.panelFactories = panelFactories;
         this.aboutDialogSupplier = aboutDialogSupplier;
         this.frameFactory = frameFactory;
@@ -105,17 +105,17 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
 
     /**
      * Display a singleton window or create a new instance of a non-singleton window.
-     * @param windowEvent event describing the window
+     * @param action action describing the window
+     * @return the matching window
      */
-    public void onWindowEvent(ApplicationWindowEvent<Key> windowEvent) {
-        Key windowInfo = windowEvent.getWindowInfo();
-        if (windowInfo.isSingleton()) showSingletonFrame(windowInfo);
-        else showFrame(windowEvent);
+    public StatusFrame onWindowEvent(ApplicationWindowAction<Key> action) {
+        Key windowInfo = action.getWindowInfo();
+        return windowInfo.isSingleton() ? showSingletonFrame(windowInfo) : showFrame(action);
     }
 
     @SuppressWarnings("unchecked")
-    private PanelFactory<ApplicationWindowEvent<Key>> getPanelFactory(Key windowInfo) {
-        return ((PanelFactory<ApplicationWindowEvent<Key>>) panelFactories.get(windowInfo));
+    private PanelFactory<ApplicationWindowAction<Key>> getPanelFactory(Key windowInfo) {
+        return ((PanelFactory<ApplicationWindowAction<Key>>) panelFactories.get(windowInfo));
     }
 
     /**
@@ -128,7 +128,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
         if (!singletonFrames.containsKey(key)) {
             singletonFrames.put(key, frame);
             initializeFrame(frame);
-            frame.setContentPane(singletonPanels.get(key));
+            frame.setContentPane(singletonPanels.computeIfAbsent(key, singletonPanelSupplier));
         }
         else if (singletonFrames.get(key) != frame) {
             throw new IllegalArgumentException("Duplicate JFrame ID: "+key.toString());
@@ -140,7 +140,7 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
      * @param key the window type
      * @return the singleton window
      */
-    public JFrame showSingletonFrame(Key key) {
+    public StatusFrame showSingletonFrame(Key key) {
         StatusFrame frame = singletonFrames.get(key);
         if (frame == null) {
             frame = frameFactory.apply(bundle, key.getResourcePrefix());
@@ -155,25 +155,25 @@ public class FrameManager<Key extends WindowInfo> implements WindowEventListener
 
     /**
      * Make a non-singleton window visible or, if it is already visible, bring it to the front.
-     * @param event the event that identifies the window
+     * @param action the action that identifies the window
      * @return the window
      */
-    public JFrame showFrame(ApplicationWindowEvent<Key> event) {
-        return frames.stream().filter(event::matches).findFirst().map(frame -> {
+    public StatusFrame showFrame(ApplicationWindowAction<Key> action) {
+        return frames.stream().filter(action::matches).findFirst().map(frame -> {
             frame.toFront();
             return frame;
-        }).orElseGet(() -> createFrame(event));
+        }).orElseGet(() -> createFrame(action));
     }
 
     /**
      * Create and display a non-singleton window.
-     * @param event the window event specifying the type of window
+     * @param action the window action specifying the type of window
      * @return the new window
      */
-    protected StatusFrame createFrame(ApplicationWindowEvent<Key> event) {
-        Key windowType = event.getWindowInfo();
+    protected StatusFrame createFrame(ApplicationWindowAction<Key> action) {
+        Key windowType = action.getWindowInfo();
         StatusFrame frame = frameFactory.apply(bundle, windowType.getResourcePrefix());
-        addFrame(frame, getPanelFactory(windowType).createPanel(event));
+        addFrame(frame, getPanelFactory(windowType).createPanel(action));
         frame.setVisible(true);
         return frame;
     }

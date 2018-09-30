@@ -16,7 +16,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.ClientProperty;
 import io.github.jonestimd.swing.ComponentFactory;
@@ -51,23 +50,26 @@ public class FrameManagerTest {
     }
 
     private ResourceBundle bundle = ResourceBundle.getBundle(TestResources.class.getName());
-    private Map<Type,JPanel> singletonPanels = ImmutableMap.of(Type.SINGLETON1, new JPanel(), Type.SINGLETON2, new JPanel());
+    @Mock
+    private Function<Type,JPanel> singletonPanelSupplier;
     @Mock
     private ComponentFactory componentFactory;
     @Mock
-    private Map<Type,PanelFactory<? extends ApplicationWindowEvent<Type>>> panelFactories;
+    private Map<Type,PanelFactory<? extends ApplicationWindowAction<Type>>> panelFactories;
     @Mock
-    private PanelFactory<ApplicationWindowEvent<Type>> panelFactory;
+    private PanelFactory<ApplicationWindowAction<Type>> panelFactory;
     @Mock
     private Function<Window, Dialog> aboutDialogSupplier;
     @Mock
     private BiFunction<ResourceBundle, String, StatusFrame> frameFactory;
+    @Mock
+    private ApplicationWindowAction<Type> action;
     @InjectMocks
     private FrameManager<Type> frameManager;
 
     @Before
     public void createFrameManager() {
-        frameManager = new FrameManager<>(bundle, singletonPanels, panelFactories, aboutDialogSupplier, frameFactory);
+        frameManager = new FrameManager<>(bundle, singletonPanelSupplier, panelFactories, aboutDialogSupplier, frameFactory);
         doReturn(panelFactory).when(panelFactories).get(Type.MULTI);
     }
 
@@ -78,12 +80,15 @@ public class FrameManagerTest {
         JMenu windowsMenu = trainGetJMenuBar(frame);
         when(frame.getTitle()).thenReturn(frameTitle);
         when(frameFactory.apply(bundle, Type.SINGLETON1.name())).thenReturn(frame);
+        JPanel content = new JPanel();
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(content);
+        when(action.getWindowInfo()).thenReturn(Type.SINGLETON1);
 
-        frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.SINGLETON1));
+        frameManager.onWindowEvent(action);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verifyInitializeFrame(frame);
-        verify(frame).setContentPane(singletonPanels.get(Type.SINGLETON1));
+        verify(frame).setContentPane(content);
         verify(frame).setVisible(true);
         checkJMenuBar(frame, frameTitle, windowsMenu);
     }
@@ -97,8 +102,9 @@ public class FrameManagerTest {
         when(frame.getTitle()).thenReturn(frameTitle);
         when(frameFactory.apply(bundle, Type.MULTI.name())).thenReturn(frame);
         when(panelFactory.createPanel(any())).thenReturn(panel);
+        when(action.getWindowInfo()).thenReturn(Type.MULTI);
 
-        frameManager.onWindowEvent(new ApplicationWindowEvent<>(this, Type.MULTI));
+        frameManager.onWindowEvent(action);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verifyInitializeFrame(frame);
@@ -137,6 +143,7 @@ public class FrameManagerTest {
     @Test
     public void testAddSingletonFrame() throws Exception {
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(new JPanel());
 
         frameManager.addSingletonFrame(Type.SINGLETON1, frame);
 
@@ -159,6 +166,8 @@ public class FrameManagerTest {
     @Test
     public void testAddSingletonFrameTwice() throws Exception {
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
+        JPanel content = new JPanel();
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(content);
 
         frameManager.addSingletonFrame(Type.SINGLETON1, frame);
         frameManager.addSingletonFrame(Type.SINGLETON1, frame);
@@ -174,6 +183,7 @@ public class FrameManagerTest {
     public void testAddSingletonFrameWithExistingId() throws Exception {
         StatusFrame frame1 = spy(new StatusFrame(new TestBundle(), "window"));
         StatusFrame frame2 = spy(new StatusFrame(new TestBundle(), "window"));
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(new JPanel());
 
         frameManager.addSingletonFrame(Type.SINGLETON1, frame1);
         try {
@@ -193,11 +203,14 @@ public class FrameManagerTest {
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         doNothing().when(frame).setVisible(anyBoolean());
         when(frameFactory.apply(bundle, "SINGLETON1")).thenReturn(frame);
+        JPanel content = new JPanel();
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(content);
 
         assertThat(frameManager.showSingletonFrame(Type.SINGLETON1)).isSameAs(frame);
         assertThat(frameManager.showSingletonFrame(Type.SINGLETON1)).isSameAs(frame);
 
-        verify(frame).setContentPane(same(singletonPanels.get(Type.SINGLETON1)));
+        verify(singletonPanelSupplier, times(1)).apply(Type.SINGLETON1);
+        verify(frame).setContentPane(same(content));
         verify(frame).setVisible(true);
         verify(frame).toFront();
         checkWindowsMenu(frame.getJMenuBar().getMenu(0), "frame1");
@@ -205,17 +218,14 @@ public class FrameManagerTest {
 
     @Test
     public void testShowFrameShowsMatchingFrame() throws Exception {
-        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<Type>(this, Type.MULTI) {
-            public boolean matches(StatusFrame frame) {
-                return true;
-            }
-        };
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         JPanel contentPane = new JPanel();
         when(panelFactory.createPanel()).thenReturn(contentPane);
         frameManager.addFrame(frame, Type.MULTI);
+        when(action.getWindowInfo()).thenReturn(Type.MULTI);
+        when(action.matches(frame)).thenReturn(true);
 
-        assertThat(frameManager.showFrame(event)).isSameAs(frame);
+        assertThat(frameManager.showFrame(action)).isSameAs(frame);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verifyZeroInteractions(frameFactory);
@@ -225,23 +235,29 @@ public class FrameManagerTest {
 
     @Test
     public void testShowFrameCreatesFrame() throws Exception {
-        ApplicationWindowEvent<Type> event = new ApplicationWindowEvent<>(this, Type.MULTI);
         StatusFrame frame = spy(new StatusFrame(new TestBundle(), "window"));
         when(frameFactory.apply(bundle, "MULTI")).thenReturn(frame);
         JPanel contentPane = new JPanel();
-        when(panelFactory.createPanel(event)).thenReturn(contentPane);
+        when(panelFactory.createPanel(action)).thenReturn(contentPane);
+        when(action.getWindowInfo()).thenReturn(Type.MULTI);
+        when(action.matches(any(StatusFrame.class))).thenReturn(false);
 
-        assertThat(frameManager.showFrame(event)).isSameAs(frame);
+        assertThat(frameManager.showFrame(action)).isSameAs(frame);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         verify(frameFactory).apply(bundle, "MULTI");
-        verify(panelFactory).createPanel(event);
+        verify(panelFactory).createPanel(action);
+        frame.dispose();
     }
 
     @Test
     public void testFrameClosed() throws Exception {
         StatusFrame frame1 = new StatusFrame(new TestBundle(), "window");
         StatusFrame frame2 = new StatusFrame(new TestBundle(), "window");
+        JPanel content1 = new JPanel();
+        JPanel content2 = new JPanel();
+        when(singletonPanelSupplier.apply(Type.SINGLETON1)).thenReturn(content1);
+        when(singletonPanelSupplier.apply(Type.SINGLETON2)).thenReturn(content2);
 
         frameManager.addSingletonFrame(Type.SINGLETON1, frame1);
         frameManager.addSingletonFrame(Type.SINGLETON2, frame2);
@@ -250,7 +266,7 @@ public class FrameManagerTest {
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
         assertThat(frame2.getJMenuBar().getMenu(0).getMenuComponentCount()).isEqualTo(1);
-        assertThat(singletonPanels.get(Type.SINGLETON1).getParent()).isNull();
+        assertThat(content1.getParent()).isNull();
     }
 
     public static class TestBundle extends ListResourceBundle {
