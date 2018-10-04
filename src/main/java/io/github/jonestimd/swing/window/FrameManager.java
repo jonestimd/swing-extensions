@@ -190,7 +190,7 @@ public class FrameManager<Key extends WindowInfo> {
         return contentPane;
     }
 
-    private void addFrame(StatusFrame frame, Container contentPane) {
+    public void addFrame(StatusFrame frame, Container contentPane) {
         frames.add(frame);
         initializeFrame(frame);
         frame.setContentPane(contentPane);
