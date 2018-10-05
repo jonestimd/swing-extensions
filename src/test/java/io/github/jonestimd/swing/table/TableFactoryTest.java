@@ -33,6 +33,7 @@ import javax.swing.table.TableCellEditor;
 import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.component.ComboBoxCellEditor;
 import io.github.jonestimd.swing.table.model.BeanListMultimapTableModel;
+import io.github.jonestimd.swing.table.model.BeanListTableModel;
 import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.ValidatedBeanListTableModel;
 import io.github.jonestimd.swing.validation.ValidatingTextCellEditor;
@@ -70,6 +71,15 @@ public class TableFactoryTest {
         when(validatedModel.getColumnClass(anyInt())).thenAnswer(invocation -> columnClasses[(int) invocation.getArguments()[0]]);
         when(validatedModel.getColumnIdentifier(anyInt())).thenAnswer(invocation -> adapters[(int) invocation.getArguments()[0]]);
         when(initializer.initialize(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
+    }
+
+    @Test
+    public void createSortedTable() throws Exception {
+        DecoratedTable<Object, BeanListTableModel<Object>> table = factory.createSortedTable(validatedModel);
+
+        verify(initializer).initialize(table);
+        assertThat(table.getCellSelectionEnabled()).isFalse();
+        assertThat(table.getRowSorter().getSortKeys()).isEmpty();
     }
 
     @Test

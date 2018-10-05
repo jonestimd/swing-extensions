@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JComboBox;
@@ -53,14 +54,34 @@ public class TableFactory {
         this.tableInitializer = tableInitializer;
     }
 
-    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, int ... sortColumns) {
+    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, int... sortColumns) {
+        return createSortedTable(model, SortOrder.ASCENDING, sortColumns);
+    }
+
+    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, SortOrder order, int... sortColumns) {
+        return createSortedTable(model, toSortKeys(order, sortColumns));
+    }
+
+    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, List<SortKey> sortKeys) {
         DecoratedTable<B, M> table = new DecoratedTable<>(model);
-        table.setRowSorter(newRowSorter(model, sortColumns));
+        table.setRowSorter(newRowSorter(model, sortKeys));
         return initialize(table);
     }
 
+    private List<SortKey> toSortKeys(SortOrder order, int... sortColumns) {
+        return Streams.map(sortColumns, (column) -> new SortKey(column, order));
+    }
+
+    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, int... sortColumns) {
+        return createValidatedTable(model, SortOrder.ASCENDING, sortColumns);
+    }
+
+    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, SortOrder order, int... sortColumns) {
+        return createValidatedTable(model, toSortKeys(order, sortColumns));
+    }
+
     @SuppressWarnings("unchecked")
-    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, int ... sortColumns) {
+    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, List<SortKey> sortColumns) {
         DecoratedTable<B, M> table = createSortedTable(model, sortColumns);
         Validator<String> validationAdapter = value -> table.isEditing() ?
                 model.validateAt(table.convertRowIndexToModel(table.getEditingRow()), table.convertColumnIndexToModel(table.getEditingColumn()), value) : null;
@@ -82,11 +103,11 @@ public class TableFactory {
         return tableInitializer.initialize(table);
     }
 
-    protected RowSorter<BeanListTableModel<?>> newRowSorter(BeanListTableModel<?> model, int ... sortColumns) {
+    protected RowSorter<BeanListTableModel<?>> newRowSorter(BeanListTableModel<?> model, List<SortKey> sortColumns) {
         TableRowSorter<BeanListTableModel<?>> sorter = new TableRowSorter<>(model);
         sorter.setSortsOnUpdates(true);
-        if (sortColumns.length > 0) {
-            sorter.setSortKeys(Streams.map(sortColumns, column -> new SortKey(column, SortOrder.ASCENDING)));
+        if (sortColumns.size() > 0) {
+            sorter.setSortKeys(sortColumns);
         }
         return sorter;
     }
