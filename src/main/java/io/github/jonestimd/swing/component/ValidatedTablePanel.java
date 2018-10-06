@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2018 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +77,7 @@ import io.github.jonestimd.swing.window.StatusFrame;
  */
 public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
     private final ValidatedBeanListTableModel<T> tableModel;
-    private final DecoratedTable<T, ValidatedBeanListTableModel<T>> table;
+    private final DecoratedTable<T, ? extends ValidatedBeanListTableModel<T>> table;
     protected final ResourceBundle bundle;
     protected final String resourceGroup;
     private final TableSummaryPanel tableSummaryPanel = new TableSummaryPanel();
@@ -91,7 +93,7 @@ public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
      * @param resourceGroup a string used to look up component resources
      */
     @SuppressWarnings("unchecked")
-    protected ValidatedTablePanel(ResourceBundle bundle, DecoratedTable<T, ValidatedBeanListTableModel<T>> table, String resourceGroup) {
+    protected ValidatedTablePanel(ResourceBundle bundle, DecoratedTable<T, ? extends ValidatedBeanListTableModel<T>> table, String resourceGroup) {
         super(bundle, 1, new JScrollPane(table));
         this.bundle = bundle;
         this.table = table;
@@ -148,7 +150,7 @@ public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
         return tableModel;
     }
 
-    protected DecoratedTable<T, ValidatedBeanListTableModel<T>> getTable() {
+    protected DecoratedTable<T, ? extends ValidatedBeanListTableModel<T>> getTable() {
         return table;
     }
 
