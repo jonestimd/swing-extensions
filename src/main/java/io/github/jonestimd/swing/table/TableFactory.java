@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2018 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -42,7 +43,6 @@ import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.ValidatedBeanListTableModel;
 import io.github.jonestimd.swing.validation.ValidatingTextCellEditor;
 import io.github.jonestimd.swing.validation.Validator;
-import io.github.jonestimd.util.Streams;
 
 /**
  * Provides factory methods for creating sorted and validated tables.
@@ -54,35 +54,13 @@ public class TableFactory {
         this.tableInitializer = tableInitializer;
     }
 
-    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, int... sortColumns) {
-        return createSortedTable(model, SortOrder.ASCENDING, sortColumns);
-    }
-
-    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, SortOrder order, int... sortColumns) {
-        return createSortedTable(model, toSortKeys(order, sortColumns));
-    }
-
-    public <B, M extends BeanListTableModel<B>> DecoratedTable<B, M> createSortedTable(M model, List<SortKey> sortKeys) {
-        DecoratedTable<B, M> table = new DecoratedTable<>(model);
-        table.setRowSorter(newRowSorter(model, sortKeys));
-        return initialize(table);
-    }
-
-    private List<SortKey> toSortKeys(SortOrder order, int... sortColumns) {
-        return Streams.map(sortColumns, (column) -> new SortKey(column, order));
-    }
-
-    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, int... sortColumns) {
-        return createValidatedTable(model, SortOrder.ASCENDING, sortColumns);
-    }
-
-    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, SortOrder order, int... sortColumns) {
-        return createValidatedTable(model, toSortKeys(order, sortColumns));
+    public <B, M extends BeanListTableModel<B>> TableBuilder<B, M, DecoratedTable<B, M>> tableBuilder(M model) {
+        return new TableBuilder<>(model, new DecoratedTable<>(model));
     }
 
     @SuppressWarnings("unchecked")
-    public <B, M extends ValidatedBeanListTableModel<B>> DecoratedTable<B, M> createValidatedTable(M model, List<SortKey> sortColumns) {
-        DecoratedTable<B, M> table = createSortedTable(model, sortColumns);
+    public <B, M extends ValidatedBeanListTableModel<B>> TableBuilder<B, M, DecoratedTable<B, M>> validatedTableBuilder(M model) {
+        DecoratedTable<B, M> table = new DecoratedTable<>(model);
         Validator<String> validationAdapter = value -> table.isEditing() ?
                 model.validateAt(table.convertRowIndexToModel(table.getEditingRow()), table.convertColumnIndexToModel(table.getEditingColumn()), value) : null;
         for (int columnIndex = 0; columnIndex < model.getColumnCount(); columnIndex++) {
@@ -95,16 +73,15 @@ public class TableFactory {
                 table.getColumn(columnIdentifier).setCellEditor(createEnumCellEditor((Class<? extends Enum<?>>) columnClass));
             }
         }
-        table.setCellSelectionEnabled(true);
-        return table;
+        return new TableBuilder<>(model, table).cellSelectionEnabled();
     }
 
     protected <B, M extends BeanTableModel<B>, T extends DecoratedTable<B, M>> T initialize(T table) {
         return tableInitializer.initialize(table);
     }
 
-    protected RowSorter<BeanListTableModel<?>> newRowSorter(BeanListTableModel<?> model, List<SortKey> sortColumns) {
-        TableRowSorter<BeanListTableModel<?>> sorter = new TableRowSorter<>(model);
+    protected RowSorter<BeanTableModel<?>> newRowSorter(BeanTableModel<?> model, List<SortKey> sortColumns) {
+        TableRowSorter<BeanTableModel<?>> sorter = new TableRowSorter<>(model);
         sorter.setSortsOnUpdates(true);
         if (sortColumns.size() > 0) {
             sorter.setSortKeys(sortColumns);
@@ -112,8 +89,8 @@ public class TableFactory {
         return sorter;
     }
 
-    public <G, T, M extends BeanListMultimapTableModel<G, T>> SectionTable<T, M> createTable(M model) {
-        return tableInitializer.initialize(new SectionTable<>(model));
+    public <G, T, M extends BeanListMultimapTableModel<G, T>> TableBuilder<T, M, SectionTable<T, M>> sectionTableBuilder(M model) {
+        return new TableBuilder<>(model, new SectionTable<>(model));
     }
 
     public static TableCellEditor createEnumCellEditor(Class<? extends Enum<?>> enumType) { // TODO use TranslatingComboBoxCellEditor
@@ -129,5 +106,50 @@ public class TableFactory {
                 }
             }
         });
+    }
+
+    public class TableBuilder<B, M extends BeanTableModel<B>, T extends DecoratedTable<B, M>> {
+        protected final M model;
+        protected final T table;
+        private List<SortKey> sortKeys;
+
+        protected TableBuilder(M model, T table) {
+            this.model = model;
+            this.table = table;
+        }
+
+        public TableBuilder<B, M, T> sorted() {
+            sortKeys = new ArrayList<>();
+            return this;
+        }
+
+        public TableBuilder<B, M, T> sortedBy(int... columns) {
+            return sortedBy(SortOrder.ASCENDING, columns);
+        }
+
+        public TableBuilder<B, M, T> sortedBy(SortOrder order, int... columns) {
+            if (sortKeys == null) sortKeys = new ArrayList<>();
+            for (int column : columns) {
+                sortKeys.add(new SortKey(column, order));
+            }
+            return this;
+        }
+
+        public TableBuilder<B, M, T> cellSelectionEnabled() {
+            table.setCellSelectionEnabled(true);
+            return this;
+        }
+
+        public TableBuilder<B, M, T> doubleClickHandler(Consumer<MouseEvent> handler) {
+            addDoubleClickHandler(table, handler);
+            return this;
+        }
+
+        public T get() {
+            if (sortKeys != null) {
+                table.setRowSorter(newRowSorter(model, sortKeys));
+            }
+            return initialize(table);
+        }
     }
 }

@@ -21,7 +21,6 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.function.Consumer;
@@ -29,18 +28,16 @@ import java.util.function.Consumer;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableRowSorter;
 
-import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.component.ComboBoxCellEditor;
 import io.github.jonestimd.swing.table.model.BeanListMultimapTableModel;
-import io.github.jonestimd.swing.table.model.BeanListTableModel;
 import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.ValidatedBeanListTableModel;
 import io.github.jonestimd.swing.validation.ValidatingTextCellEditor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -75,7 +72,7 @@ public class TableFactoryTest {
 
     @Test
     public void createSortedTable() throws Exception {
-        DecoratedTable<Object, BeanListTableModel<Object>> table = factory.createSortedTable(validatedModel);
+        DecoratedTable<?, ?> table = factory.tableBuilder(validatedModel).sorted().get();
 
         verify(initializer).initialize(table);
         assertThat(table.getCellSelectionEnabled()).isFalse();
@@ -84,7 +81,7 @@ public class TableFactoryTest {
 
     @Test
     public void createValidatedTable() throws Exception {
-        DecoratedTable<Object, ValidatedBeanListTableModel<Object>> table = factory.createValidatedTable(validatedModel);
+        DecoratedTable<?, ?> table = factory.validatedTableBuilder(validatedModel).sorted().get();
 
         verify(initializer).initialize(table);
         assertThat(table.getCellSelectionEnabled()).isTrue();
@@ -95,7 +92,7 @@ public class TableFactoryTest {
 
     @Test
     public void createValidatedTableWithSortKey() throws Exception {
-        DecoratedTable<Object, ValidatedBeanListTableModel<Object>> table = factory.createValidatedTable(validatedModel, 0);
+        DecoratedTable<?, ?> table = factory.validatedTableBuilder(validatedModel).sortedBy(0).get();
 
         verify(initializer).initialize(table);
         assertThat(table.getCellSelectionEnabled()).isTrue();
@@ -107,7 +104,7 @@ public class TableFactoryTest {
     @Test
     @SuppressWarnings("unchecked")
     public void createSectionTable() throws Exception {
-        factory.createTable(listMultimapModel);
+        factory.sectionTableBuilder(listMultimapModel).get();
 
         verify(initializer).initialize(isA(SectionTable.class));
     }
@@ -121,18 +118,23 @@ public class TableFactoryTest {
     }
 
     @Test
-    public void addDoubleClickHanlder() throws Exception {
-        JTable table = mock(JTable.class);
-        when(table.getLocationOnScreen()).thenReturn(new Point());
+    public void tableBuilder_sorted() throws Exception {
+        JTable table = factory.tableBuilder(validatedModel).sorted().get();
 
-        TableFactory.addDoubleClickHandler(table, mouseEventConsumer);
+        assertThat(table.getRowSorter()).isInstanceOf(TableRowSorter.class);
+        assertThat(((TableRowSorter) table.getRowSorter()).getSortsOnUpdates()).isTrue();
+    }
 
-        ArgumentCaptor<MouseListener> captor = ArgumentCaptorFactory.create();
-        verify(table).addMouseListener(captor.capture());
+    @Test
+    public void doubleClickHanlder() throws Exception {
+        JTable table = factory.tableBuilder(validatedModel).doubleClickHandler(mouseEventConsumer).get();
+
+        MouseListener[] listeners = table.getMouseListeners();
+        MouseListener listener = listeners[listeners.length-1];
         MouseEvent event = new MouseEvent(table, -1, 0L, 0, 0, 0, 2, false, MouseEvent.BUTTON1);
-        captor.getValue().mouseClicked(event);
-        captor.getValue().mouseClicked(new MouseEvent(table, -1, 0L, 0, 0, 0, 2, false, MouseEvent.BUTTON2));
-        captor.getValue().mouseClicked(new MouseEvent(table, -1, 0L, 0, 0, 0, 1, false, MouseEvent.BUTTON1));
+        listener.mouseClicked(event);
+        listener.mouseClicked(new MouseEvent(table, -1, 0L, 0, 0, 0, 2, false, MouseEvent.BUTTON2));
+        listener.mouseClicked(new MouseEvent(table, -1, 0L, 0, 0, 0, 1, false, MouseEvent.BUTTON1));
         verify(mouseEventConsumer).accept(same(event));
         verifyNoMoreInteractions(mouseEventConsumer);
     }
