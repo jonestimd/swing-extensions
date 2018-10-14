@@ -34,8 +34,8 @@ import javax.swing.border.Border;
 public class IconBorder implements Border {
     /** Available sides for displaying the icon. */
     public enum Side { LEFT, RIGHT };
-    private final ImageIcon icon;
-    private final Side side;
+    protected final ImageIcon icon;
+    protected final Side side;
 
     public IconBorder(Side side, ImageIcon icon) {
         this.side = side;
