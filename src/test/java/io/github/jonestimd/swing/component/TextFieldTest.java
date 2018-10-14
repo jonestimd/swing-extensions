@@ -17,6 +17,19 @@ public class TextFieldTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
 
     @Test
+    public void inputFilter() throws Exception {
+        JTextField field = TextField.plain().inputFilter("[0-9]*").get();
+
+        field.setText("123");
+
+        assertThat(field.getText()).isEqualTo("123");
+        field.setText("1a2");
+        assertThat(field.getText()).isEqualTo("123");
+        field.setText("a3b");
+        assertThat(field.getText()).isEqualTo("123");
+    }
+
+    @Test
     public void readonlySetsEditableFalse() throws Exception {
         JTextField field = new TextField<>(new JTextField()).readOnly().get();
 

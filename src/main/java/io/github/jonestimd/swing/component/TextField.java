@@ -23,9 +23,15 @@ import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import io.github.jonestimd.swing.validation.NumberValidator;
 import io.github.jonestimd.swing.validation.PositiveNumberValidator;
@@ -59,6 +65,36 @@ public class TextField<T extends JTextField> {
      */
     public TextField<T> rightAligned() {
         textField.setHorizontalAlignment(JTextField.RIGHT);
+        return this;
+    }
+
+    /**
+     * Set the {@link DocumentFilter} to filter input using a regex pattern.
+     * @param pattern the regex pattern to use for filtering input
+     * @return this {@code TextField} for further configuration
+     */
+    public TextField<T> inputFilter(String pattern) {
+        Pattern regex = Pattern.compile(pattern);
+        return inputFilter((s) -> regex.matcher(s).matches());
+    }
+
+    /**
+     * Set the {@link DocumentFilter} to filter input using a predicate.
+     * @param filter the predicate to use for filtering input
+     * @return this {@code TextField} for further configuration
+     */
+    public TextField<T> inputFilter(Predicate<String> filter) {
+        ((AbstractDocument) textField.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
+                if (filter.test(text)) super.insertString(fb, offset, text, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                if (filter.test(text)) super.replace(fb, offset, length, text, attrs);
+            }
+        });
         return this;
     }
 
