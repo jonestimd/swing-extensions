@@ -25,6 +25,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -101,7 +102,7 @@ public class GridBagBuilder {
      * @see FormElement
      */
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix) {
-        this(container, bundle, resourcePrefix, 2, DEFAULT_CONSTRAINTS);
+        this(container, bundle, resourcePrefix, 2, new HashMap<>(DEFAULT_CONSTRAINTS));
     }
 
     /**
@@ -120,6 +121,11 @@ public class GridBagBuilder {
         this.columns = columns;
         this.container = container;
         container.setLayout(new GridBagLayout());
+    }
+
+    public GridBagBuilder setConstraints(Class<?> componentClass, GridBagFormula constraints) {
+        fieldConstrains.put(componentClass, constraints);
+        return this;
     }
 
     /**

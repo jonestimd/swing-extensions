@@ -23,6 +23,8 @@ package io.github.jonestimd.swing.layout;
 
 import java.awt.GridBagConstraints;
 
+import static java.awt.GridBagConstraints.*;
+
 /**
  * An interface for generating {@link GridBagConstraints}.
  * @see GridBagBuilder
@@ -39,4 +41,43 @@ public interface GridBagFormula {
      * @return the updated {@code gbc} parameter
      */
     GridBagConstraints setConstraints(GridBagConstraints gbc);
+
+    /**
+     * Create an instance of {@code GridBagFormula}.
+     * @param labelConstraints the {@code GridBagFormula} to use for the label
+     * @param anchor the anchor position for the field
+     * @param width the grid width for the field
+     * @param height the grid height for the field
+     * @param weightx the width size allocation for the field
+     * @param weighty the height size allocation for the field
+     * @param indent the left inset for the field
+     */
+    static GridBagFormula get(GridBagFormula labelConstraints, int anchor, int width, int height, double weightx, double weighty, int indent) {
+        return new GridBagFormula() {
+            @Override
+            public GridBagFormula getLabelConstraints() {
+                return labelConstraints;
+            }
+
+            @Override
+            public GridBagConstraints setConstraints(GridBagConstraints gbc) {
+                if (labelConstraints == null && anchor == GridBagConstraints.WEST && width == 1) {
+                    gbc.gridx = 1;
+                }
+                gbc.anchor = anchor;
+                gbc.gridwidth = width;
+                gbc.gridheight = height;
+                gbc.weightx = weightx;
+                gbc.weighty = weighty;
+                gbc.insets.left = indent;
+                if (weightx > 0) {
+                    gbc.fill = weighty > 0 ? BOTH : HORIZONTAL;
+                }
+                else {
+                    gbc.fill = NONE;
+                }
+                return gbc;
+            }
+        };
+    }
 }

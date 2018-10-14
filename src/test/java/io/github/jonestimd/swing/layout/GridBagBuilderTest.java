@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
@@ -39,10 +40,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static java.awt.GridBagConstraints.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class GridBagBuilderTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
     private final JPanel panel = new JPanel();
@@ -50,12 +56,21 @@ public class GridBagBuilderTest {
     private final GridBagConstraints textAreaLabelConstraints = new GridBagConstraints(0, 0, 2, 1, 0, 0, WEST, NONE, new Insets(2, 0, 0, 2), 0, 0);
     private final GridBagConstraints textFieldConstraints = new GridBagConstraints(1, 0, 1, 1, 1, 0, WEST, HORIZONTAL, new Insets(2, 0, 0, 2), 0, 0);
     private final GridBagConstraints tableScrollPaneConstraints = new GridBagConstraints(0, 1, 2, 1, 1, 1, WEST, BOTH, new Insets(2, 0, 0, 2), 0, 0);
+    @Mock
+    private Map<Class<?>, GridBagFormula> constraintsMap;
 
     @Test
     public void setsContainerLayout() throws Exception {
         new GridBagBuilder(panel, bundle, "");
 
         assertThat(panel.getLayout()).isInstanceOf(GridBagLayout.class);
+    }
+
+    @Test
+    public void setConstraints() throws Exception {
+        new GridBagBuilder(panel, bundle, "", 2, constraintsMap).setConstraints(JPanel.class, FormElement.LIST);
+
+        verify(constraintsMap).put(JPanel.class, FormElement.LIST);
     }
 
     @Test

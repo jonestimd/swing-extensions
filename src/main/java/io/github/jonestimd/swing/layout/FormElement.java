@@ -31,8 +31,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import static java.awt.GridBagConstraints.*;
-
 /**
  * The default {@link GridBagFormula}s for {@link GridBagBuilder}.
  */
@@ -57,46 +55,17 @@ public enum FormElement implements GridBagFormula {
     /** Constraints for a {@link JPanel}. */
     PANEL(null, GridBagConstraints.WEST, 2, 1, 1d, 1d, 0);
 
-    private final FormElement labelConstraints;
-    private final int anchor;
-    private final int width;
-    private final int height;
-    private final double weightx;
-    private final double weighty;
-    private final int fill;
-    private final int indent;
+    private final GridBagFormula delegate;
 
     FormElement(FormElement labelConstraints, int anchor, int width, int height, double weightx, double weighty, int indent) {
-        this.labelConstraints = labelConstraints;
-        this.anchor = anchor;
-        this.width = width;
-        this.height = height;
-        this.weightx = weightx;
-        this.weighty = weighty;
-        this.indent = indent;
-        if (weightx > 0) {
-            fill = weighty > 0 ? BOTH : HORIZONTAL;
-        }
-        else {
-            fill = NONE;
-        }
+        this.delegate = GridBagFormula.get(labelConstraints, anchor, width, height, weightx, weighty, indent);
     }
 
     public GridBagFormula getLabelConstraints() {
-        return labelConstraints;
+        return delegate.getLabelConstraints();
     }
 
     public GridBagConstraints setConstraints(GridBagConstraints gbc) {
-        if (labelConstraints == null && anchor == GridBagConstraints.WEST && width == 1) {
-            gbc.gridx = 1;
-        }
-        gbc.anchor = anchor;
-        gbc.gridwidth = width;
-        gbc.gridheight = height;
-        gbc.weightx = weightx;
-        gbc.weighty = weighty;
-        gbc.insets.left = indent;
-        gbc.fill = fill;
-        return gbc;
+        return delegate.setConstraints(gbc);
     }
 }
