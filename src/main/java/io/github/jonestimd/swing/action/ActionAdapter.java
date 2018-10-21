@@ -21,9 +21,12 @@ package io.github.jonestimd.swing.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 
 /**
  * Converts an {@link ActionListener} to an {@link Action}.
@@ -44,6 +47,32 @@ public class ActionAdapter extends AbstractAction {
     public ActionAdapter(ActionListener handler, String name) {
         this(handler);
         putValue(NAME, name);
+    }
+
+    /**
+     * Create an action using settings from a resource bundle.  The following resource bundle keys will be used if available:
+     * <ul>
+     *     <li><em>keyPrefix</em>.mnemonicAndName - string containing the mnemonic character followed by the action name</li>
+     *     <li><em>keyPrefix</em>.imageIcon - the location of the image to use for the {@link Action#SMALL_ICON}</li>
+     *     <li><em>keyPrefix</em>.accelerator - the accelerator keystroke for the action</li>
+     * </ul>
+     * @param handler action handler
+     * @param bundle the resource bundle containing the action settings
+     * @param keyPrefix the key prefix for the action settings
+     */
+    public ActionAdapter(ActionListener handler, ResourceBundle bundle, String keyPrefix) {
+        this(handler);
+        if (bundle.containsKey(keyPrefix + ".mnemonicAndName")) {
+            String mnemonicAndName = bundle.getString(keyPrefix+".mnemonicAndName");
+            putValue(NAME, mnemonicAndName.substring(1));
+            putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
+        }
+        if (bundle.containsKey(keyPrefix + ".iconImage")) {
+            putValue(SMALL_ICON, new ImageIcon(getClass().getResource(bundle.getString(keyPrefix + ".iconImage"))));
+        }
+        if (bundle.containsKey(keyPrefix + ".accelerator")) {
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(bundle.getString(keyPrefix + ".accelerator")));
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
