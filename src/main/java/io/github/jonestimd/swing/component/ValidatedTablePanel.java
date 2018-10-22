@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -39,7 +40,7 @@ import io.github.jonestimd.swing.ChangeBuffer;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.UnsavedChangesIndicator;
-import io.github.jonestimd.swing.action.MnemonicAction;
+import io.github.jonestimd.swing.action.ActionAdapter;
 import io.github.jonestimd.swing.table.DecoratedTable;
 import io.github.jonestimd.swing.table.TableSummary;
 import io.github.jonestimd.swing.table.TableSummaryPanel;
@@ -262,9 +263,9 @@ public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
         deleteAction.setEnabled(isDeleteEnabled(getSelectionMinusPendingDeletes()));
     }
 
-    private class DeleteAction extends MnemonicAction {
+    private class DeleteAction extends AbstractAction {
         private DeleteAction() {
-            super(bundle, resourceGroup + ".action.delete");
+            ActionAdapter.initialize(this, bundle, resourceGroup + ".action.delete");
             setEnabled(false);
         }
 

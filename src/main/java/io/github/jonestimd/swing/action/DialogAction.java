@@ -22,6 +22,7 @@ package io.github.jonestimd.swing.action;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -36,13 +37,13 @@ import io.github.jonestimd.swing.BackgroundTask;
  *     <li>{@link #setSaveResultOnUI()} - run on the Swing event dispatch thread</li>
  * </ul>
  */
-public abstract class DialogAction extends MnemonicAction {
+public abstract class DialogAction extends AbstractAction {
     private ResourceBundle bundle;
     private String initializeMessageKey;
     private String updateMessageKey;
 
     protected DialogAction(ResourceBundle bundle, String resourcePrefix) {
-        super(bundle, resourcePrefix);
+        ActionAdapter.initialize(this, bundle, resourcePrefix);
         this.bundle = bundle;
         this.initializeMessageKey = resourcePrefix + ".status.initialize";
         this.updateMessageKey = resourcePrefix + ".status.save";

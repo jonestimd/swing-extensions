@@ -25,9 +25,10 @@ import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
 
+import javax.swing.AbstractAction;
 import javax.swing.JTable;
 
-import io.github.jonestimd.swing.action.MnemonicAction;
+import io.github.jonestimd.swing.action.ActionAdapter;
 import io.github.jonestimd.swing.table.model.BufferedBeanListTableModel;
 
 /**
@@ -35,13 +36,13 @@ import io.github.jonestimd.swing.table.model.BufferedBeanListTableModel;
  * @param <T> the class of the beans displayed in the table
  * @see BufferedBeanListTableModel
  */
-public class AddRowAction<T> extends MnemonicAction {
+public class AddRowAction<T> extends AbstractAction {
     private final BufferedBeanListTableModel<T> tableModel;
     private final JTable table;
     private final Supplier<T> newBeanSupplier;
 
     public AddRowAction(ResourceBundle bundle, String keyPrefix, BufferedBeanListTableModel<T> tableModel, JTable table, Supplier<T> newBeanSupplier) {
-        super(bundle, keyPrefix);
+        ActionAdapter.initialize(this, bundle, keyPrefix);
         this.tableModel = tableModel;
         this.table = table;
         this.newBeanSupplier = newBeanSupplier;

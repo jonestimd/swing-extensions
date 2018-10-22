@@ -21,8 +21,6 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.action;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
@@ -44,15 +42,6 @@ import javax.swing.KeyStroke;
  * </ul>
  */
 public abstract class MnemonicAction extends AbstractAction {
-    public static MnemonicAction forListener(ActionListener handler, ResourceBundle bundle, String resourcePrefix) {
-        return new MnemonicAction(bundle, resourcePrefix) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                handler.actionPerformed(event);
-            }
-        };
-    }
-
     public MnemonicAction(String mnemonicAndName) {
         this(mnemonicAndName, null);
     }

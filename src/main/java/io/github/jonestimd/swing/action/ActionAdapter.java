@@ -40,6 +40,21 @@ public class ActionAdapter extends AbstractAction {
         return action;
     }
 
+    public static <T extends Action> T initialize(T action, ResourceBundle bundle, String keyPrefix) {
+        if (bundle.containsKey(keyPrefix + ".mnemonicAndName")) {
+            String mnemonicAndName = bundle.getString(keyPrefix+".mnemonicAndName");
+            action.putValue(NAME, mnemonicAndName.substring(1));
+            action.putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
+        }
+        if (bundle.containsKey(keyPrefix + ".iconImage")) {
+            action.putValue(SMALL_ICON, new ImageIcon(action.getClass().getResource(bundle.getString(keyPrefix + ".iconImage"))));
+        }
+        if (bundle.containsKey(keyPrefix + ".accelerator")) {
+            action.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(bundle.getString(keyPrefix + ".accelerator")));
+        }
+        return action;
+    }
+
     public ActionAdapter(ActionListener handler) {
         this.handler = handler;
     }
@@ -62,17 +77,7 @@ public class ActionAdapter extends AbstractAction {
      */
     public ActionAdapter(ActionListener handler, ResourceBundle bundle, String keyPrefix) {
         this(handler);
-        if (bundle.containsKey(keyPrefix + ".mnemonicAndName")) {
-            String mnemonicAndName = bundle.getString(keyPrefix+".mnemonicAndName");
-            putValue(NAME, mnemonicAndName.substring(1));
-            putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
-        }
-        if (bundle.containsKey(keyPrefix + ".iconImage")) {
-            putValue(SMALL_ICON, new ImageIcon(getClass().getResource(bundle.getString(keyPrefix + ".iconImage"))));
-        }
-        if (bundle.containsKey(keyPrefix + ".accelerator")) {
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(bundle.getString(keyPrefix + ".accelerator")));
-        }
+        initialize(this, bundle, keyPrefix);
     }
 
     public void actionPerformed(ActionEvent e) {
