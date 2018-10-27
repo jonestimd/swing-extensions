@@ -174,6 +174,7 @@ public class GridBagBuilder {
         relatedGap();
         container.add(new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix + labelKey)).forComponent(field).get(),
                 constraints.getLabelConstraints().setConstraints(gbc));
+        relatedGap();
         nextCell();
         return append(field, constraints);
     }

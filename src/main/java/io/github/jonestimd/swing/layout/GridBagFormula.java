@@ -22,6 +22,7 @@
 package io.github.jonestimd.swing.layout;
 
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 import static java.awt.GridBagConstraints.*;
 
@@ -53,6 +54,20 @@ public interface GridBagFormula {
      * @param indent the left inset for the field
      */
     static GridBagFormula get(GridBagFormula labelConstraints, int anchor, int width, int height, double weightx, double weighty, int indent) {
+        return get(labelConstraints, anchor, width, height, weightx, weighty, new Insets(0, indent, 0, 0));
+    }
+
+    /**
+     * Create an instance of {@code GridBagFormula}.
+     * @param labelConstraints the {@code GridBagFormula} to use for the label
+     * @param anchor the anchor position for the field
+     * @param width the grid width for the field
+     * @param height the grid height for the field
+     * @param weightx the width size allocation for the field
+     * @param weighty the height size allocation for the field
+     * @param insets the insets for the field
+     */
+    static GridBagFormula get(GridBagFormula labelConstraints, int anchor, int width, int height, double weightx, double weighty, Insets insets) {
         return new GridBagFormula() {
             @Override
             public GridBagFormula getLabelConstraints() {
@@ -69,7 +84,10 @@ public interface GridBagFormula {
                 gbc.gridheight = height;
                 gbc.weightx = weightx;
                 gbc.weighty = weighty;
-                gbc.insets.left = indent;
+                gbc.insets.top += insets.top;
+                gbc.insets.bottom += insets.bottom;
+                gbc.insets.left += insets.left;
+                gbc.insets.right += insets.right;
                 if (weightx > 0) {
                     gbc.fill = weighty > 0 ? BOTH : HORIZONTAL;
                 }
