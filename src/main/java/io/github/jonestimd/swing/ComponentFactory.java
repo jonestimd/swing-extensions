@@ -32,6 +32,7 @@ import java.util.function.Predicate;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -64,6 +65,7 @@ public class ComponentFactory {
     public static final char NO_MNEMONIC = ' ';
     public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
     public static final String TOOLBAR_BUTTON_ACTION_KEY = "doClick";
+    public static final int LABEL_GAP = 5;
 
     protected final ResourceBundle bundle;
 
@@ -116,6 +118,22 @@ public class ComponentFactory {
         statusArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, statusArea.getHeight()));
         statusArea.setBackground(SwingResource.VALIDATION_MESSAGE_BACKGROUND.getColor(bundle));
         return statusArea;
+    }
+
+    public static JComponent newFormSeparator(String label) {
+        Box box = Box.createHorizontalBox();
+        box.add(createFormSeparator());
+        box.add(Box.createHorizontalStrut(LABEL_GAP));
+        box.add(new LabelBuilder().name(label).bold().get());
+        box.add(Box.createHorizontalStrut(LABEL_GAP));
+        box.add(createFormSeparator());
+        return box;
+    }
+
+    private static JSeparator createFormSeparator() {
+        JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+        separator.setAlignmentY(0f);
+        return separator;
     }
 
     public static JSeparator newMenuBarSeparator() {

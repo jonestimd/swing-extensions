@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultButtonModel;
@@ -115,6 +116,22 @@ public class ComponentFactoryTest {
         assertThat(statusArea.getRows()).isEqualTo(2);
         assertThat(statusArea.getMaximumSize().width).isEqualTo(Integer.MAX_VALUE);
         assertThat(statusArea.getBackground()).isEqualTo(new Color(254, 254, 199));
+    }
+
+    @Test
+    public void newFormSeparator() throws Exception {
+        JComponent separator = ComponentFactory.newFormSeparator("the title");
+
+        assertThat(separator.getComponentCount()).isEqualTo(5);
+        assertThat(separator.getComponent(0)).isInstanceOf(JSeparator.class);
+        assertThat(separator.getComponent(0).getAlignmentY()).isEqualTo(0f);
+        assertThat(separator.getComponent(1)).isInstanceOf(Box.Filler.class);
+        assertThat(separator.getComponent(2)).isInstanceOf(JLabel.class);
+        assertThat(((JLabel) separator.getComponent(2)).getText()).isEqualTo("the title");
+        assertThat(separator.getComponent(2).getFont().isBold()).isTrue();
+        assertThat(separator.getComponent(3)).isInstanceOf(Box.Filler.class);
+        assertThat(separator.getComponent(4)).isInstanceOf(JSeparator.class);
+        assertThat(separator.getComponent(4).getAlignmentY()).isEqualTo(0f);
     }
 
     @Test

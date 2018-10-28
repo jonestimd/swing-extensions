@@ -29,11 +29,12 @@ import io.github.jonestimd.swing.LabelBuilder;
 import io.github.jonestimd.swing.component.AutosizeTextField;
 import io.github.jonestimd.swing.component.ComponentBinder;
 
+import static io.github.jonestimd.swing.ComponentFactory.LABEL_GAP;
+
 /**
  * A panel that displays summary values provided by {@link TableSummary}.
  */
 public class TableSummaryPanel extends Box {
-    private static final int LABEL_GAP = 5;
     private static final int SUMMARY_GAP = 10;
 
     public TableSummaryPanel(TableSummary tableSummary) {
