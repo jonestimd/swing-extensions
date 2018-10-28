@@ -93,6 +93,7 @@ public class GridBagBuilder {
     private GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1d, 0d, WEST, HORIZONTAL, new Insets(RELATED_GAP, 0, 0, RELATED_GAP), 0, 0);
     private Container container;
     private final int columns;
+    private JLabel lastLabel;
 
     /**
      * Create a new builder using 2 columns and the default {@link GridBagFormula}s.
@@ -121,6 +122,13 @@ public class GridBagBuilder {
         this.columns = columns;
         this.container = container;
         container.setLayout(new GridBagLayout());
+    }
+
+    /**
+     * @return the most recently created field label
+     */
+    public JLabel getLastLabel() {
+        return lastLabel;
     }
 
     public GridBagBuilder setConstraints(Class<?> componentClass, GridBagFormula constraints) {
@@ -170,13 +178,24 @@ public class GridBagBuilder {
      * @return the component
      */
     public <T extends JComponent> T append(String labelKey, T field) {
-        GridBagFormula constraints = getConstraints(field.getClass());
+        return append(labelKey, field, getConstraints(field.getClass()));
+    }
+
+    /**
+     * Append a labeled component to the form.
+     * @param labelKey the resource key for the label
+     * @param field the component
+     * @param <T> the class of the component
+     * @param formula the constraints calculator for the component
+     * @return the component
+     */
+    public <T extends JComponent> T append(String labelKey, T field, GridBagFormula formula) {
         relatedGap();
-        container.add(new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix + labelKey)).forComponent(field).get(),
-                constraints.getLabelConstraints().setConstraints(gbc));
+        lastLabel = new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix+labelKey)).forComponent(field).get();
+        container.add(lastLabel, formula.getLabelConstraints().setConstraints(gbc));
         relatedGap();
         nextCell();
-        return append(field, constraints);
+        return append(field, formula);
     }
 
     /**

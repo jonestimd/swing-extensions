@@ -81,6 +81,7 @@ public class GridBagBuilderTest {
 
         assertThat(panel.getComponentCount()).isEqualTo(2);
         JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
         assertThat(label.getText()).isEqualTo("Field 1");
         assertThat(label.getDisplayedMnemonic()).isEqualTo('1');
         assertThat(label.getLabelFor()).isSameAs(field);
@@ -109,6 +110,7 @@ public class GridBagBuilderTest {
 
         assertThat(panel.getComponentCount()).isEqualTo(2);
         JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
         assertThat(label.getText()).isEqualTo("Field 1");
         assertThat(label.getDisplayedMnemonic()).isEqualTo('1');
         assertThat(label.getLabelFor()).isSameAs(field);
@@ -125,6 +127,7 @@ public class GridBagBuilderTest {
 
         assertThat(panel.getComponentCount()).isEqualTo(2);
         JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
         assertThat(label.getText()).isEqualTo("Field 1");
         assertThat(label.getDisplayedMnemonic()).isEqualTo('1');
         assertThat(label.getLabelFor()).isSameAs(field);
@@ -142,6 +145,7 @@ public class GridBagBuilderTest {
 
         assertThat(panel.getComponentCount()).isEqualTo(2);
         JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
         assertThat(label.getText()).isEqualTo("Field 1");
         assertThat(label.getDisplayedMnemonic()).isEqualTo('1');
         assertThat(label.getLabelFor()).isSameAs(field);
@@ -159,6 +163,7 @@ public class GridBagBuilderTest {
 
         assertThat(panel.getComponentCount()).isEqualTo(2);
         JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
         assertThat(label.getText()).isEqualTo("Field 1");
         assertThat(label.getDisplayedMnemonic()).isEqualTo('1');
         assertThat(label.getLabelFor()).isSameAs(field);
