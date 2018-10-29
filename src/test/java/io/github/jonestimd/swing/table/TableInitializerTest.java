@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.function.Supplier;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -90,6 +91,20 @@ public class TableInitializerTest {
     }
 
     @Test
+    public void keepsExistingColumnCellRenderers() throws Exception {
+        BeanListTableModel<Object> tableModel = new BeanListTableModel<>(ImmutableList.of(dateColumnAdapter, numberColumnAdapter));
+        ImmutableMap<String, TableCellRenderer> cellRenderers = ImmutableMap.of("date renderer", mock(TableCellRenderer.class));
+        TableInitializer initializer = new TableInitializer(emptyMap(), emptyMap(), cellRenderers, emptyMap());
+        DecoratedTable<Object, BeanListTableModel<Object>> table = new DecoratedTable<>(tableModel);
+        TableCellRenderer existingRenderer = mock(TableCellRenderer.class);
+        table.getColumn(dateColumnAdapter).setCellRenderer(existingRenderer);
+
+        initializer.initialize(table);
+
+        assertThat(table.getColumn(dateColumnAdapter).getCellRenderer()).isSameAs(existingRenderer);
+    }
+
+    @Test
     public void setsTableColumnCellRenderersOnMixedColumn() throws Exception {
         HeaderDetailTableModel<Object> tableModel = new HeaderDetailTableModel<>(null, null, ImmutableList.of(numberColumnAdapter),
                 ImmutableList.of(ImmutableList.of(dateColumnAdapter)));
@@ -128,6 +143,20 @@ public class TableInitializerTest {
         initializer.initialize(table);
 
         assertThat(table.getColumn(dateColumnAdapter).getCellEditor()).isSameAs(dateEditor);
+    }
+
+    @Test
+    public void keepsExistingColumnCellEditors() throws Exception {
+        BeanListTableModel<Object> tableModel = new BeanListTableModel<>(ImmutableList.of(dateColumnAdapter, numberColumnAdapter));
+        ImmutableMap<String, Supplier<TableCellEditor>> cellEditors = ImmutableMap.of("date editor", () -> mock(TableCellEditor.class));
+        TableInitializer initializer = new TableInitializer(emptyMap(), emptyMap(), emptyMap(), cellEditors);
+        DecoratedTable<Object, BeanListTableModel<Object>> table = new DecoratedTable<>(tableModel);
+        TableCellEditor existingEditor = mock(TableCellEditor.class);
+        table.getColumn(dateColumnAdapter).setCellEditor(existingEditor);
+
+        initializer.initialize(table);
+
+        assertThat(table.getColumn(dateColumnAdapter).getCellEditor()).isSameAs(existingEditor);
     }
 
     @Test

@@ -150,8 +150,8 @@ public class TableInitializer {
     }
 
     protected void initializeColumn(TableColumn column) {
-        column.setCellRenderer(getColumnRenderer(column.getIdentifier()));
-        column.setCellEditor(getColumnEditor(column.getIdentifier()));
+        if (column.getCellRenderer() == null) column.setCellRenderer(getColumnRenderer(column.getIdentifier()));
+        if (column.getCellEditor() == null) column.setCellEditor(getColumnEditor(column.getIdentifier()));
         if (column instanceof MixedRowTableColumn) {
             MixedRowTableColumn mixedRowColumn = (MixedRowTableColumn) column;
             for (int i = 0; i < mixedRowColumn.getSubColumnCount(); i++) {
