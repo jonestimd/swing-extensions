@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2018 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,9 @@ import javax.swing.ImageIcon;
 
 import static io.github.jonestimd.swing.SwingResource.*;
 
+/**
+ * This resource bundle provides default values for custom components in this library.
+ */
 @SuppressWarnings({"MagicCharacter", "MagicNumber"})
 public class ComponentResources extends ListResourceBundle {
     public static final ResourceBundle BUNDLE = ResourceBundle.getBundle(ComponentResources.class.getName());
@@ -47,6 +50,42 @@ public class ComponentResources extends ListResourceBundle {
         } catch (MissingResourceException ex) {
             return ComponentResources.BUNDLE.getString(key);
         }
+    }
+
+    /**
+     * Get a color value from a resource bundle with fallback to {@link #BUNDLE}.
+     * @param bundle the resource bundle
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public static Color getColor(ResourceBundle bundle, String key) {
+        try {
+            Object value = bundle.getObject(key);
+            if (value instanceof Color) return (Color) value;
+            if (value instanceof String) return ColorFactory.createColor((String) value);
+        } catch (Exception ex) {
+            // use default value
+        }
+        return (Color) ComponentResources.BUNDLE.getObject(key);
+    }
+
+    /**
+     * Get an int value from a resource bundle with fallback to {@link #BUNDLE}.
+     * @param bundle the resource bundle
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public static int getInt(ResourceBundle bundle, String key) {
+        try {
+            Object value = bundle.getObject(key);
+            if (value instanceof Integer) return (int) value;
+            if (value instanceof String) return Integer.parseInt((String) value);
+        } catch (Exception ex) {
+            // use default value
+        }
+        return (int) ComponentResources.BUNDLE.getObject(key);
     }
 
     public static int getInt(String key) {
@@ -96,7 +135,15 @@ public class ComponentResources extends ListResourceBundle {
             { "calendarPanel.month.background", new Color(255,255,224) },
             { "calendarPanel.month.foreground", Color.black },
             { "calendarPanel.month.adjacent.background", new Color(223,223,192) },
-            { "calendarPanel.month.adjacent.foreground", Color.darkGray }
+            { "calendarPanel.month.adjacent.foreground", Color.darkGray },
+
+            { "multiSelectItem.background", new Color(215, 241, 255) },
+            { "multiSelectItem.outline.color", new Color(0, 173, 255) },
+            { "multiSelectItem.outline.strokeWidth", 1 },
+            { "multiSelectItem.outline.flatness", 0 },
+            { "multiSelectItem.button.color", Color.GRAY },
+            { "multiSelectItem.button.hoverColor", new Color(0, 173, 255) },
+            { "multiSelectItem.button.size", 14 },
         };
     }
 }

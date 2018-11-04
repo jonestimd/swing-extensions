@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2018 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -112,11 +112,11 @@ public class CalendarPanel extends Box {
 
     public CalendarPanel(ResourceBundle bundle, Date initialValue) {
         super(BoxLayout.Y_AXIS);
-        monthForeground = (Color) bundle.getObject("calendarPanel.month.foreground");
-        monthBackground = (Color) bundle.getObject("calendarPanel.month.background");
-        adjacentForeground = (Color) bundle.getObject("calendarPanel.month.adjacent.foreground");
-        adjacentBackground = (Color) bundle.getObject("calendarPanel.month.adjacent.background");
-        selectedBorder = BorderFactory.createLineBorder((Color) bundle.getObject("calendarPanel.selected.border"));
+        monthForeground = ComponentResources.getColor(bundle, "calendarPanel.month.foreground");
+        monthBackground = ComponentResources.getColor(bundle, "calendarPanel.month.background");
+        adjacentForeground = ComponentResources.getColor(bundle, "calendarPanel.month.adjacent.foreground");
+        adjacentBackground = ComponentResources.getColor(bundle, "calendarPanel.month.adjacent.background");
+        selectedBorder = BorderFactory.createLineBorder(ComponentResources.getColor(bundle, "calendarPanel.selected.border"));
         setBackground(monthBackground);
         setOpaque(true);
 
@@ -143,7 +143,8 @@ public class CalendarPanel extends Box {
     private PreviousNextPanel createPreviousNextPanel(ResourceBundle bundle, Component valueComponent,
             PreviousNextListener handler, String resourcePrefix) {
         PreviousNextPanel previousNextPanel = new PreviousNextPanel(valueComponent,
-                bundle.getString(resourcePrefix + ".previous"), bundle.getString(resourcePrefix + ".next"));
+                ComponentResources.getString(bundle, resourcePrefix + ".previous"),
+                ComponentResources.getString(bundle, resourcePrefix + ".next"));
         previousNextPanel.addPreviousNextListener(handler);
         return previousNextPanel;
     }
@@ -171,7 +172,7 @@ public class CalendarPanel extends Box {
         calendarTable.setCellSelectionEnabled(true);
         calendarTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         calendarTable.setDefaultRenderer(Date.class, new CellRenderer());
-        calendarTable.setToolTipText(bundle.getString("calendar.tooltip"));
+        calendarTable.setToolTipText(ComponentResources.getString(bundle, "calendar.tooltip"));
         calendarTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 setDate(tableModel.getSelectedDate());
