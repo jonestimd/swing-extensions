@@ -35,7 +35,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.RoundRectangle2D.Double;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -243,7 +243,7 @@ public class MultiSelectItem extends JLabel {
      * @param height the height of the outline
      */
     protected Shape getOutline(int x, int y, int width, int height) {
-        return new Double(x, y, width, height, height-outlineFlatness, height-outlineFlatness);
+        return new RoundRectangle2D.Double(x, y, width, height, height-outlineFlatness, height-outlineFlatness);
     }
 
     /**

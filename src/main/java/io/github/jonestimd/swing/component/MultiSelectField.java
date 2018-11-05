@@ -21,17 +21,14 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
-import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
@@ -180,6 +177,9 @@ public class MultiSelectField extends JTextPane {
                 } catch (BadLocationException e1) {
                     throw new RuntimeException(e1);
                 }
+            }
+            else if (getSelectionStart() < items.size() && Character.isDefined(e.getKeyChar())) {
+                setSelectionStart(getDocument().getLength());
             }
         }
         return super.processKeyBinding(ks, e, condition, pressed);
