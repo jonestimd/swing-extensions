@@ -76,7 +76,7 @@ public class MultiSelectItem extends JLabel {
     protected final int buttonSize;
     protected final int buttonSizeSquared;
     protected final ButtonGeometry buttonGeometry;
-    private boolean showDelete;
+    private final boolean showDelete;
     private boolean isOverButton = false;
     private final List<Consumer<MultiSelectItem>> deleteListeners = new ArrayList<>();
 
@@ -175,13 +175,6 @@ public class MultiSelectItem extends JLabel {
      */
     public boolean isShowDelete() {
         return showDelete;
-    }
-
-    /**
-     * Set the flag that displays the delete button.
-     */
-    public void setShowDelete(boolean showDelete) {
-        this.showDelete = showDelete;
     }
 
     /**

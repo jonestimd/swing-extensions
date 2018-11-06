@@ -103,8 +103,8 @@ public class MultiSelectItemTest extends JFrameRobotTest {
 
     @Test
     public void ignoresClickWhenDeleteButtonNotDisplayed() throws Exception {
+        multiSelectItem = new MultiSelectItem("item text", false, false);
         multiSelectItem.addDeleteListener(deleteListener);
-        multiSelectItem.setShowDelete(false);
         showWindow();
 
         robot.click(multiSelectItem, new Point(12, 10));
