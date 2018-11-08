@@ -31,13 +31,13 @@ import java.util.function.Function;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
 import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.component.MultiSelectItem;
-import sun.swing.DefaultLookup;
 
 public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRenderer {
     private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
@@ -67,7 +67,7 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
     }
 
     private Border getNoFocusBorder() {
-        Border border = DefaultLookup.getBorder(this, ui, "Table.cellNoFocusBorder");
+        Border border = (Border) UIManager.get("Table.cellNoFocusBorder", getLocale());
         if (System.getSecurityManager() != null) {
             if (border != null) return border;
             return SAFE_NO_FOCUS_BORDER;
@@ -114,20 +114,20 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
         if (hasFocus) {
             Border border = null;
             if (isSelected) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusSelectedCellHighlightBorder");
+                border = (Border) UIManager.get("Table.focusSelectedCellHighlightBorder", getLocale());
             }
             if (border == null) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusCellHighlightBorder");
+                border = (Border) UIManager.get("Table.focusCellHighlightBorder", getLocale());
             }
             setBorder(border);
 
             if (!isSelected && table.isCellEditable(row, column)) {
                 Color col;
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellForeground");
+                col = (Color) UIManager.get("Table.focusCellForeground", getLocale());
                 if (col != null) {
                     super.setForeground(col);
                 }
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellBackground");
+                col = (Color) UIManager.get("Table.focusCellBackground", getLocale());
                 if (col != null) {
                     super.setBackground(col);
                 }

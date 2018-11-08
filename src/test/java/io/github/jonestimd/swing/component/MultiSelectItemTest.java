@@ -94,7 +94,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.addDeleteListener(deleteListener);
         showWindow();
 
-        robot.click(multiSelectItem, new Point(25, 10));
+        robot.click(multiSelectItem, new Point(multiSelectItem.getWidth()-15, 10));
 
         robot.waitForIdle();
         verify(deleteListener, never()).accept(multiSelectItem);
