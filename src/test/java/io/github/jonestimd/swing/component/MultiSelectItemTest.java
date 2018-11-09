@@ -71,6 +71,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.addDeleteListener(deleteListener);
         showWindow();
 
+        robot.moveMouse(0, 0);
         robot.click(multiSelectItem, new Point(12, 10));
 
         robot.waitForIdle();
@@ -83,6 +84,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.removeDeleteListener(deleteListener);
         showWindow();
 
+        robot.moveMouse(0, 0);
         robot.click(multiSelectItem, new Point(12, 10));
 
         robot.waitForIdle();
@@ -94,6 +96,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.addDeleteListener(deleteListener);
         showWindow();
 
+        robot.moveMouse(0, 0);
         robot.click(multiSelectItem, new Point(multiSelectItem.getWidth()-15, 10));
 
         robot.waitForIdle();
@@ -107,6 +110,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.addDeleteListener(deleteListener);
         showWindow();
 
+        robot.moveMouse(0, 0);
         robot.click(multiSelectItem, new Point(12, 10));
 
         robot.waitForIdle();
@@ -119,6 +123,7 @@ public class MultiSelectItemTest extends JFrameRobotTest {
         multiSelectItem.addDeleteListener(deleteListener);
         showWindow();
 
+        robot.moveMouse(0, 0);
         robot.click(multiSelectItem, new Point(12, 10), MouseButton.RIGHT_BUTTON, 1);
 
         robot.waitForIdle();
