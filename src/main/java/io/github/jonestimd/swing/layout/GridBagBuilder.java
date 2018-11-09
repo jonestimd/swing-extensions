@@ -103,7 +103,18 @@ public class GridBagBuilder {
      * @see FormElement
      */
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix) {
-        this(container, bundle, resourcePrefix, 2, new HashMap<>(DEFAULT_CONSTRAINTS));
+        this(container, bundle, resourcePrefix, 2);
+    }
+
+    /**
+     * Create a new builder using the default {@link GridBagFormula}s.
+     * @param container the form container
+     * @param bundle provides label text
+     * @param resourcePrefix prefix for resource bundle keys
+     * @param columns the number of grid columns
+     */
+    public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix, int columns) {
+        this(container, bundle, resourcePrefix, columns, new HashMap<>(DEFAULT_CONSTRAINTS));
     }
 
     /**

@@ -77,7 +77,8 @@ public interface GridBagFormula {
             @Override
             public GridBagConstraints setConstraints(GridBagConstraints gbc) {
                 if (labelConstraints == null && anchor == GridBagConstraints.WEST && width == 1) {
-                    gbc.gridx = 1;
+                    // unlabeled component, e.g. checkbox
+                    gbc.gridx = Math.max(gbc.gridx, 0) + 1;
                 }
                 gbc.anchor = anchor;
                 gbc.gridwidth = width;
