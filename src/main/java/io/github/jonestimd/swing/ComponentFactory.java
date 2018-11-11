@@ -35,7 +35,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -224,7 +224,7 @@ public class ComponentFactory {
     }
 
     private <T extends JTextComponent> T initializeFilterField(T field, int paddingTop, int paddingBottom) {
-        ImageIcon filterIcon = (ImageIcon) bundle.getObject("filter.iconImage");
+        Icon filterIcon = ComponentResources.getIcon(bundle, "filter.iconImage");
         field.setBorder(new CompoundBorder(new OblongBorder(1, Color.GRAY, paddingTop, 4, paddingBottom, 0), new IconBorder(Side.LEFT, filterIcon)));
         return field;
     }

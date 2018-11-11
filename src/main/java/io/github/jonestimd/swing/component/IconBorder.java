@@ -25,7 +25,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.border.Border;
 
 /**
@@ -34,10 +34,10 @@ import javax.swing.border.Border;
 public class IconBorder implements Border {
     /** Available sides for displaying the icon. */
     public enum Side { LEFT, RIGHT };
-    protected final ImageIcon icon;
+    protected final Icon icon;
     protected final Side side;
 
-    public IconBorder(Side side, ImageIcon icon) {
+    public IconBorder(Side side, Icon icon) {
         this.side = side;
         this.icon = icon;
     }

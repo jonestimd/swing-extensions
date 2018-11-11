@@ -26,6 +26,7 @@ import java.util.ListResourceBundle;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import static io.github.jonestimd.swing.SwingResource.*;
@@ -68,6 +69,24 @@ public class ComponentResources extends ListResourceBundle {
             // use default value
         }
         return (Color) ComponentResources.BUNDLE.getObject(key);
+    }
+
+    /**
+     * Get an icon value from a resource bundle with fallback to {@link #BUNDLE}.
+     * @param bundle the resource bundle
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in either bundle
+     */
+    public static Icon getIcon(ResourceBundle bundle, String key) {
+        try {
+            Object value = bundle.getObject(key);
+            if (value instanceof Icon) return (Icon) value;
+            if (value instanceof String) return new ImageIcon(bundle.getClass().getResource((String) value));
+        } catch (Exception ex) {
+            // use default value
+        }
+        return (Icon) ComponentResources.BUNDLE.getObject(key);
     }
 
     /**
