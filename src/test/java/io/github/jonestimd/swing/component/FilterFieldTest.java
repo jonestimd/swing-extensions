@@ -45,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter;
 
 import io.github.jonestimd.swing.ComponentFactory;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.filter.FilterParser;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -67,7 +68,7 @@ public class FilterFieldTest {
 
     @Test
     public void getFilterReturnsNullPredicateForEmptyText() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).bundle(ComponentResources.BUNDLE).build();
         field.addPropertyChangeListener(FilterField.PREDICATE_PROPERTY, listener);
 
         field.setText("");
@@ -84,7 +85,7 @@ public class FilterFieldTest {
     public void getFilterReturnsNullForInvalidText() throws Exception {
         String error = "parse exception";
         when(parser.parse(any())).thenThrow(new IllegalStateException(error));
-        FilterField<String> field = new FilterField<>(parser, Color.red);
+        FilterField<String> field = FilterField.builder(parser).errorBackground(Color.red).build();
         field.addPropertyChangeListener(FilterField.PREDICATE_PROPERTY, listener);
 
         field.setText("abc");
@@ -97,7 +98,7 @@ public class FilterFieldTest {
 
     @Test
     public void clearsTermsWhenTextIsEmpty() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).build();
         field.addPropertyChangeListener(FilterField.PREDICATE_PROPERTY, listener);
         field.setText("abc");
 
@@ -111,7 +112,7 @@ public class FilterFieldTest {
 
     @Test
     public void parseText() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).build();
 
         field.setText("abc");
 
@@ -121,7 +122,7 @@ public class FilterFieldTest {
 
     @Test
     public void highlightsMatchingParenthesisOperator() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).build();
         inputText(field, "abc & ( def | (xyz) )");
 
         field.setCaretPosition(field.getText().length());
@@ -136,7 +137,7 @@ public class FilterFieldTest {
 
     @Test
     public void ignoresNonParenthesisOperator() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).build();
         inputText(field, "abc & ( def )");
         field.getDocument().insertString(12, "(xyz)", null);
 
@@ -162,7 +163,7 @@ public class FilterFieldTest {
 
     @Test
     public void getTerms() throws Exception {
-        FilterField<String> field = new FilterField<>(predicateFactory, Color.red);
+        FilterField<String> field = FilterField.builder(predicateFactory).build();
 
         inputText(field, "abc & !(def | ghi)");
 

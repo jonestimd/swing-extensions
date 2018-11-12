@@ -82,34 +82,6 @@ public class FilterField<T> extends JTextPane implements FilterSource {
     private final char groupEnd;
 
     /**
-     * Construct a filter field using {@link BasicFilterParser}.
-     * @param predicateFactory a function for creating a predicate for a single term
-     * @param errorBackground the background color to use when parsing fails
-     */
-    public FilterField(Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
-        this(ComponentResources.BUNDLE, predicateFactory, errorBackground);
-    }
-
-    /**
-     * Construct a filter field using {@link BasicFilterParser}.
-     * @param bundle provides filter operator keys and symbols
-     * @param predicateFactory a function for creating a predicate for a single term
-     * @param errorBackground the background color to use when parsing fails
-     */
-    public FilterField(ResourceBundle bundle, Function<String, Predicate<T>> predicateFactory, Color errorBackground) {
-        this(bundle, new BasicFilterParser<>(predicateFactory), errorBackground);
-    }
-
-    /**
-     * Construct a filter field using the specified {@code filterParser}.
-     * @param filterParser the filter parser
-     * @param errorBackground the background color to use when parsing fails
-     */
-    public FilterField(FilterParser<T> filterParser, Color errorBackground) {
-        this(ComponentResources.BUNDLE, filterParser, errorBackground);
-    }
-
-    /**
      * Construct a filter field using the specified {@code filterParser}.
      * @param bundle provides filter operator keys and symbols
      * @param filterParser the filter parser
@@ -222,5 +194,37 @@ public class FilterField<T> extends JTextPane implements FilterSource {
      */
     public List<String> getTerms() {
         return filterParser.getTerms();
+    }
+
+    public static <T> Builder<T> builder(FilterParser<T> filterParser) {
+        return new Builder<>(filterParser);
+    }
+
+    public static <T> Builder<T> builder(Function<String, Predicate<T>> predicateFactory) {
+        return new Builder<>(new BasicFilterParser<>(predicateFactory));
+    }
+
+    public static class Builder<T> {
+        private final FilterParser<T> filterParser;
+        private ResourceBundle bundle = ComponentResources.BUNDLE;
+        private Color errorBackground = (Color) ComponentResources.BUNDLE.getObject("filter.invalid.background");
+
+        public Builder(FilterParser<T> filterParser) {
+            this.filterParser = filterParser;
+        }
+
+        public Builder<T> bundle(ResourceBundle bundle) {
+            this.bundle = bundle;
+            return this;
+        }
+
+        public Builder<T> errorBackground(Color errorBackground) {
+            this.errorBackground = errorBackground;
+            return this;
+        }
+
+        public FilterField<T> build() {
+            return new FilterField<>(bundle, filterParser, errorBackground);
+        }
     }
 }

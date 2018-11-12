@@ -220,7 +220,7 @@ public class ComponentFactory {
      * @param paddingBottom padding between bottom of border and input field
      */
     public <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory, int paddingTop, int paddingBottom) {
-        return initializeFilterField(new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")), paddingTop, paddingBottom);
+        return initializeFilterField(FilterField.builder(predicateFactory).build(), paddingTop, paddingBottom);
     }
 
     private <T extends JTextComponent> T initializeFilterField(T field, int paddingTop, int paddingBottom) {
