@@ -54,13 +54,9 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     }
 
     protected void showWindow() throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            window = newWindow.get();
-            window.setContentPane(createContentPane());
-            window.pack();
-            window.setLocationRelativeTo(null);
-            window.setVisible(true);
-        });
+        window = newWindow.get();
+        window.setContentPane(createContentPane());
+        robot.showWindow(window);
     }
 
     protected abstract JPanel createContentPane();

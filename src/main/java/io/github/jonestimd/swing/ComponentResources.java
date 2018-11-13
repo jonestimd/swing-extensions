@@ -163,6 +163,10 @@ public class ComponentResources extends ListResourceBundle {
             { "multiSelectItem.button.color", Color.GRAY },
             { "multiSelectItem.button.hoverColor", new Color(0, 173, 255) },
             { "multiSelectItem.button.size", 14 },
+
+            { "popupListField.focusCursor", "\u23f5" },
+            { "popupListField.commitKey", "ctrl released ENTER" },
+            { "popupListField.cancelKey", "released ESCAPE" },
         };
     }
 }

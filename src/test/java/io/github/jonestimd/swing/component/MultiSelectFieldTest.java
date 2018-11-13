@@ -25,7 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.security.Key;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
