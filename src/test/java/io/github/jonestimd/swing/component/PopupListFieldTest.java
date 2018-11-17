@@ -31,7 +31,6 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,6 +48,7 @@ import io.github.jonestimd.swing.JFrameRobotTest;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import static io.github.jonestimd.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -221,7 +221,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
     public void setValidatorAndHighlighter() throws Exception {
         HighlightPainter highlighter = (g, p0, p1, bounds, c) -> {};
         popupListField = PopupListField.builder(true, true)
-                .validator(text -> !text.contains("x"))
+                .validator((items, index) -> !items.get(index).contains("x"))
                 .errorHighlighter(highlighter)
                 .build();
         showWindow();
@@ -238,8 +238,8 @@ public class PopupListFieldTest extends JFrameRobotTest {
     }
 
     @Test
-    public void setErrorHighligher() throws Exception {
-        popupListField = PopupListField.builder(true, true).validator(text -> !text.contains("x")).build();
+    public void setErrorHighlighter() throws Exception {
+        popupListField = PopupListField.builder(true, true).validator((items, index) -> !items.get(index).contains("x")).build();
         showWindow();
         robot.click(popupListField);
 
@@ -351,9 +351,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
     public void setPopupRows() throws Exception {
         popupListField = PopupListField.builder(true, true).popupRows(10).build();
 
-        Field field = PopupListField.class.getDeclaredField("textArea");
-        field.setAccessible(true);
-        JTextArea textArea = (JTextArea) field.get(popupListField);
+        JTextArea textArea = getField(popupListField, "textArea", JTextArea.class);
         assertThat(textArea.getRows()).isEqualTo(10);
     }
 

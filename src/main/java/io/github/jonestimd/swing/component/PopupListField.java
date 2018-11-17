@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ComponentAdapter;
@@ -38,7 +37,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyBoundsAdapter;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -49,32 +47,26 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
 
 import javax.swing.FocusManager;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.plaf.TextUI;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter.HighlightPainter;
-import javax.swing.text.Position.Bias;
 
 import com.google.common.base.Joiner;
 import io.github.jonestimd.swing.ComponentResources;
+import io.github.jonestimd.swing.component.ListField.ItemValidator;
 
 /**
  * A component that displays a list of string values using {@link MultiSelectItem} and allows editing
  * the items in the list.  When the component receives focus, a popup editor is displayed with the
  * list items.  The items can be modified by editing the text in the editor.  Each line in the
- * editor corresponds to a list item.  The items are validated using the {@code isValidItem} predicate and
+ * editor corresponds to a list item.  The items are validated using the {@code validator} and
  * invalid items are highlighted using the {@code errorPainter}.  Changes made in the editor are committed
  * by typing {@code ctrl ENTER}.  Changes in the editor are cancelled by typing {@code ctrl ESCAPE} or when
  * the editor loses focus.
@@ -84,19 +76,7 @@ import io.github.jonestimd.swing.ComponentResources;
  */
 public class PopupListField extends JPanel {
     public static final String ITEMS_PROPERTY = "items";
-    public static final Predicate<String> DEFAULT_IS_VALID_ITEM = (text) -> !text.trim().isEmpty();
     public static final String LINE_SEPARATOR = "\n";
-    protected static final HighlightPainter DEFAULT_ERROR_HIGHLIGHTER = (g, p0, p1, bounds, c) -> {
-        g.setColor(Color.PINK);
-        Rectangle rect = bounds.getBounds();
-        TextUI mapper = c.getUI();
-        try {
-            Rectangle start = mapper.modelToView(c, p0, Bias.Forward);
-            g.fillRect(start.x, start.y+1, rect.width, start.height-1);
-        } catch (BadLocationException e) {
-            // can't render
-        }
-    };
     protected static final int MIN_HEIGHT = new MultiSelectItem("x", true, false).getMinimumSize().height+1;
     protected static final int HGAP = 2;
     protected static final int VGAP = 2;
@@ -105,8 +85,7 @@ public class PopupListField extends JPanel {
     private final boolean showItemDelete;
     private final boolean opaqueItems;
     private final ResourceBundle bundle;
-    private final Predicate<String> isValidItem;
-    private final JTextArea textArea = new JTextArea();
+    private final ListField textArea;
     private final JLabel focusCursor;
     private final Border popupBorder;
     private Window popupWindow;
@@ -128,31 +107,26 @@ public class PopupListField extends JPanel {
             }
         }
     };
-    private final HighlightPainter errorPainter;
-    private boolean isValid = true;
 
     /**
      * Create a new {@code MultiSelectField}.
      * @param showItemDelete true to show delete buttons on the list items
      * @param opaqueItems true to fill the list items with their background color
-     * @param isValidItem predicate to use to validate items before adding them to the list
+     * @param validator predicate to use to validate items before adding them to the list
      * @param errorPainter painter for highlighting invalid items
      * @param popupBorder the border for the popup window
      * @param bundle the {@code ResourceBundle} to use for configuration
      */
     public PopupListField(boolean showItemDelete, boolean opaqueItems, int popupRows,
-            Predicate<String> isValidItem, HighlightPainter errorPainter, Border popupBorder, ResourceBundle bundle) {
+            ItemValidator validator, HighlightPainter errorPainter, Border popupBorder, ResourceBundle bundle) {
         super(new FlowLayout(FlowLayout.LEADING, HGAP, VGAP));
         this.showItemDelete = showItemDelete;
         this.opaqueItems = opaqueItems;
-        this.isValidItem = isValidItem;
-        this.errorPainter = errorPainter;
         this.focusCursor = new JLabel(ComponentResources.getString(bundle, "popupListField.focusCursor"));
         this.popupBorder = popupBorder;
         this.bundle = bundle;
+        textArea = new ListField(validator, errorPainter, bundle, this::hidePopup, this::commitEdit);
         textArea.setRows(popupRows);
-        textArea.getDocument().addDocumentListener(new EditorDocumentListener());
-        textArea.addKeyListener(new EditorKeyListener());
         textArea.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -235,26 +209,6 @@ public class PopupListField extends JPanel {
         return Collections.unmodifiableList(items);
     }
 
-    private void validateText() {
-        isValid = true;
-        textArea.getHighlighter().removeAllHighlights();
-        int pos = 0;
-        String text = textArea.getText();
-        while (pos < text.length()) {
-            int end = text.indexOf(LINE_SEPARATOR, pos);
-            String line = end > 0 ? text.substring(pos, end) : text.substring(pos);
-            if (!isValidItem.test(line)) {
-                isValid = false;
-                try {
-                    textArea.getHighlighter().addHighlight(pos, pos+line.length(), errorPainter);
-                } catch (BadLocationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            pos += line.length()+1;
-        }
-    }
-
     @Override
     public Dimension getPreferredSize() {
         Dimension size = super.getPreferredSize();
@@ -273,7 +227,10 @@ public class PopupListField extends JPanel {
 
     private void hierarchyChanged(HierarchyEvent event) {
         if ((event.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) {
-            createPopupWindow();
+            popupWindow = new Window((Window) getTopLevelAncestor());
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setBorder(popupBorder);
+            popupWindow.add(scrollPane);
         }
     }
 
@@ -294,13 +251,6 @@ public class PopupListField extends JPanel {
             location.y -= popupSize.height-getHeight();
         }
         return location;
-    }
-
-    private void createPopupWindow() {
-        popupWindow = new Window((Window) getTopLevelAncestor());
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setBorder(popupBorder);
-        popupWindow.add(scrollPane);
     }
 
     /**
@@ -366,36 +316,9 @@ public class PopupListField extends JPanel {
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
-    private class EditorDocumentListener implements DocumentListener {
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            validateText();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            validateText();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            validateText();
-        }
-    }
-
-    private class EditorKeyListener extends KeyAdapter {
-        final KeyStroke commitKey = KeyStroke.getKeyStroke(ComponentResources.getString(bundle, "popupListField.commitKey"));
-        final KeyStroke cancelKey = KeyStroke.getKeyStroke(ComponentResources.getString(bundle, "popupListField.cancelKey"));
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(e.getExtendedKeyCode(), e.getModifiers(), true);
-            if (keyStroke == cancelKey) hidePopup();
-            else if (keyStroke == commitKey && isValid) {
-                setItems(textArea.getText().split(LINE_SEPARATOR));
-                hidePopup();
-            }
-        }
+    private void commitEdit(List<String> items) {
+        setItems(items);
+        hidePopup();
     }
 
     /**
@@ -410,10 +333,10 @@ public class PopupListField extends JPanel {
     public static class Builder {
         private final boolean showItemDelete;
         private final boolean opaqueItems;
-        private int popupRows = 5;
+        private int popupRows = ListField.DEFAULT_ROWS;
         private Border popupBorder = new LineBorder(Color.BLACK, 1);
-        private Predicate<String> validator = DEFAULT_IS_VALID_ITEM;
-        private HighlightPainter errorHighlighter = DEFAULT_ERROR_HIGHLIGHTER;
+        private ItemValidator validator = ListField.DEFAULT_VALIDATOR;
+        private HighlightPainter errorHighlighter = ListField.DEFAULT_ERROR_HIGHLIGHTER;
         private ResourceBundle bundle = ComponentResources.BUNDLE;
 
         public Builder(boolean showItemDelete, boolean opaqueItems) {
@@ -426,7 +349,7 @@ public class PopupListField extends JPanel {
             return this;
         }
 
-        public Builder validator(Predicate<String> validator) {
+        public Builder validator(ItemValidator validator) {
             this.validator = validator;
             return this;
         }

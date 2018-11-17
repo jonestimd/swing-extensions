@@ -39,6 +39,11 @@ import javax.swing.table.TableCellRenderer;
 import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.component.MultiSelectItem;
 
+/**
+ * A table cell renderer that displays a list of values as {@link MultiSelectItem}s.  {@link PopupListTableCellEditor}
+ * can be used to edit the list of values.
+ * @param <T> the type of the list items
+ */
 public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRenderer {
     private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);

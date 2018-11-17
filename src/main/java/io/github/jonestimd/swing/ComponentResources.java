@@ -165,8 +165,8 @@ public class ComponentResources extends ListResourceBundle {
             { "multiSelectItem.button.size", 14 },
 
             { "popupListField.focusCursor", "\u23f5" },
-            { "popupListField.commitKey", "ctrl released ENTER" },
-            { "popupListField.cancelKey", "released ESCAPE" },
+            { "popupListField.commitKey", "ctrl pressed ENTER" },
+            { "popupListField.cancelKey", "pressed ESCAPE" },
         };
     }
 }
