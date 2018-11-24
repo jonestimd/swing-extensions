@@ -204,22 +204,25 @@ public class DecoratedTableTest {
     private void checkRendererColors(String description, DecoratedTable<?, ?> table, int row, int column, Color foreground, Color background) {
         Component component = table.prepareRenderer(table.getCellRenderer(row, column), row, column);
 
-        assertThat(component.getForeground()).isEqualTo(foreground).as(description);
+        assertThat(component.getForeground()).as(description).isEqualTo(foreground);
         assertThat(component.getBackground()).isEqualTo(background);
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void multiRowHeader() throws Exception {
+    public void multiRowHeaders() throws Exception {
         BeanTableModel<DecoratedTableTest> model = mock(BeanTableModel.class);
         when(model.getColumnCount()).thenReturn(3);
         when(model.getColumnName(0)).thenReturn("Column 1");
-        when(model.getColumnName(1)).thenReturn("Column 2");
+        when(model.getColumnName(1)).thenReturn("Column 2\nOverflows\n3 lines");
         when(model.getColumnName(2)).thenReturn("Column 3\nLine 2");
 
         DecoratedTable<DecoratedTableTest, BeanTableModel<DecoratedTableTest>> table = new DecoratedTable<>(model);
 
-        assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(34);
+        assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(49);
+        assertThat(table.getColumnModel().getColumn(0).getHeaderValue()).isEqualTo("Column 1");
+        assertThat(table.getColumnModel().getColumn(1).getHeaderValue()).isEqualTo("<html><center>Column 2<br>Overflows<br>3 lines</center></html>");
+        assertThat(table.getColumnModel().getColumn(2).getHeaderValue()).isEqualTo("<html><center>Column 3<br>Line 2</center></html>");
     }
 
     @Test
@@ -302,7 +305,7 @@ public class DecoratedTableTest {
             table.processKeyBinding(KeyStroke.getKeyStroke(keyChar), event, WHEN_FOCUSED, true);
         });
 
-        assertThat(editor.getEditor().getItem()).isEqualTo(expectedEditorText).as(description);
+        assertThat(editor.getEditor().getItem()).as(description).isEqualTo(expectedEditorText);
     }
 
     @Test

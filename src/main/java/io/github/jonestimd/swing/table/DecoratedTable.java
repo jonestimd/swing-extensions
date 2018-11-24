@@ -145,7 +145,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
             aColumn.setIdentifier(((ColumnIdentifier) getModel()).getColumnIdentifier(aColumn.getModelIndex()));
         }
         int columnHeaderRows = aColumn.getHeaderValue().toString().split("\n").length;
-        if (columnHeaderRows > headerRows) {
+        if (columnHeaderRows > 1) {
             aColumn.setHeaderValue("<html><center>" + aColumn.getHeaderValue().toString().replaceAll("\n", "<br>") + "</center></html>");
         }
         headerRows = Math.max(headerRows, columnHeaderRows);
