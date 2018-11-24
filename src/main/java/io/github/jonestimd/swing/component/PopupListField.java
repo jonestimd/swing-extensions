@@ -77,7 +77,7 @@ import io.github.jonestimd.swing.component.ListField.ItemValidator;
 public class PopupListField extends JPanel {
     public static final String ITEMS_PROPERTY = "items";
     public static final String LINE_SEPARATOR = "\n";
-    protected static final int MIN_HEIGHT = new MultiSelectItem("x", true, false).getMinimumSize().height+1;
+    protected static final int MIN_HEIGHT = new MultiSelectItem("x", true, false).getMinHeight() + 2;
     protected static final int HGAP = 2;
     protected static final int VGAP = 2;
 
@@ -138,7 +138,7 @@ public class PopupListField extends JPanel {
         setBackground(textArea.getBackground());
         setBorder(UIManager.getBorder("TextField.border"));
         setFocusable(true);
-        enableEvents(FocusEvent.FOCUS_EVENT_MASK+MouseEvent.MOUSE_EVENT_MASK);
+        enableEvents(FocusEvent.FOCUS_EVENT_MASK + MouseEvent.MOUSE_EVENT_MASK);
         addHierarchyListener(this::hierarchyChanged);
     }
 
@@ -150,7 +150,7 @@ public class PopupListField extends JPanel {
      * Replace the list of values.
      */
     public void setItems(Collection<String> items) {
-        for (int i = getComponentCount()-1; i >= 0; i--) {
+        for (int i = getComponentCount() - 1; i >= 0; i--) {
             if (getComponent(i) instanceof MultiSelectItem) remove(i);
         }
         this.items.clear();
@@ -210,6 +210,22 @@ public class PopupListField extends JPanel {
     }
 
     @Override
+    public Dimension getMinimumSize() {
+        Dimension size = super.getMinimumSize();
+        if (items.isEmpty()) size.height = MIN_HEIGHT;
+        else {
+            getLayout().layoutContainer(this);
+            int maxY = 0;
+            for (Component component : getComponents()) {
+                maxY = Math.max(maxY, component.getY() + component.getHeight());
+            }
+            Insets insets = getInsets();
+            size.height = maxY + VGAP + insets.bottom;
+        }
+        return size;
+    }
+
+    @Override
     public Dimension getPreferredSize() {
         Dimension size = super.getPreferredSize();
         if (items.isEmpty()) size.height = MIN_HEIGHT;
@@ -217,10 +233,10 @@ public class PopupListField extends JPanel {
             getLayout().layoutContainer(this);
             int maxY = 0;
             for (Component component : getComponents()) {
-                maxY = Math.max(maxY, component.getY()+component.getHeight());
+                maxY = Math.max(maxY, component.getY() + component.getHeight());
             }
             Insets insets = getInsets();
-            size.height = maxY+VGAP+insets.bottom;
+            size.height = maxY + VGAP + insets.bottom;
         }
         return size;
     }
@@ -237,8 +253,8 @@ public class PopupListField extends JPanel {
     private Point getPopupLocation() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-        screenSize.width -= insets.left+insets.right;
-        screenSize.height -= insets.top+insets.bottom;
+        screenSize.width -= insets.left + insets.right;
+        screenSize.height -= insets.top + insets.bottom;
         Dimension popupSize = popupWindow.getSize();
         popupSize.width = getWidth();
         popupWindow.setSize(popupSize);
@@ -247,8 +263,8 @@ public class PopupListField extends JPanel {
 
     protected Point getPopupLocation(Dimension screenSize, Dimension popupSize) {
         Point location = getLocationOnScreen();
-        if (location.y+popupSize.height > screenSize.height) {
-            location.y -= popupSize.height-getHeight();
+        if (location.y + popupSize.height > screenSize.height) {
+            location.y -= popupSize.height - getHeight();
         }
         return location;
     }
@@ -285,7 +301,7 @@ public class PopupListField extends JPanel {
     protected void processFocusEvent(FocusEvent e) {
         if (e.getID() == FocusEvent.FOCUS_GAINED) {
             add(focusCursor);
-            if (e.getOppositeComponent() != null && !e.isTemporary() && ! ignoreFocusGained) {
+            if (e.getOppositeComponent() != null && !e.isTemporary() && !ignoreFocusGained) {
                 showPopup();
             }
         }

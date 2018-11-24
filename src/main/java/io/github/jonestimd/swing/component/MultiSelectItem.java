@@ -55,13 +55,13 @@ import io.github.jonestimd.swing.ComponentResources;
  * <p/>
  * The following resources are used to configure the apearance of this component and can be overridden by a custom resource bundle.
  * <ul>
- *     <li><strong>multiSelectItem.background</strong> - the background color used to fill the outline</li>
- *     <li><strong>multiSelectItem.outline.color</strong> - the color of the outline</li>
- *     <li><strong>multiSelectItem.outline.strokeWidth</strong> - the stroke width of the outline</li>
- *     <li><strong>multiSelectItem.outline.flatness</strong> - length of the sides to be drawn as a straight line (0 for semicircle sides)</li>
- *     <li><strong>multiSelectItem.button.color</strong> - color of the delete button</li>
- *     <li><strong>multiSelectItem.button.hoverColor</strong> - highlight color for the delete button when the mouse cursor is over it</li>
- *     <li><strong>multiSelectItem.button.size</strong> - radius of the delete button</li>
+ * <li><strong>multiSelectItem.background</strong> - the background color used to fill the outline</li>
+ * <li><strong>multiSelectItem.outline.color</strong> - the color of the outline</li>
+ * <li><strong>multiSelectItem.outline.strokeWidth</strong> - the stroke width of the outline</li>
+ * <li><strong>multiSelectItem.outline.flatness</strong> - length of the sides to be drawn as a straight line (0 for semicircle sides)</li>
+ * <li><strong>multiSelectItem.button.color</strong> - color of the delete button</li>
+ * <li><strong>multiSelectItem.button.hoverColor</strong> - highlight color for the delete button when the mouse cursor is over it</li>
+ * <li><strong>multiSelectItem.button.size</strong> - radius of the delete button</li>
  * </ul>
  */
 public class MultiSelectItem extends JLabel {
@@ -191,12 +191,16 @@ public class MultiSelectItem extends JLabel {
     @Override
     public Insets getInsets(Insets insets) {
         insets = super.getInsets(insets);
-        int vertical = GAP+strokeWidth;
+        int vertical = GAP + strokeWidth;
         insets.top += vertical;
         insets.bottom += vertical;
-        insets.left += GAP*2+(showDelete ? buttonSize+GAP*2 : getIconTextGap());
-        insets.right += getIconTextGap()+GAP;
+        insets.left += GAP*2 + (showDelete ? buttonSize + GAP*2 : getIconTextGap());
+        insets.right += getIconTextGap() + GAP;
         return insets;
+    }
+
+    public int getMinHeight() {
+        return getMinimumSize().height + 2*(GAP + strokeWidth);
     }
 
     /**
@@ -204,8 +208,8 @@ public class MultiSelectItem extends JLabel {
      */
     @Override
     protected void paintComponent(Graphics g) {
-        int width = getWidth(), height = getHeight()-strokeWidth;
-        Shape outline = getOutline(GAP, 0, width-GAP*2, height);
+        int width = getWidth(), height = getHeight() - strokeWidth;
+        Shape outline = getOutline(GAP, 0, width - GAP*2, height);
         Graphics2D g2d = (Graphics2D) g.create(0, 0, width, getHeight());
         try {
             g2d.setStroke(new BasicStroke(strokeWidth));
@@ -236,7 +240,7 @@ public class MultiSelectItem extends JLabel {
      * @param height the height of the outline
      */
     protected Shape getOutline(int x, int y, int width, int height) {
-        return new RoundRectangle2D.Double(x, y, width, height, height-outlineFlatness, height-outlineFlatness);
+        return new RoundRectangle2D.Double(x, y, width, height, height - outlineFlatness, height - outlineFlatness);
     }
 
     /**
@@ -246,7 +250,7 @@ public class MultiSelectItem extends JLabel {
      */
     protected void drawDeleteButton(Graphics2D g2d, boolean hoverEffect) {
         g2d.setColor(hoverEffect ? buttonHoverColor : buttonColor);
-        g2d.fill(new Ellipse2D.Double(GAP*2+strokeWidth, GAP+strokeWidth, buttonSize, buttonSize));
+        g2d.fill(new Ellipse2D.Double(GAP*2 + strokeWidth, GAP + strokeWidth, buttonSize, buttonSize));
         g2d.setColor(isOpaque() ? getBackground() : getParent().getBackground());
         g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
         g2d.drawLine(buttonGeometry.crossLeft, buttonGeometry.crossTop, buttonGeometry.crossRight, buttonGeometry.crossBottom);
@@ -263,12 +267,12 @@ public class MultiSelectItem extends JLabel {
 
         protected ButtonGeometry(int buttonSize, int strokeWidth) {
             int dx = (int) (buttonSize*Math.cos(Math.PI/4)*CROSS_SIZE);
-            this.centerX = GAP*2+strokeWidth+buttonSize/2;
-            this.centerY = GAP+strokeWidth+buttonSize/2;
-            this.crossRight = centerX+dx;
-            this.crossLeft = centerX-dx-1;
-            this.crossBottom = centerY+dx;
-            this.crossTop = centerY-dx-1;
+            this.centerX = GAP*2 + strokeWidth + buttonSize/2;
+            this.centerY = GAP + strokeWidth + buttonSize/2;
+            this.crossRight = centerX + dx;
+            this.crossLeft = centerX - dx - 1;
+            this.crossBottom = centerY + dx;
+            this.crossTop = centerY - dx - 1;
         }
     }
 }
