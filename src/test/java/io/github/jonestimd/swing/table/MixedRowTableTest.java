@@ -69,10 +69,10 @@ public class MixedRowTableTest {
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
 
         assertThat(table.getColumnModel().getColumnCount()).isEqualTo(2);
-        assertThat(table.getColumnModel().getColumn(0).getHeaderValue()).isEqualTo("<html><center>Summary Name</center></html>");
+        assertThat(table.getColumnModel().getColumn(0).getHeaderValue()).isEqualTo("Summary Name");
         assertThat(((MixedRowTableColumn) table.getColumnModel().getColumn(0)).getSubColumn(0).getHeaderValue()).isEqualTo("Detail Id");
         MixedRowTableColumn column = (MixedRowTableColumn) table.getColumnModel().getColumn(0);
-        assertThat(column.getHeaderValue()).isEqualTo("<html><center>Summary Name</center></html>");
+        assertThat(column.getHeaderValue()).isEqualTo("Summary Name");
         assertThat(column.getSubColumn(0).getHeaderValue()).isEqualTo("Detail Id");
     }
 
