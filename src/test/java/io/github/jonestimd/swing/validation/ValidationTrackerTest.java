@@ -77,7 +77,7 @@ public class ValidationTrackerTest {
         SwingUtilities.invokeAndWait(() -> field.setVisible(false));
 
         inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
-        inOrder.verify(handler, times(2)).validationChanged(Matchers.isEmpty());
+        inOrder.verify(handler).validationChanged(Matchers.isEmpty());
         frame.dispose();
     }
 

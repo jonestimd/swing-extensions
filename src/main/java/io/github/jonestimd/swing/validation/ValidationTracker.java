@@ -108,7 +108,13 @@ public class ValidationTracker extends ContainerTracker {
     private void visibilityChanged(HierarchyEvent event) {
         if (event.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
             ValidatedComponent component = (ValidatedComponent) event.getComponent();
-            updateValidationMessages(component, component.isVisible() ? component.getValidationMessages() : null);
+            if (component.isVisible()) {
+                String messages = component.getValidationMessages();
+                if (messages != null && !validationMessages.containsKey(component)) {
+                    updateValidationMessages(component, messages);
+                }
+            }
+            else if (validationMessages.containsKey(component)) updateValidationMessages(component, null);
         }
     }
 
