@@ -49,4 +49,6 @@ public interface ValidatedComponent {
      * Remove a listener that is receiving notification when the validation changes.
      */
     void removeValidationListener(PropertyChangeListener listener);
+
+    boolean isVisible();
 }

@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.validation;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.HierarchyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -70,6 +71,7 @@ public class ValidationTracker extends ContainerTracker {
     @Override
     protected void componentAdded(Component component) {
         if (component instanceof ValidatedComponent) {
+            component.addHierarchyListener(this::visibilityChanged);
             ValidatedComponent validatedComponent = (ValidatedComponent) component;
             validatedComponent.addValidationListener(validationHandler);
             String messages = validatedComponent.getValidationMessages();
@@ -90,6 +92,7 @@ public class ValidationTracker extends ContainerTracker {
     @Override
     protected void componentRemoved(Component component) {
         if (component instanceof ValidatedComponent) {
+            component.removeHierarchyListener(this::visibilityChanged);
             ValidatedComponent validatedComponent = (ValidatedComponent) component;
             validatedComponent.removeValidationListener(validationHandler);
             validationMessages.remove(validatedComponent);
@@ -99,6 +102,13 @@ public class ValidationTracker extends ContainerTracker {
         }
         else {
             super.componentRemoved(component);
+        }
+    }
+
+    private void visibilityChanged(HierarchyEvent event) {
+        if (event.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+            ValidatedComponent component = (ValidatedComponent) event.getComponent();
+            updateValidationMessages(component, component.isVisible() ? component.getValidationMessages() : null);
         }
     }
 

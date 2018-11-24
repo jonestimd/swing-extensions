@@ -1,6 +1,8 @@
 package io.github.jonestimd.swing.validation;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.mockito.Matchers;
 import io.github.jonestimd.swing.validation.ValidationTracker.ValidationChangeHandler;
@@ -59,6 +61,24 @@ public class ValidationTrackerTest {
 
         panel.remove(field);
         inOrder.verify(handler).validationChanged(Matchers.isEmpty());
+    }
+
+    @Test
+    public void ignoreValidationOnHiddenComponent() throws Exception {
+        ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
+        panel.add(field);
+        JFrame frame = new JFrame("JUnit test");
+        SwingUtilities.invokeAndWait(() -> {
+            frame.getContentPane().add(panel);
+            frame.pack();
+            frame.setVisible(true);
+        });
+
+        SwingUtilities.invokeAndWait(() -> field.setVisible(false));
+
+        inOrder.verify(handler).validationChanged(Matchers.containsOnly(REQUIRED_MESSAGE));
+        inOrder.verify(handler, times(2)).validationChanged(Matchers.isEmpty());
+        frame.dispose();
     }
 
     @Test
