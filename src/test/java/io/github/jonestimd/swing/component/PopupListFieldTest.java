@@ -32,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -40,11 +41,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.Highlighter.Highlight;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+import io.github.jonestimd.mockito.Matchers;
 import io.github.jonestimd.swing.JFrameRobotTest;
+import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidationTooltipBorder;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -55,6 +60,7 @@ import static org.mockito.Mockito.*;
 public class PopupListFieldTest extends JFrameRobotTest {
     public static final int WINDOW_WIDTH = 400;
     public static final int WINDOW_HEIGHT = 100;
+    public static final String REQUIRED_MESSAGE = "A value is required";
     private PopupListField popupListField;
 
     private JTextField field = new JTextField();
@@ -353,6 +359,59 @@ public class PopupListFieldTest extends JFrameRobotTest {
 
         JTextArea textArea = getField(popupListField, "textArea", JTextArea.class);
         assertThat(textArea.getRows()).isEqualTo(10);
+    }
+
+    @Test
+    public void addsValidationBorderForRequiredMessage() throws Exception {
+        popupListField = PopupListField.builder(true, true).requiredMessage(REQUIRED_MESSAGE).build();
+
+        CompoundBorder border = (CompoundBorder) popupListField.getBorder();
+
+        assertThat(border.getInsideBorder()).isInstanceOf(ValidationTooltipBorder.class);
+        ValidationTooltipBorder validationBorder = (ValidationTooltipBorder) border.getInsideBorder();
+        assertThat(validationBorder.isValid()).isFalse();
+    }
+
+    @Test
+    public void setBorderRetainsValidationBorder() throws Exception {
+        popupListField = PopupListField.builder(true, true).requiredMessage(REQUIRED_MESSAGE).build();
+
+        popupListField.setBorder(null);
+
+        assertThat(popupListField.getBorder()).isInstanceOf(ValidationTooltipBorder.class);
+    }
+
+    @Test
+    public void getValidationMessages() throws Exception {
+        popupListField = PopupListField.builder(true, true).requiredMessage(REQUIRED_MESSAGE).build();
+
+        assertThat(popupListField.getValidationMessages()).isEqualTo(REQUIRED_MESSAGE);
+
+        popupListField.setItems(Collections.singletonList("item"));
+        assertThat(popupListField.getValidationMessages()).isNull();
+    }
+
+    @Test
+    public void notifiesValidationListeners() throws Exception {
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        popupListField = PopupListField.builder(true, true).requiredMessage(REQUIRED_MESSAGE).build();
+        popupListField.addValidationListener(listener);
+
+        popupListField.setItems(Collections.singletonList("item"));
+
+        verify(listener).propertyChange(Matchers.matches(new PropertyChangeEvent(popupListField, ValidatedComponent.VALIDATION_MESSAGES, REQUIRED_MESSAGE, null)));
+    }
+
+    @Test
+    public void removeValidationListener() throws Exception {
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        popupListField = PopupListField.builder(true, true).requiredMessage(REQUIRED_MESSAGE).build();
+        popupListField.addValidationListener(listener);
+
+        popupListField.removeValidationListener(listener);
+        popupListField.setItems(Collections.singletonList("item"));
+
+        verifyZeroInteractions(listener);
     }
 
     public static void main(String[] args) {

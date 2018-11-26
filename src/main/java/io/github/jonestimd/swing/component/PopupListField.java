@@ -55,12 +55,17 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.Highlighter.HighlightPainter;
 
 import com.google.common.base.Joiner;
 import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.component.ListField.ItemValidator;
+import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidationBorder;
+import io.github.jonestimd.swing.validation.ValidationSupport;
+import io.github.jonestimd.swing.validation.ValidationTooltipBorder;
 
 /**
  * A component that displays a list of string values using {@link MultiSelectItem} and allows editing
@@ -74,7 +79,7 @@ import io.github.jonestimd.swing.component.ListField.ItemValidator;
  * If the delete buttons are enabled on the {@link MultiSelectItem}s then items can also be
  * removed from the list using the delete buttons.
  */
-public class PopupListField extends JPanel {
+public class PopupListField extends JPanel implements ValidatedComponent {
     public static final String ITEMS_PROPERTY = "items";
     public static final String LINE_SEPARATOR = "\n";
     protected static final int MIN_HEIGHT = new MultiSelectItem("x", true, false).getMinHeight() + 2;
@@ -88,6 +93,9 @@ public class PopupListField extends JPanel {
     private final ListField textArea;
     private final JLabel focusCursor;
     private final Border popupBorder;
+    private final String requiredMessage;
+    private ValidationTooltipBorder validationBorder;
+    private final ValidationSupport<List<String>> validationSupport;
     private Window popupWindow;
     private boolean ignoreFocusGained = false;
     private final HierarchyBoundsListener movementListener = new HierarchyBoundsAdapter() {
@@ -117,14 +125,16 @@ public class PopupListField extends JPanel {
      * @param popupBorder the border for the popup window
      * @param bundle the {@code ResourceBundle} to use for configuration
      */
-    public PopupListField(boolean showItemDelete, boolean opaqueItems, int popupRows,
-            ItemValidator validator, HighlightPainter errorPainter, Border popupBorder, ResourceBundle bundle) {
+    public PopupListField(boolean showItemDelete, boolean opaqueItems, int popupRows, ItemValidator validator,
+            HighlightPainter errorPainter, Border popupBorder, ResourceBundle bundle, String requiredMessage) {
         super(new FlowLayout(FlowLayout.LEADING, HGAP, VGAP));
         this.showItemDelete = showItemDelete;
         this.opaqueItems = opaqueItems;
         this.focusCursor = new JLabel(ComponentResources.getString(bundle, "popupListField.focusCursor"));
         this.popupBorder = popupBorder;
         this.bundle = bundle;
+        this.requiredMessage = requiredMessage;
+        this.validationSupport = new ValidationSupport<>(this, value -> value.isEmpty() ? requiredMessage : null);
         textArea = new ListField(validator, errorPainter, bundle, this::hidePopup, this::commitEdit);
         textArea.setRows(popupRows);
         textArea.addFocusListener(new FocusAdapter() {
@@ -140,6 +150,45 @@ public class PopupListField extends JPanel {
         setFocusable(true);
         enableEvents(FocusEvent.FOCUS_EVENT_MASK + MouseEvent.MOUSE_EVENT_MASK);
         addHierarchyListener(this::hierarchyChanged);
+        if (requiredMessage != null) {
+            addPropertyChangeListener(ITEMS_PROPERTY, event -> validateValue());
+            validateValue();
+        }
+    }
+
+    /**
+     * Overridden to wrap the {@link ValidationBorder} with the input border.
+     * @param border the border to add around the {@code ValidationBorder} or null
+     *        to use the {@code ValidationBorder} alone
+     */
+    @Override
+    public void setBorder(Border border) {
+        if (requiredMessage == null) super.setBorder(border);
+        else {
+            if (validationBorder == null) validationBorder = new ValidationTooltipBorder(this);
+            if (border == null) super.setBorder(validationBorder);
+            else super.setBorder(new CompoundBorder(border, validationBorder));
+        }
+    }
+
+    @Override
+    public void validateValue() {
+        if (requiredMessage != null) validationBorder.setValid(validationSupport.validateValue(getItems()) == null);
+    }
+
+    @Override
+    public String getValidationMessages() {
+        return validationSupport.getMessages();
+    }
+
+    @Override
+    public void addValidationListener(PropertyChangeListener listener) {
+        validationSupport.addValidationListener(listener);
+    }
+
+    @Override
+    public void removeValidationListener(PropertyChangeListener listener) {
+        validationSupport.removeValidationListener(listener);
     }
 
     protected void setItems(String... items) {
@@ -354,6 +403,7 @@ public class PopupListField extends JPanel {
         private ItemValidator validator = ListField.DEFAULT_VALIDATOR;
         private HighlightPainter errorHighlighter = ListField.DEFAULT_ERROR_HIGHLIGHTER;
         private ResourceBundle bundle = ComponentResources.BUNDLE;
+        private String requiredMessage = null;
 
         public Builder(boolean showItemDelete, boolean opaqueItems) {
             this.showItemDelete = showItemDelete;
@@ -385,8 +435,13 @@ public class PopupListField extends JPanel {
             return this;
         }
 
+        public Builder requiredMessage(String requiredMessage) {
+            this.requiredMessage = requiredMessage;
+            return  this;
+        }
+
         public PopupListField build() {
-            return new PopupListField(showItemDelete, opaqueItems, popupRows, validator, errorHighlighter, popupBorder, bundle);
+            return new PopupListField(showItemDelete, opaqueItems, popupRows, validator, errorHighlighter, popupBorder, bundle, requiredMessage);
         }
     }
 }
