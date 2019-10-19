@@ -155,7 +155,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
     public void removeItemIgnoresInvalidValue() throws Exception {
         multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
 
-        multiSelectField.removeItem("mango");
+        multiSelectField.removeItem(new MultiSelectItem("mango", true, true));
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
     }

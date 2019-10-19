@@ -31,9 +31,12 @@ import java.util.function.Predicate;
 
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
 import io.github.jonestimd.swing.ComponentResources;
+import io.github.jonestimd.util.Streams;
 
 /**
  * A text component that displays a list of string values using {@link MultiSelectItem} and allows adding and
@@ -46,7 +49,7 @@ public class MultiSelectField extends JTextPane {
     public static final Predicate<String> DEFAULT_IS_VALID_ITEM = (text) -> !text.trim().isEmpty();
     protected static final float ITEM_ALIGNMENT = 0.75f;
 
-    private final List<String> items = new ArrayList<>();
+    private final List<MultiSelectItem> items = new ArrayList<>();
     private final boolean showItemDelete;
     private final boolean opaqueItems;
     private final ResourceBundle bundle;
@@ -73,6 +76,27 @@ public class MultiSelectField extends JTextPane {
         this.opaqueItems = opaqueItems;
         this.isValidItem = isValidItem;
         this.bundle = bundle;
+        addCaretListener(event -> {
+            int start = getSelectionStart();
+            int end = getSelectionEnd();
+            for (int i = 0; i < items.size(); i++) items.get(i).setSelected(i >= start && i < end);
+        });
+        getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                int offset = e.getOffset();
+                int length = e.getLength();
+                if (offset < items.size()) removeItems(offset, length);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
     }
 
     /**
@@ -99,9 +123,13 @@ public class MultiSelectField extends JTextPane {
      * Add an item to the list of values.
      */
     public void addItem(String text) {
+        addItem(newItem(text));
+    }
+
+    protected void addItem(MultiSelectItem item) {
         setSelectionStart(items.size());
-        items.add(text);
-        insertComponent(newItem(text));
+        items.add(item);
+        insertComponent(item);
         setSelectionStart(items.size());
     }
 
@@ -111,31 +139,29 @@ public class MultiSelectField extends JTextPane {
     protected MultiSelectItem newItem(String text) {
         MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems, bundle);
         item.setAlignmentY(ITEM_ALIGNMENT);
-        item.addDeleteListener(this::onDeleteItem);
+        item.addDeleteListener(this::removeItem);
         return item;
-    }
-
-    /**
-     * Handles clicking on an item's delete button.
-     * @param item the item to be deleted
-     */
-    protected void onDeleteItem(MultiSelectItem item) {
-        removeItem(item.getText());
     }
 
     /**
      * Remove an item from the list of values.
      */
-    public void removeItem(String text) {
-        int index = items.indexOf(text);
+    protected void removeItem(MultiSelectItem item) {
+        int index = items.indexOf(item);
         if (index >= 0) {
             try {
                 getDocument().remove(index, 1);
-                items.remove(text);
+                items.remove(item);
             } catch (BadLocationException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    protected void removeItems(int start, int count) {
+        int lastItem = Math.min(items.size(), start+count);
+        items.subList(start, lastItem).clear();
+        firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
     }
 
     /**
@@ -143,7 +169,7 @@ public class MultiSelectField extends JTextPane {
      * @return an immutable copy of the list of values.
      */
     public List<String> getItems() {
-        return Collections.unmodifiableList(items);
+        return Streams.map(items, MultiSelectItem::getText);
     }
 
     /**
@@ -152,21 +178,8 @@ public class MultiSelectField extends JTextPane {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         if (pressed) {
-            if (ks.getKeyCode() == KeyEvent.VK_DELETE) {
-                if (getSelectionStart() < items.size()) {
-                    if (getSelectionEnd() != getSelectionStart()) return false;
-                    items.remove(getSelectionStart());
-                    firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
-                }
-            }
-            else if (ks.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                if (getSelectionStart() > 0 && getSelectionStart() <= items.size()) {
-                    if (getSelectionEnd() != getSelectionStart()) return false;
-                    items.remove(getSelectionStart()-1);
-                    firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
-                }
-            }
-            else if (ks.getKeyCode() == KeyEvent.VK_ENTER) {
+            int selectionStart = getSelectionStart();
+            if (ks.getKeyCode() == KeyEvent.VK_ENTER) {
                 try {
                     String text = getText().substring(items.size());
                     if (isValidItem.test(text)) {
@@ -178,7 +191,8 @@ public class MultiSelectField extends JTextPane {
                     throw new RuntimeException(e1);
                 }
             }
-            else if (getSelectionStart() < items.size() && Character.isDefined(e.getKeyChar())) {
+            else if (ks.getKeyCode() != KeyEvent.VK_DELETE && ks.getKeyCode() != KeyEvent.VK_BACK_SPACE
+                    && selectionStart < items.size() && Character.isDefined(e.getKeyChar())) {
                 setSelectionStart(getDocument().getLength());
             }
         }
