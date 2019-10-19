@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.swing.JLabel;
 
@@ -70,7 +71,7 @@ public class MultiSelectItem extends JLabel {
 
     protected final int strokeWidth;
     protected final Color outlineColor;
-    protected final int outlineFlatness;
+    protected final float outlineRoundness;
     protected final Color buttonColor;
     protected final Color buttonHoverColor;
     protected final int buttonSize;
@@ -79,6 +80,9 @@ public class MultiSelectItem extends JLabel {
     private final boolean showDelete;
     private boolean isOverButton = false;
     private final List<Consumer<MultiSelectItem>> deleteListeners = new ArrayList<>();
+    private boolean selected;
+    private final Function<MultiSelectItem, Color> defaultBackgroundSupplier;
+    private Function<MultiSelectItem, Color> backgroundSupplier;
 
     /**
      * Create a new {@code MultiSelectItem}.
@@ -100,40 +104,62 @@ public class MultiSelectItem extends JLabel {
     public MultiSelectItem(String text, boolean showDelete, boolean opaque, ResourceBundle bundle) {
         super(text);
         this.showDelete = showDelete;
-        this.outlineColor = ComponentResources.getColor(bundle, "multiSelectItem.outline.color");
-        this.strokeWidth = ComponentResources.getInt(bundle, "multiSelectItem.outline.strokeWidth");
-        this.outlineFlatness = ComponentResources.getInt(bundle, "multiSelectItem.outline.flatness");
-
-        this.buttonColor = ComponentResources.getColor(bundle, "multiSelectItem.button.color");
-        this.buttonHoverColor = ComponentResources.getColor(bundle, "multiSelectItem.button.hoverColor");
-        this.buttonSize = ComponentResources.getInt(bundle, "multiSelectItem.button.size");
-        this.buttonSizeSquared = buttonSize*buttonSize;
-        this.buttonGeometry = new ButtonGeometry(buttonSize, strokeWidth);
+        outlineColor = ComponentResources.getColor(bundle, "multiSelectItem.outline.color");
+        strokeWidth = ComponentResources.getInt(bundle, "multiSelectItem.outline.strokeWidth");
+        outlineRoundness = ComponentResources.getFloat(bundle, "multiSelectItem.outline.roundness." + (showDelete ? "button" : "noButton"));
+        buttonColor = ComponentResources.getColor(bundle, "multiSelectItem.button.color");
+        buttonHoverColor = ComponentResources.getColor(bundle, "multiSelectItem.button.hoverColor");
+        buttonSize = ComponentResources.getInt(bundle, "multiSelectItem.button.size");
+        buttonSizeSquared = buttonSize*buttonSize;
+        buttonGeometry = new ButtonGeometry(buttonSize, strokeWidth);
+        final Color background = ComponentResources.getColor(bundle, "multiSelectItem.background");
+        final Color selectedBackground = ComponentResources.getColor(bundle, "multiSelectItem.selectedBackground");
+        backgroundSupplier = defaultBackgroundSupplier = (item) -> item.selected ? selectedBackground : background;
 
         setFont(getFont().deriveFont(Font.PLAIN));
         setOpaque(opaque);
-        setBackground(ComponentResources.getColor(bundle, "multiSelectItem.background"));
+        setBackground(background);
         setCursor(Cursor.getDefaultCursor());
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                if (showDelete) onMouseMove(e.getPoint());
-            }
-        });
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                isOverButton = false;
-                repaint();
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (isOverButton && e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
-                    fireDelete();
+        if (showDelete) {
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    onMouseMove(e.getPoint());
                 }
-            }
-        });
+            });
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    isOverButton = false;
+                    repaint();
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (isOverButton && e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
+                        fireDelete();
+                    }
+                }
+            });
+        }
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        updateBackground();
+    }
+
+    public void setBackgroundSupplier(Function<MultiSelectItem, Color> backgroundSupplier) {
+        this.backgroundSupplier = backgroundSupplier == null ? defaultBackgroundSupplier : backgroundSupplier;
+        updateBackground();
+    }
+
+    private void updateBackground() {
+        setBackground(backgroundSupplier.apply(this));
     }
 
     /**
@@ -191,7 +217,7 @@ public class MultiSelectItem extends JLabel {
     @Override
     public Insets getInsets(Insets insets) {
         insets = super.getInsets(insets);
-        int vertical = GAP + strokeWidth;
+        int vertical = strokeWidth + (showDelete ? GAP : 0);
         insets.top += vertical;
         insets.bottom += vertical;
         insets.left += GAP*2 + (showDelete ? buttonSize + GAP*2 : getIconTextGap());
@@ -240,7 +266,7 @@ public class MultiSelectItem extends JLabel {
      * @param height the height of the outline
      */
     protected Shape getOutline(int x, int y, int width, int height) {
-        return new RoundRectangle2D.Double(x, y, width, height, height - outlineFlatness, height - outlineFlatness);
+        return new RoundRectangle2D.Double(x, y, width, height, height*outlineRoundness, height*outlineRoundness);
     }
 
     /**

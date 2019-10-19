@@ -21,8 +21,10 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.RoundRectangle2D;
@@ -30,12 +32,12 @@ import java.util.function.Consumer;
 
 import javax.swing.JPanel;
 
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.JFrameRobotTest;
-import java.awt.Font;
 import org.assertj.swing.core.MouseButton;
 import org.junit.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
 public class MultiSelectItemTest extends JFrameRobotTest {
@@ -128,5 +130,28 @@ public class MultiSelectItemTest extends JFrameRobotTest {
 
         robot.waitForIdle();
         verify(deleteListener, never()).accept(multiSelectItem);
+    }
+
+    @Test
+    public void usesDefaultBackgroundSupplier() throws Exception {
+        multiSelectItem.setSelected(true);
+
+        assertThat(multiSelectItem.getBackground()).isEqualTo(ComponentResources.BUNDLE.getObject("multiSelectItem.selectedBackground"));
+    }
+
+    @Test
+    public void setBackgroundSupplier_setsBackground() throws Exception {
+        multiSelectItem.setBackgroundSupplier((item) -> Color.PINK);
+
+        assertThat(multiSelectItem.getBackground()).isEqualTo(Color.PINK);
+    }
+
+    @Test
+    public void setSelected_usesBackgroundSupplier() throws Exception {
+        multiSelectItem.setBackgroundSupplier((item) -> item.isSelected() ? Color.PINK : Color.RED);
+
+        multiSelectItem.setSelected(true);
+
+        assertThat(multiSelectItem.getBackground()).isEqualTo(Color.PINK);
     }
 }
