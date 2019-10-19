@@ -52,6 +52,7 @@ import io.github.jonestimd.swing.validation.ValidationTracker;
  */
 public class FormDialog extends MessageDialog {
     protected static final int BUTTON_BAR_BORDER = 10;
+    protected static final String SAVE_MNEMONIC_AND_NAME = ComponentResources.lookupString("action.save.mnemonicAndName");
     protected final JPanel formPanel = new JPanel();
     protected final CancelAction cancelAction = CancelAction.install(this);
     protected final Action saveAction;
@@ -73,7 +74,7 @@ public class FormDialog extends MessageDialog {
 
     public FormDialog(Window owner, String title, ModalityType modalityType, ResourceBundle bundle) {
         super(owner, title, modalityType);
-        this.saveAction = new MnemonicAction(ComponentResources.getString(bundle, "action.save.mnemonicAndName")) {
+        this.saveAction = new MnemonicAction(SAVE_MNEMONIC_AND_NAME) {
             public void actionPerformed(ActionEvent e) {
                 onSave();
             }

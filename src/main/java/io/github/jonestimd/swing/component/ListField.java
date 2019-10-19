@@ -26,7 +26,6 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 import javax.swing.JTextArea;
@@ -39,8 +38,9 @@ import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.Position.Bias;
 
 import com.google.common.base.Joiner;
-import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.table.PopupListTableCellEditor;
+
+import static io.github.jonestimd.swing.ComponentResources.*;
 
 /**
  * Extends {@link JTextArea} to support editing a list of string values.  When the text contains
@@ -71,8 +71,8 @@ public class ListField extends JTextArea {
             // can't render
         }
     };
-    private final KeyStroke commitKey;
-    private final KeyStroke cancelKey;
+    private static final KeyStroke COMMIT_KEY = KeyStroke.getKeyStroke(lookupString("popupListField.commitKey"));
+    private static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke(lookupString("popupListField.cancelKey"));
     private final ItemValidator validator;
     private final HighlightPainter errorPainter;
     private final Runnable cancelCallback;
@@ -80,15 +80,12 @@ public class ListField extends JTextArea {
     private boolean isValid = true;
 
     public ListField(Runnable cancelCallback, Consumer<List<String>> commitCallback) {
-        this(DEFAULT_VALIDATOR, DEFAULT_ERROR_HIGHLIGHTER, ComponentResources.BUNDLE, cancelCallback, commitCallback);
+        this(DEFAULT_VALIDATOR, DEFAULT_ERROR_HIGHLIGHTER, cancelCallback, commitCallback);
     }
 
-    public ListField(ItemValidator validator, HighlightPainter errorPainter, ResourceBundle bundle,
-            Runnable cancelCallback, Consumer<List<String>> commitCallback) {
+    public ListField(ItemValidator validator, HighlightPainter errorPainter, Runnable cancelCallback, Consumer<List<String>> commitCallback) {
         this.validator = validator;
         this.errorPainter = errorPainter;
-        commitKey = KeyStroke.getKeyStroke(ComponentResources.getString(bundle, "popupListField.commitKey"));
-        cancelKey = KeyStroke.getKeyStroke(ComponentResources.getString(bundle, "popupListField.cancelKey"));
         this.cancelCallback = cancelCallback;
         this.commitCallback = commitCallback;
         setRows(DEFAULT_ROWS);
@@ -150,8 +147,8 @@ public class ListField extends JTextArea {
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        if (ks == cancelKey) cancelCallback.run();
-        else if (isValid && ks == commitKey) commitCallback.accept(parseItems());
+        if (ks == CANCEL_KEY) cancelCallback.run();
+        else if (isValid && ks == COMMIT_KEY) commitCallback.accept(parseItems());
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 

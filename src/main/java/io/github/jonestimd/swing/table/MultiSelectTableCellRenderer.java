@@ -25,7 +25,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.function.Function;
 
 import javax.swing.Box;
@@ -36,7 +35,6 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
-import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.component.MultiSelectItem;
 
 /**
@@ -50,7 +48,6 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
     protected static Border noFocusBorder = DEFAULT_NO_FOCUS_BORDER;
 
     private final boolean opaque;
-    private final ResourceBundle bundle;
     private final Function<T, String> format;
     private Color unselectedForeground;
     private Color unselectedBackground;
@@ -60,13 +57,8 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
     }
 
     public MultiSelectTableCellRenderer(boolean opaque, Function<T, String> format) {
-        this(opaque, ComponentResources.BUNDLE, format);
-    }
-
-    public MultiSelectTableCellRenderer(boolean opaque, ResourceBundle bundle, Function<T, String> format) {
         super(BoxLayout.X_AXIS);
         this.opaque = opaque;
-        this.bundle = bundle;
         this.format = format;
         setOpaque(true);
     }
@@ -101,7 +93,7 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
         if (value instanceof Collection) {
             Collection<T> items = (Collection<T>) value;
             for (T item : items) {
-                MultiSelectItem comp = new MultiSelectItem(format.apply(item), false, opaque, bundle);
+                MultiSelectItem comp = new MultiSelectItem(format.apply(item), false, opaque);
                 comp.setFont(table.getFont());
                 add(comp);
             }

@@ -24,7 +24,7 @@ package io.github.jonestimd.swing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -55,7 +55,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.text.JTextComponent;
 
-import com.google.common.base.MoreObjects;
 import io.github.jonestimd.swing.border.OblongBorder;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
@@ -63,29 +62,9 @@ import io.github.jonestimd.swing.component.IconBorder.Side;
 
 public class ComponentFactory {
     public static final char NO_MNEMONIC = ' ';
-    public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
+    public static final String ACCELERATOR_DELIMITER = Optional.ofNullable(UIManager.getString("MenuItem.acceleratorDelimiter")).orElse("+");
     public static final String TOOLBAR_BUTTON_ACTION_KEY = "doClick";
     public static final int LABEL_GAP = 5;
-
-    protected final ResourceBundle bundle;
-
-    public ComponentFactory() {
-        this(ComponentResources.BUNDLE);
-    }
-
-    public ComponentFactory(ResourceBundle bundle) {
-        this.bundle = bundle;
-    }
-
-    /**
-     * Get a string value from the resource bundle with fallback to {@link ComponentResources#BUNDLE}.
-     * @param key the resource key
-     * @return the value from the resource bundle if it exists, otherwise the value from {@link ComponentResources#BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
-     */
-    public String getString(String key) {
-        return ComponentResources.getString(bundle, key);
-    }
 
     public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
@@ -224,7 +203,7 @@ public class ComponentFactory {
     }
 
     private <T extends JTextComponent> T initializeFilterField(T field, int paddingTop, int paddingBottom) {
-        Icon filterIcon = ComponentResources.getIcon(bundle, "filter.iconImage");
+        Icon filterIcon = ComponentResources.lookupIcon("filter.iconImage");
         field.setBorder(new CompoundBorder(new OblongBorder(1, Color.GRAY, paddingTop, 4, paddingBottom, 0), new IconBorder(Side.LEFT, filterIcon)));
         return field;
     }

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
 import javax.swing.JTextPane;
@@ -35,7 +34,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
-import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.util.Streams;
 
 /**
@@ -46,13 +44,12 @@ import io.github.jonestimd.util.Streams;
  */
 public class MultiSelectField extends JTextPane {
     public static final String ITEMS_PROPERTY = "items";
-    public static final Predicate<String> DEFAULT_IS_VALID_ITEM = (text) -> !text.trim().isEmpty();
+    public static final Predicate<String> DEFAULT_IS_VALID_ITEM = (text) -> !text.trim().isEmpty(); // TODO pass current list
     protected static final float ITEM_ALIGNMENT = 0.75f;
 
     private final List<MultiSelectItem> items = new ArrayList<>();
     private final boolean showItemDelete;
     private final boolean opaqueItems;
-    private final ResourceBundle bundle;
     private final Predicate<String> isValidItem;
 
     /**
@@ -61,7 +58,7 @@ public class MultiSelectField extends JTextPane {
      * @param opaqueItems true to fill the list items with their background color
      */
     public MultiSelectField(boolean showItemDelete, boolean opaqueItems) {
-        this(showItemDelete, opaqueItems, DEFAULT_IS_VALID_ITEM, ComponentResources.BUNDLE);
+        this(showItemDelete, opaqueItems, DEFAULT_IS_VALID_ITEM);
     }
 
     /**
@@ -69,13 +66,11 @@ public class MultiSelectField extends JTextPane {
      * @param showItemDelete true to show delete buttons on the list items
      * @param opaqueItems true to fill the list items with their background color
      * @param isValidItem predicate to use to validate items before adding them to the list
-     * @param bundle the {@code ResourceBundle} to use for configuration
      */
-    public MultiSelectField(boolean showItemDelete, boolean opaqueItems, Predicate<String> isValidItem, ResourceBundle bundle) {
+    public MultiSelectField(boolean showItemDelete, boolean opaqueItems, Predicate<String> isValidItem) {
         this.showItemDelete = showItemDelete;
         this.opaqueItems = opaqueItems;
         this.isValidItem = isValidItem;
-        this.bundle = bundle;
         addCaretListener(event -> {
             int start = getSelectionStart();
             int end = getSelectionEnd();
@@ -107,7 +102,7 @@ public class MultiSelectField extends JTextPane {
      * @param isValidItem predicate to use to validate items before adding them to the list
      */
     public MultiSelectField(List<String> items, boolean showItemDelete, boolean opaqueItems, Predicate<String> isValidItem) {
-        this(showItemDelete, opaqueItems, isValidItem, ComponentResources.BUNDLE);
+        this(showItemDelete, opaqueItems, isValidItem);
         items.forEach(this::addItem);
     }
 
@@ -137,7 +132,7 @@ public class MultiSelectField extends JTextPane {
      * Create a new {@link MultiSelectItem} to add to the field.
      */
     protected MultiSelectItem newItem(String text) {
-        MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems, bundle);
+        MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems);
         item.setAlignmentY(ITEM_ALIGNMENT);
         item.addDeleteListener(this::removeItem);
         return item;

@@ -22,12 +22,21 @@
 package io.github.jonestimd.swing;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.List;
 import java.util.ListResourceBundle;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+
+import io.github.jonestimd.util.Streams;
 
 import static io.github.jonestimd.swing.SwingResource.*;
 
@@ -36,97 +45,102 @@ import static io.github.jonestimd.swing.SwingResource.*;
  */
 @SuppressWarnings({"MagicCharacter", "MagicNumber"})
 public class ComponentResources extends ListResourceBundle {
+    public interface Provider extends Supplier<ResourceBundle> {}
+
     public static final ResourceBundle BUNDLE = ResourceBundle.getBundle(ComponentResources.class.getName());
+    private static final List<ResourceBundle> PROVIDERS = getProviders();
 
-    /**
-     * Get a string value from a resource bundle with fallback to {@link #BUNDLE}.
-     * @param bundle the resource bundle
-     * @param key the resource key
-     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
-     */
-    public static String getString(ResourceBundle bundle, String key) {
-        try {
-            return bundle.getString(key);
-        } catch (MissingResourceException ex) {
-            return ComponentResources.BUNDLE.getString(key);
+    private static List<ResourceBundle> getProviders() {
+        ServiceLoader<Provider> providers = ServiceLoader.load(Provider.class);
+        return Collections.unmodifiableList(Streams.of(providers).map(Provider::get).collect(Collectors.toList()));
+    }
+
+    private static Optional<String> getProviderString(String key) {
+        for (ResourceBundle override : PROVIDERS) {
+            if (override.containsKey(key)) return Optional.of(override.getString(key));
         }
+        return Optional.empty();
+    }
+
+    private static <T> Optional<T> getProviderValue(String key, BiFunction<Object, Class<?>, Optional<T>> converter) {
+        for (ResourceBundle provider : PROVIDERS) {
+            if (provider.containsKey(key)) {
+                try {
+                    return Optional.of(provider.getObject(key)).flatMap(value -> converter.apply(value, provider.getClass()));
+                } catch (Exception ex) {
+                    // try next provider
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
-     * Get a color value from a resource bundle with fallback to {@link #BUNDLE}.
-     * @param bundle the resource bundle
+     * Look up a string value from Provider bundles with fallback to {@link #BUNDLE}.
      * @param key the resource key
-     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
+     * @return the value from a {@code provider} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in any of the bundles
      */
-    public static Color getColor(ResourceBundle bundle, String key) {
-        try {
-            Object value = bundle.getObject(key);
-            if (value instanceof Color) return (Color) value;
-            if (value instanceof String) return ColorFactory.createColor((String) value);
-        } catch (Exception ex) {
-            // use default value
-        }
-        return (Color) ComponentResources.BUNDLE.getObject(key);
+    public static String lookupString(String key) {
+        return getProviderString(key).orElseGet(() -> BUNDLE.getString(key));
     }
 
     /**
-     * Get an icon value from a resource bundle with fallback to {@link #BUNDLE}.
-     * @param bundle the resource bundle
+     * Look up a color value from Provider bundles with fallback to {@link #BUNDLE}.
      * @param key the resource key
      * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
+     * @throws MissingResourceException if the key is not defined in any of the bundles
      */
-    public static Icon getIcon(ResourceBundle bundle, String key) {
-        try {
-            Object value = bundle.getObject(key);
-            if (value instanceof Icon) return (Icon) value;
-            if (value instanceof String) return new ImageIcon(bundle.getClass().getResource((String) value));
-        } catch (Exception ex) {
-            // use default value
-        }
-        return (Icon) ComponentResources.BUNDLE.getObject(key);
+    public static Color lookupColor(String key) {
+        return getProviderValue(key, ComponentResources::asColor).orElseGet(() -> (Color) BUNDLE.getObject(key));
+    }
+
+    private static Optional<Color> asColor(Object value, Class<?> providerClass) {
+        if (value instanceof Color) return Optional.of((Color) value);
+        if (value instanceof String) return Optional.of(ColorFactory.createColor((String) value));
+        throw new IllegalArgumentException("Invalid Color: " + value);
     }
 
     /**
-     * Get an int value from a resource bundle with fallback to {@link #BUNDLE}.
-     * @param bundle the resource bundle
+     * Look up an icon value from Provider bundles with fallback to {@link #BUNDLE}.
      * @param key the resource key
      * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
+     * @throws MissingResourceException if the key is not defined in any of the bundles
      */
-    public static int getInt(ResourceBundle bundle, String key) {
-        try {
-            Object value = bundle.getObject(key);
-            if (value instanceof Number) return ((Number) value).intValue();
-            if (value instanceof String) return Integer.parseInt((String) value);
-        } catch (Exception ex) {
-            // use default value
-        }
-        return (int) ComponentResources.BUNDLE.getObject(key);
+    public static Icon lookupIcon(String key) {
+        return getProviderValue(key, ComponentResources::asIcon).orElseGet(() -> (Icon) BUNDLE.getObject(key));
+    }
+
+    private static Optional<Icon> asIcon(Object value, Class<?> providerClass) {
+        if (value instanceof Icon) return Optional.of((Icon) value);
+        if (value instanceof String) return Optional.of(new ImageIcon(providerClass.getResource((String) value)));
+        throw new IllegalArgumentException("Invalid Icon: " + value);
     }
 
     /**
-     * Get a float value from a resource bundle with fallback to {@link #BUNDLE}.
-     * @param bundle the resource bundle
+     * Look up an int value from Provider bundles with fallback to {@link #BUNDLE}.
      * @param key the resource key
      * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
+     * @throws MissingResourceException if the key is not defined in any of the bundles
      */
-    public static float getFloat(ResourceBundle bundle, String key) {
-        try {
-            Object value = bundle.getObject(key);
-            if (value instanceof Number) return ((Number) value).floatValue();
-            if (value instanceof String) return Float.parseFloat((String) value);
-        } catch (Exception ex) {
-            // use default value
-        }
-        return (float) ComponentResources.BUNDLE.getObject(key);
+    public static int lookupInt(String key) {
+        return getProviderValue(key, ComponentResources::asNumber).orElseGet(() -> (int) BUNDLE.getObject(key)).intValue();
     }
 
-    public static int getInt(String key) {
-        return (int) BUNDLE.getObject(key);
+    private static Optional<Number> asNumber(Object value, Class<?> providerClass) {
+        if (value instanceof Number) return Optional.of(((Number) value));
+        if (value instanceof String) return Optional.of(Integer.valueOf((String) value));
+        throw new IllegalArgumentException("Invalid int: " + value);
+    }
+
+    /**
+     * Look up a float value from Provider bundles with fallback to {@link #BUNDLE}.
+     * @param key the resource key
+     * @return the value from {@code bundle} if it exists, otherwise the value from {@link #BUNDLE}
+     * @throws MissingResourceException if the key is not defined in any of the bundles
+     */
+    public static float lookupFloat(String key) {
+        return getProviderValue(key, ComponentResources::asNumber).orElseGet(() -> (float) BUNDLE.getObject(key)).floatValue();
     }
 
     @Override
@@ -168,6 +182,7 @@ public class ComponentResources extends ListResourceBundle {
             { "calendar.tooltip.month.previous", "Previous month" },
             { "calendar.tooltip.year.next", "Next year" },
             { "calendar.tooltip.year.previous", "Previous year" },
+            { "calendar.currentDate.font.scale", 1.1f },
             { "calendarPanel.selected.border", Color.red },
             { "calendarPanel.month.background", new Color(255,255,224) },
             { "calendarPanel.month.foreground", Color.black },

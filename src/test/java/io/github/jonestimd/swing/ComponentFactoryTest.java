@@ -61,16 +61,6 @@ public class ComponentFactoryTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
 
     @Test
-    public void getStringReturnsValueFromInputBundle() throws Exception {
-        assertThat(new ComponentFactory(bundle).getString("menu1.mnemonicAndKey")).isEqualTo("MMenu");
-    }
-
-    @Test
-    public void getStringReturnsValueFromDefaultBundle() throws Exception {
-        assertThat(new ComponentFactory(bundle).getString("exceptionDialog.title")).isEqualTo("Unexpected Exception");
-    }
-
-    @Test
     public void newRadioButtonGroupSetsMnemonicAndName() throws Exception {
         JRadioButton[] group = ComponentFactory.newRadioButtonGroup(bundle,
                 "radio1.mnemonicAndName", "radio2.mnemonicAndName", "radio3.mnemonicAndName");

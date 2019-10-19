@@ -46,7 +46,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.swing.FocusManager;
 import javax.swing.JLabel;
@@ -85,11 +84,11 @@ public class PopupListField extends JPanel implements ValidatedComponent {
     protected static final int MIN_HEIGHT = new MultiSelectItem("x", true, false).getMinHeight() + 2;
     protected static final int HGAP = 2;
     protected static final int VGAP = 2;
+    protected static final String FOCUS_CURSOR = ComponentResources.lookupString("popupListField.focusCursor");
 
     private final List<String> items = new ArrayList<>();
     private final boolean showItemDelete;
     private final boolean opaqueItems;
-    private final ResourceBundle bundle;
     private final ListField textArea;
     private final JLabel focusCursor;
     private final Border popupBorder;
@@ -123,19 +122,17 @@ public class PopupListField extends JPanel implements ValidatedComponent {
      * @param validator predicate to use to validate items before adding them to the list
      * @param errorPainter painter for highlighting invalid items
      * @param popupBorder the border for the popup window
-     * @param bundle the {@code ResourceBundle} to use for configuration
      */
     public PopupListField(boolean showItemDelete, boolean opaqueItems, int popupRows, ItemValidator validator,
-            HighlightPainter errorPainter, Border popupBorder, ResourceBundle bundle, String requiredMessage) {
+            HighlightPainter errorPainter, Border popupBorder, String requiredMessage) {
         super(new FlowLayout(FlowLayout.LEADING, HGAP, VGAP));
         this.showItemDelete = showItemDelete;
         this.opaqueItems = opaqueItems;
-        this.focusCursor = new JLabel(ComponentResources.getString(bundle, "popupListField.focusCursor"));
+        this.focusCursor = new JLabel(FOCUS_CURSOR);
         this.popupBorder = popupBorder;
-        this.bundle = bundle;
         this.requiredMessage = requiredMessage;
         this.validationSupport = new ValidationSupport<>(this, value -> value.isEmpty() ? requiredMessage : null);
-        textArea = new ListField(validator, errorPainter, bundle, this::hidePopup, this::commitEdit);
+        textArea = new ListField(validator, errorPainter, this::hidePopup, this::commitEdit);
         textArea.setRows(popupRows);
         textArea.addFocusListener(new FocusAdapter() {
             @Override
@@ -223,7 +220,7 @@ public class PopupListField extends JPanel implements ValidatedComponent {
      * Create a new {@link MultiSelectItem} to add to the field.
      */
     protected MultiSelectItem newItem(String text) {
-        MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems, bundle);
+        MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems);
         item.addDeleteListener(this::onDeleteItem);
         return item;
     }
@@ -402,7 +399,6 @@ public class PopupListField extends JPanel implements ValidatedComponent {
         private Border popupBorder = new LineBorder(Color.BLACK, 1);
         private ItemValidator validator = ListField.DEFAULT_VALIDATOR;
         private HighlightPainter errorHighlighter = ListField.DEFAULT_ERROR_HIGHLIGHTER;
-        private ResourceBundle bundle = ComponentResources.BUNDLE;
         private String requiredMessage = null;
 
         public Builder(boolean showItemDelete, boolean opaqueItems) {
@@ -430,18 +426,13 @@ public class PopupListField extends JPanel implements ValidatedComponent {
             return this;
         }
 
-        public Builder bundle(ResourceBundle bundle) {
-            this.bundle = bundle;
-            return this;
-        }
-
         public Builder requiredMessage(String requiredMessage) {
             this.requiredMessage = requiredMessage;
             return  this;
         }
 
         public PopupListField build() {
-            return new PopupListField(showItemDelete, opaqueItems, popupRows, validator, errorHighlighter, popupBorder, bundle, requiredMessage);
+            return new PopupListField(showItemDelete, opaqueItems, popupRows, validator, errorHighlighter, popupBorder, requiredMessage);
         }
     }
 }

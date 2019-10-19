@@ -99,7 +99,7 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
      */
     public PopupListTableCellEditor(Function<T, String> format, Function<String, T> parser, ItemValidator validator,
             HighlightPainter errorPainter, int rows, ResourceBundle bundle) {
-        textArea = new ListField(validator, errorPainter, bundle, this::cancelCellEditing, this::commitEdit);
+        textArea = new ListField(validator, errorPainter, this::cancelCellEditing, this::commitEdit);
         textArea.setRows(rows);
         this.format = format;
         this.parser = parser;

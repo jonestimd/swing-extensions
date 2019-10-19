@@ -38,7 +38,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -68,21 +67,26 @@ import io.github.jonestimd.swing.ComponentResources;
 public class MultiSelectItem extends JLabel {
     public static final int GAP = 2;
     protected static final double CROSS_SIZE = 0.4;
+    protected static final int strokeWidth = ComponentResources.lookupInt("multiSelectItem.outline.strokeWidth");
+    protected static final Color outlineColor = ComponentResources.lookupColor("multiSelectItem.outline.color");
+    protected static final Color buttonColor = ComponentResources.lookupColor("multiSelectItem.button.color");
+    protected static final Color buttonHoverColor = ComponentResources.lookupColor("multiSelectItem.button.hoverColor");
+    protected static final int buttonSize = ComponentResources.lookupInt("multiSelectItem.button.size");
+    protected static final int buttonSizeSquared = buttonSize*buttonSize;
+    protected static final float buttonRoundness = ComponentResources.lookupFloat("multiSelectItem.outline.roundness.button");
+    protected static final float noButtonRoundness = ComponentResources.lookupFloat("multiSelectItem.outline.roundness.noButton");
 
-    protected final int strokeWidth;
-    protected final Color outlineColor;
+    protected static final Color background = ComponentResources.lookupColor("multiSelectItem.background");
+    protected static final Color selectedBackground = ComponentResources.lookupColor("multiSelectItem.selectedBackground");
+    private static final Function<MultiSelectItem, Color> defaultBackgroundSupplier = (item) -> item.selected ? selectedBackground : background;
+
     protected final float outlineRoundness;
-    protected final Color buttonColor;
-    protected final Color buttonHoverColor;
-    protected final int buttonSize;
-    protected final int buttonSizeSquared;
     protected final ButtonGeometry buttonGeometry;
     private final boolean showDelete;
     private boolean isOverButton = false;
     private final List<Consumer<MultiSelectItem>> deleteListeners = new ArrayList<>();
     private boolean selected;
-    private final Function<MultiSelectItem, Color> defaultBackgroundSupplier;
-    private Function<MultiSelectItem, Color> backgroundSupplier;
+    private Function<MultiSelectItem, Color> backgroundSupplier = defaultBackgroundSupplier;
 
     /**
      * Create a new {@code MultiSelectItem}.
@@ -91,31 +95,10 @@ public class MultiSelectItem extends JLabel {
      * @param opaque true to fill the outline with the background color
      */
     public MultiSelectItem(String text, boolean showDelete, boolean opaque) {
-        this(text, showDelete, opaque, ComponentResources.BUNDLE);
-    }
-
-    /**
-     * Create a new {@code MultiSelectItem}.
-     * @param text the text to display
-     * @param showDelete true to show the delete button
-     * @param opaque true to fill the outline with the background color
-     * @param bundle the {@code ResourceBundle} to use for configuration
-     */
-    public MultiSelectItem(String text, boolean showDelete, boolean opaque, ResourceBundle bundle) {
         super(text);
         this.showDelete = showDelete;
-        outlineColor = ComponentResources.getColor(bundle, "multiSelectItem.outline.color");
-        strokeWidth = ComponentResources.getInt(bundle, "multiSelectItem.outline.strokeWidth");
-        outlineRoundness = ComponentResources.getFloat(bundle, "multiSelectItem.outline.roundness." + (showDelete ? "button" : "noButton"));
-        buttonColor = ComponentResources.getColor(bundle, "multiSelectItem.button.color");
-        buttonHoverColor = ComponentResources.getColor(bundle, "multiSelectItem.button.hoverColor");
-        buttonSize = ComponentResources.getInt(bundle, "multiSelectItem.button.size");
-        buttonSizeSquared = buttonSize*buttonSize;
+        outlineRoundness = showDelete ? buttonRoundness : noButtonRoundness;
         buttonGeometry = new ButtonGeometry(buttonSize, strokeWidth);
-        final Color background = ComponentResources.getColor(bundle, "multiSelectItem.background");
-        final Color selectedBackground = ComponentResources.getColor(bundle, "multiSelectItem.selectedBackground");
-        backgroundSupplier = defaultBackgroundSupplier = (item) -> item.selected ? selectedBackground : background;
-
         setFont(getFont().deriveFont(Font.PLAIN));
         setOpaque(opaque);
         setBackground(background);
