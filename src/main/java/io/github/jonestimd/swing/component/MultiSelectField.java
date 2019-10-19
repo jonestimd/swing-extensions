@@ -21,20 +21,28 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.util.Streams;
+
+import static java.awt.KeyboardFocusManager.*;
 
 /**
  * A text component that displays a list of string values using {@link MultiSelectItem} and allows adding and
@@ -44,13 +52,15 @@ import io.github.jonestimd.util.Streams;
  */
 public class MultiSelectField extends JTextPane {
     public static final String ITEMS_PROPERTY = "items";
-    public static final Predicate<String> DEFAULT_IS_VALID_ITEM = (text) -> !text.trim().isEmpty(); // TODO pass current list
+    public static final BiPredicate<MultiSelectField, String> DEFAULT_IS_VALID_ITEM = (field, text) -> !text.trim().isEmpty();
+    private static final Color INVALID_ITEM_BACKGROUND = ComponentResources.lookupColor("multiSelectField.invalidItem.background");
     protected static final float ITEM_ALIGNMENT = 0.75f;
 
     private final List<MultiSelectItem> items = new ArrayList<>();
     private final boolean showItemDelete;
     private final boolean opaqueItems;
-    private final Predicate<String> isValidItem;
+    private final BiPredicate<MultiSelectField, String> isValidItem;
+    private final MutableAttributeSet invalidItemStyle = new SimpleAttributeSet();
 
     /**
      * Create a new {@code MultiSelectField}.
@@ -67,7 +77,7 @@ public class MultiSelectField extends JTextPane {
      * @param opaqueItems true to fill the list items with their background color
      * @param isValidItem predicate to use to validate items before adding them to the list
      */
-    public MultiSelectField(boolean showItemDelete, boolean opaqueItems, Predicate<String> isValidItem) {
+    public MultiSelectField(boolean showItemDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
         this.showItemDelete = showItemDelete;
         this.opaqueItems = opaqueItems;
         this.isValidItem = isValidItem;
@@ -76,10 +86,10 @@ public class MultiSelectField extends JTextPane {
             int end = getSelectionEnd();
             for (int i = 0; i < items.size(); i++) items.get(i).setSelected(i >= start && i < end);
         });
+        StyleConstants.setBackground(invalidItemStyle, INVALID_ITEM_BACKGROUND);
         getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-            }
+            public void insertUpdate(DocumentEvent e) {}
 
             @Override
             public void removeUpdate(DocumentEvent e) {
@@ -89,21 +99,12 @@ public class MultiSelectField extends JTextPane {
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
+            public void changedUpdate(DocumentEvent e) {}
         });
     }
 
-    /**
-     * Create a new {@code MultiSelectField}.
-     * @param items initial list of values
-     * @param showItemDelete true to show delete buttons on the list items
-     * @param opaqueItems true to fill the list items with their background color
-     * @param isValidItem predicate to use to validate items before adding them to the list
-     */
-    public MultiSelectField(List<String> items, boolean showItemDelete, boolean opaqueItems, Predicate<String> isValidItem) {
-        this(showItemDelete, opaqueItems, isValidItem);
-        items.forEach(this::addItem);
+    public MutableAttributeSet getInvalidItemStyle() {
+        return invalidItemStyle;
     }
 
     /**
@@ -154,7 +155,7 @@ public class MultiSelectField extends JTextPane {
     }
 
     protected void removeItems(int start, int count) {
-        int lastItem = Math.min(items.size(), start+count);
+        int lastItem = Math.min(items.size(), start + count);
         items.subList(start, lastItem).clear();
         firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
     }
@@ -177,7 +178,7 @@ public class MultiSelectField extends JTextPane {
             if (ks.getKeyCode() == KeyEvent.VK_ENTER) {
                 try {
                     String text = getText().substring(items.size());
-                    if (isValidItem.test(text)) {
+                    if (isValidItem.test(this, text)) {
                         getDocument().remove(items.size(), text.length());
                         addItem(text);
                     }
@@ -191,6 +192,42 @@ public class MultiSelectField extends JTextPane {
                 setSelectionStart(getDocument().getLength());
             }
         }
-        return super.processKeyBinding(ks, e, condition, pressed);
+        if (super.processKeyBinding(ks, e, condition, pressed)) {
+            String text = getText().substring(items.size());
+            if (!text.isEmpty()) {
+                AttributeSet attrs = isValidItem.test(this, text) ? SimpleAttributeSet.EMPTY : invalidItemStyle;
+                getStyledDocument().setCharacterAttributes(items.size(), text.length(), attrs, true);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public static class Builder {
+        protected final MultiSelectField field;
+
+        public Builder(boolean showDelete, boolean opaqueItems) {
+            this.field = new MultiSelectField(showDelete, opaqueItems);
+        }
+
+        public Builder(boolean showDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
+            this.field = new MultiSelectField(showDelete, opaqueItems, isValidItem);
+        }
+
+        public Builder setItems(Collection<String> items) {
+            field.setItems(items);
+            return this;
+        }
+
+        public Builder disableTab() {
+            field.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "disable-insert-tab");
+            field.setFocusTraversalKeys(FORWARD_TRAVERSAL_KEYS, Collections.singleton(KeyStroke.getKeyStroke("pressed TAB")));
+            field.setFocusTraversalKeys(BACKWARD_TRAVERSAL_KEYS, Collections.singleton(KeyStroke.getKeyStroke("shift pressed TAB")));
+            return this;
+        }
+
+        public MultiSelectField get() {
+            return field;
+        }
     }
 }

@@ -26,12 +26,18 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.function.BiPredicate;
 
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.text.StyleConstants;
 
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.JFrameRobotTest;
+import io.github.jonestimd.swing.component.MultiSelectField.Builder;
 import org.junit.Test;
 
+import static java.awt.KeyboardFocusManager.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class MultiSelectFieldTest extends JFrameRobotTest {
@@ -69,7 +75,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void jumpsToEndOnTextKeystrokesBetweenItems() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
         robot.enterText("pea");
@@ -82,7 +88,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void deleteRemovesAnItem() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
 
@@ -93,7 +99,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void deleteRemovesACharacter() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
         robot.enterText("peacch");
@@ -130,7 +136,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void backspaceRemovesACharacter() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
         robot.enterText("peacch");
@@ -143,7 +149,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void deleteButtonRemovesItem() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
 
         robot.click(multiSelectField, new Point(15, 12));
@@ -153,10 +159,40 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void removeItemIgnoresInvalidValue() throws Exception {
-        multiSelectField = new MultiSelectField(Arrays.asList("apple", "banana", "cherry"), true, true, MultiSelectField.DEFAULT_IS_VALID_ITEM);
+        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
 
         multiSelectField.removeItem(new MultiSelectItem("mango", true, true));
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
+    }
+
+    @Test
+    public void highlightsInvalidItemText() throws Exception {
+        multiSelectField = new MultiSelectField(false, false);
+
+        assertThat(StyleConstants.getBackground(multiSelectField.getInvalidItemStyle()))
+                .isEqualTo(ComponentResources.lookupColor("multiSelectField.invalidItem.background"));
+    }
+
+    @Test
+    public void builder_disableTab_setsFocusTraversalKeys() throws Exception {
+        multiSelectField = new Builder(false, true).disableTab().get();
+
+        assertThat(multiSelectField.getInputMap().get(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))).isNotEqualTo("insert-tab");
+        assertThat(multiSelectField.getFocusTraversalKeys(FORWARD_TRAVERSAL_KEYS)).containsExactly(KeyStroke.getKeyStroke("pressed TAB"));
+        assertThat(multiSelectField.getFocusTraversalKeys(BACKWARD_TRAVERSAL_KEYS)).containsExactly(KeyStroke.getKeyStroke("shift pressed TAB"));
+    }
+
+    @Test
+    public void builder_setsIsValidPredicate() throws Exception {
+        BiPredicate<MultiSelectField, String> isValid = (field, text) -> !field.getItems().contains(text);
+        multiSelectField = new Builder(false, true, isValid).setItems(Arrays.asList("one", "two")).get();
+        showWindow();
+
+        robot.focus(multiSelectField);
+        robot.enterText("one");
+        robot.pressAndReleaseKeys(KeyEvent.VK_ENTER);
+
+        assertThat(multiSelectField.getItems()).containsExactly("one", "two");
     }
 }
