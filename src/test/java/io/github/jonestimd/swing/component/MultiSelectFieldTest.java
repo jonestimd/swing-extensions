@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.function.BiPredicate;
 
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.text.StyleConstants;
 
@@ -46,7 +47,8 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
     @Override
     protected JPanel createContentPane() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(multiSelectField);
+        panel.add(multiSelectField, BorderLayout.CENTER);
+        panel.add(new JTextField(), BorderLayout.SOUTH);
         panel.setPreferredSize(new Dimension(400, 50));
         return panel;
     }
@@ -172,6 +174,58 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
         assertThat(StyleConstants.getBackground(multiSelectField.getInvalidItemStyle()))
                 .isEqualTo(ComponentResources.lookupColor("multiSelectField.invalidItem.background"));
+    }
+
+    @Test
+    public void addsItemOnFocusLost() throws Exception {
+        multiSelectField = new Builder(false, true).disableTab().get();
+        showWindow();
+        robot.focus(multiSelectField);
+        robot.enterText("peach");
+
+        robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+
+        assertThat(multiSelectField.getItems()).containsExactly("peach");
+        assertThat(multiSelectField.getText().substring(1)).isEmpty();
+    }
+
+    @Test
+    public void retainsFocusWithInvalidText() throws Exception {
+        multiSelectField = new Builder(false, true).disableTab().setYieldFocusOnError(false).get();
+        showWindow();
+        robot.focus(multiSelectField);
+        robot.enterText("  ");
+
+        robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+
+        assertThat(multiSelectField.isFocusOwner()).isTrue();
+    }
+
+    @Test
+    public void keepsTextOnFocusLost() throws Exception {
+        multiSelectField = new Builder(false, true).disableTab().setKeepTextOnFocusLost(true).get();
+        showWindow();
+        robot.focus(multiSelectField);
+        robot.enterText("peach");
+
+        robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+
+        assertThat(multiSelectField.isFocusOwner()).isFalse();
+        assertThat(multiSelectField.getItems()).isEmpty();
+        assertThat(multiSelectField.getText()).isEqualTo("peach");
+    }
+
+    @Test
+    public void clearsInvalidTextOnFocusLost() throws Exception {
+        multiSelectField = new Builder(false, true).disableTab().get();
+        showWindow();
+        robot.focus(multiSelectField);
+        robot.enterText("  ");
+
+        robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+
+        assertThat(multiSelectField.getItems()).isEmpty();
+        assertThat(multiSelectField.getText()).isEmpty();
     }
 
     @Test

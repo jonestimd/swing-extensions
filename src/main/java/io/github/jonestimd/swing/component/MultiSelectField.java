@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
@@ -61,6 +63,8 @@ public class MultiSelectField extends JTextPane {
     private final boolean opaqueItems;
     private final BiPredicate<MultiSelectField, String> isValidItem;
     private final MutableAttributeSet invalidItemStyle = new SimpleAttributeSet();
+    private boolean yieldFocusOnError = true;
+    private boolean keepTextOnFocusLost = false;
 
     /**
      * Create a new {@code MultiSelectField}.
@@ -75,7 +79,7 @@ public class MultiSelectField extends JTextPane {
      * Create a new {@code MultiSelectField}.
      * @param showItemDelete true to show delete buttons on the list items
      * @param opaqueItems true to fill the list items with their background color
-     * @param isValidItem predicate to use to validate items before adding them to the list
+     * @param isValidItem predicate to use to validate input text before adding an item to the list
      */
     public MultiSelectField(boolean showItemDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
         this.showItemDelete = showItemDelete;
@@ -86,6 +90,7 @@ public class MultiSelectField extends JTextPane {
             int end = getSelectionEnd();
             for (int i = 0; i < items.size(); i++) items.get(i).setSelected(i >= start && i < end);
         });
+        setInputVerifier(new InputValidator());
         StyleConstants.setBackground(invalidItemStyle, INVALID_ITEM_BACKGROUND);
         getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -103,6 +108,9 @@ public class MultiSelectField extends JTextPane {
         });
     }
 
+    /**
+     * Get the <code>AttributeSet</code> used to style invalid input text.
+     */
     public MutableAttributeSet getInvalidItemStyle() {
         return invalidItemStyle;
     }
@@ -119,10 +127,9 @@ public class MultiSelectField extends JTextPane {
      * Add an item to the list of values.
      */
     public void addItem(String text) {
-        addItem(newItem(text));
-    }
-
-    protected void addItem(MultiSelectItem item) {
+        MultiSelectItem item = newItem(text);
+        item.setAlignmentY(ITEM_ALIGNMENT);
+        item.addDeleteListener(this::removeItem);
         setSelectionStart(items.size());
         items.add(item);
         insertComponent(item);
@@ -133,10 +140,7 @@ public class MultiSelectField extends JTextPane {
      * Create a new {@link MultiSelectItem} to add to the field.
      */
     protected MultiSelectItem newItem(String text) {
-        MultiSelectItem item = new MultiSelectItem(text, showItemDelete, opaqueItems);
-        item.setAlignmentY(ITEM_ALIGNMENT);
-        item.addDeleteListener(this::removeItem);
-        return item;
+        return new MultiSelectItem(text, showItemDelete, opaqueItems);
     }
 
     /**
@@ -154,18 +158,36 @@ public class MultiSelectField extends JTextPane {
         }
     }
 
-    protected void removeItems(int start, int count) {
+    /**
+     * Remove a range of items.  Called when items are removed from the component's <code>Document</code>.
+     */
+    private void removeItems(int start, int count) {
         int lastItem = Math.min(items.size(), start + count);
         items.subList(start, lastItem).clear();
         firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
     }
 
-    /**
-     * Get the list of values.
-     * @return an immutable copy of the list of values.
-     */
+    /** Get the list of values. */
     public List<String> getItems() {
         return Streams.map(items, MultiSelectItem::getText);
+    }
+
+    /**
+     *  Check if the input text is valid.
+     */
+    public boolean isValidItem() {
+        return isValidItem.test(this, getText().substring(items.size()));
+    }
+
+    /** Add the current input text as an item. */
+    protected void addItem() {
+        try {
+            String text = getText().substring(items.size());
+            getDocument().remove(items.size(), text.length());
+            addItem(text);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -176,16 +198,8 @@ public class MultiSelectField extends JTextPane {
         if (pressed) {
             int selectionStart = getSelectionStart();
             if (ks.getKeyCode() == KeyEvent.VK_ENTER) {
-                try {
-                    String text = getText().substring(items.size());
-                    if (isValidItem.test(this, text)) {
-                        getDocument().remove(items.size(), text.length());
-                        addItem(text);
-                    }
-                    return true;
-                } catch (BadLocationException e1) {
-                    throw new RuntimeException(e1);
-                }
+                if (isValidItem()) addItem();
+                return true;
             }
             else if (ks.getKeyCode() != KeyEvent.VK_DELETE && ks.getKeyCode() != KeyEvent.VK_BACK_SPACE
                     && selectionStart < items.size() && Character.isDefined(e.getKeyChar())) {
@@ -195,7 +209,7 @@ public class MultiSelectField extends JTextPane {
         if (super.processKeyBinding(ks, e, condition, pressed)) {
             String text = getText().substring(items.size());
             if (!text.isEmpty()) {
-                AttributeSet attrs = isValidItem.test(this, text) ? SimpleAttributeSet.EMPTY : invalidItemStyle;
+                AttributeSet attrs = isValidItem() ? SimpleAttributeSet.EMPTY : invalidItemStyle;
                 getStyledDocument().setCharacterAttributes(items.size(), text.length(), attrs, true);
             }
             return true;
@@ -203,26 +217,93 @@ public class MultiSelectField extends JTextPane {
         return false;
     }
 
+    public boolean isYieldFocusOnError() {
+        return yieldFocusOnError;
+    }
+
+    /**
+     * Set the policy for yielding focus when the input text is invalid.
+     * If <code>false</code> then focus will be retained when input text is invalid.
+     * Defaults to <code>true</code>.
+     */
+    public void setYieldFocusOnError(boolean yieldFocusOnError) {
+        this.yieldFocusOnError = yieldFocusOnError;
+    }
+
+    public boolean isKeepTextOnFocusLost() {
+        return keepTextOnFocusLost;
+    }
+
+    /**
+     * Set the policy for handling input text when focus is lost.
+     * If <code>false</code> then valid input text will be added as an item and invalid input text will be cleared.
+     * Defaults to <code>false</code>.
+     */
+    public void setKeepTextOnFocusLost(boolean keepTextOnFocusLost) {
+        this.keepTextOnFocusLost = keepTextOnFocusLost;
+    }
+
+    protected class InputValidator extends InputVerifier {
+        @Override
+        public boolean verify(JComponent input) {
+            return getText().length() == items.size() || isValidItem();
+        }
+
+        @Override
+        public boolean shouldYieldFocus(JComponent input) {
+            try {
+                if (super.shouldYieldFocus(input)) {
+                    if (!isKeepTextOnFocusLost() && getText().length() > items.size()) addItem();
+                    return true;
+                }
+                if (isYieldFocusOnError() && !isKeepTextOnFocusLost()) {
+                    int itemCount = items.size();
+                    getDocument().remove(itemCount, getText().length() - itemCount);
+                }
+                return isYieldFocusOnError();
+            } catch (BadLocationException ex) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Helper class for building a {@link MultiSelectField}.
+     */
     public static class Builder {
         protected final MultiSelectField field;
 
+        /** @see MultiSelectField#MultiSelectField(boolean, boolean) */
         public Builder(boolean showDelete, boolean opaqueItems) {
             this.field = new MultiSelectField(showDelete, opaqueItems);
         }
 
+        /** @see MultiSelectField#MultiSelectField(boolean, boolean, BiPredicate) */
         public Builder(boolean showDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
             this.field = new MultiSelectField(showDelete, opaqueItems, isValidItem);
         }
 
+        /** Initialize the list of values in the field. */
         public Builder setItems(Collection<String> items) {
             field.setItems(items);
             return this;
         }
 
+        /** Disable <code>tab</code> as text input and enable focus traversal using <code>tab</code> and <code>shift tab</code>. */
         public Builder disableTab() {
             field.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "disable-insert-tab");
             field.setFocusTraversalKeys(FORWARD_TRAVERSAL_KEYS, Collections.singleton(KeyStroke.getKeyStroke("pressed TAB")));
             field.setFocusTraversalKeys(BACKWARD_TRAVERSAL_KEYS, Collections.singleton(KeyStroke.getKeyStroke("shift pressed TAB")));
+            return this;
+        }
+
+        public Builder setYieldFocusOnError(boolean yieldFocusOnError) {
+            field.setYieldFocusOnError(yieldFocusOnError);
+            return this;
+        }
+
+        public Builder setKeepTextOnFocusLost(boolean keepTextOnFocusLost) {
+            field.setKeepTextOnFocusLost(keepTextOnFocusLost);
             return this;
         }
 
