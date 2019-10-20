@@ -216,6 +216,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         assertThat(highlights[1].getEndOffset()).isEqualTo(8);
 
         robot.pressAndReleaseKeys(KeyEvent.VK_BACK_SPACE, KeyEvent.VK_BACK_SPACE);
+        robot.waitForIdle();
 
         highlights = textArea.getHighlighter().getHighlights();
         assertThat(highlights).hasSize(1);
@@ -234,6 +235,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.click(popupListField);
 
         robot.enterText("Apple\nx\n\n");
+        robot.waitForIdle();
 
         JTextArea textArea = robot.finder().findByType(JTextArea.class);
         Highlight[] highlights = textArea.getHighlighter().getHighlights();
@@ -250,6 +252,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.click(popupListField);
 
         robot.enterText("Apple\nx\n\n");
+        robot.waitForIdle();
 
         JTextArea textArea = robot.finder().findByType(JTextArea.class);
         Highlight[] highlights = textArea.getHighlighter().getHighlights();
@@ -267,6 +270,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.enterText("Apple\nBanana");
 
         robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
 
         assertThat(popupWindow.isVisible()).isFalse();
         assertThat(popupListField.getItems()).containsExactly("Apple", "Banana");
@@ -281,6 +285,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.enterText("Apple\n\n");
 
         robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
 
         assertThat(popupWindow.isVisible()).isTrue();
         assertThat(popupListField.getItems()).isEmpty();
@@ -295,6 +300,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.enterText("Apple\nBanana");
 
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
+        robot.waitForIdle();
 
         assertThat(popupWindow.isVisible()).isFalse();
         assertThat(popupListField.getItems()).isEmpty();
@@ -307,6 +313,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         robot.focus(field);
 
         robot.pressAndReleaseKey(KeyEvent.VK_TAB);
+        robot.waitForIdle();
 
         Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
         assertThat(popupWindow.isVisible()).isTrue();
@@ -322,6 +329,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         assertThat(popupWindow.isVisible()).isTrue();
 
         robot.click(field);
+        robot.waitForIdle();
 
         assertThat(popupWindow.isVisible()).isFalse();
     }
@@ -337,6 +345,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         assertThat(popupWindow.isVisible()).isFalse();
 
         robot.pressAndReleaseKey(KeyEvent.VK_SPACE);
+        robot.waitForIdle();
 
         assertThat(popupWindow.isVisible()).isTrue();
     }
@@ -347,6 +356,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         popupListField = PopupListField.builder(true, true).popupBorder(border).build();
         showWindow();
         robot.click(popupListField);
+        robot.waitForIdle();
 
         JScrollPane scrollPane = robot.finder().findByType(JScrollPane.class);
 
