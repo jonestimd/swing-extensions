@@ -45,6 +45,8 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     @Before
     public void createRobot() throws Exception {
         robot = BasicRobot.robotWithNewAwtHierarchy();
+        robot.settings().delayBetweenEvents(10);
+        robot.settings().eventPostingDelay(10);
     }
 
     @After
