@@ -57,7 +57,7 @@ public class UnsavedChangeDecoratorTest {
 
             decorator.prepareRenderer(table, renderer, 0, 0);
 
-            assertThat(renderer.getBackground()).isEqualTo(new Color(190, 129, 129));
+            assertThat(renderer.getBackground()).isEqualTo(new Color(191, 130, 130));
             assertThat(renderer.getFont().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
         });
     }
@@ -71,7 +71,7 @@ public class UnsavedChangeDecoratorTest {
 
         decorator.prepareRenderer(table, renderer, 0, 0);
 
-        assertThat(renderer.getBackground()).isEqualTo(new Color(10, 190, 190));
+        assertThat(renderer.getBackground()).isEqualTo(new Color(0, 192, 192));
         assertThat(renderer.getFont()).isSameAs(font);
     }
 }

@@ -60,6 +60,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
 
         robot.enterText("apple\nbanana\ncherry\n");
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
     }
@@ -71,6 +72,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
 
         robot.enterText("apple\nbanana\n  \ncherry\n");
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "  cherry");
     }
@@ -84,6 +86,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.pressAndReleaseKeys(KeyEvent.VK_HOME, KeyEvent.VK_RIGHT);
 
         robot.enterText("ch\n");
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry", "peach");
     }
@@ -95,6 +98,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
 
         robot.pressAndReleaseKeys(KeyEvent.VK_HOME, KeyEvent.VK_DELETE);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("banana", "cherry");
     }
@@ -107,6 +111,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("peacch");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, KeyEvent.VK_DELETE);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
         assertThat(multiSelectField.getText()).endsWith("peach");
@@ -120,6 +125,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
 
         robot.pressAndReleaseKeys(KeyEvent.VK_HOME, KeyEvent.VK_BACK_SPACE);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
     }
@@ -132,6 +138,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
 
         robot.pressAndReleaseKeys(KeyEvent.VK_END, KeyEvent.VK_BACK_SPACE);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana");
     }
@@ -144,6 +151,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("peacch");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_LEFT, KeyEvent.VK_BACK_SPACE);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
         assertThat(multiSelectField.getText()).endsWith("peach");
@@ -155,6 +163,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         showWindow();
 
         robot.click(multiSelectField, new Point(15, 12));
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("banana", "cherry");
     }
@@ -184,6 +193,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("peach");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("peach");
         assertThat(multiSelectField.getText().substring(1)).isEmpty();
@@ -197,6 +207,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("  ");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.isFocusOwner()).isTrue();
     }
@@ -209,6 +220,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("peach");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.isFocusOwner()).isFalse();
         assertThat(multiSelectField.getItems()).isEmpty();
@@ -223,6 +235,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.enterText("  ");
 
         robot.pressAndReleaseKeys(KeyEvent.VK_TAB);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).isEmpty();
         assertThat(multiSelectField.getText()).isEmpty();
@@ -246,6 +259,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.focus(multiSelectField);
         robot.enterText("one");
         robot.pressAndReleaseKeys(KeyEvent.VK_ENTER);
+        robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).containsExactly("one", "two");
     }

@@ -194,7 +194,7 @@ public class FilterFieldTest {
 //            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
 //            UIManager.setLookAndFeel("javax.swing.plaf.synth.SynthLookAndFeel");
             SwingUtilities.invokeAndWait(() -> {
-                FilterField<?> filterField = new ComponentFactory().newFilterField(term -> term::contains, 3, 1);
+                FilterField<String> filterField = new ComponentFactory().newFilterField(term -> term::contains, 3, 1);
 //                JTextField filterField = new ComponentFactory().newFilterField();
                 JFrame frame = new JFrame("Filter FIeld");
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
