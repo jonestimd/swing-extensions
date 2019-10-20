@@ -26,8 +26,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.JCheckBox;
@@ -42,6 +44,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import com.google.common.collect.ImmutableSet;
 import io.github.jonestimd.collection.MapBuilder;
 import io.github.jonestimd.swing.LabelBuilder;
 
@@ -56,7 +59,9 @@ import static java.awt.GridBagConstraints.*;
  * <li><code>anchor = WEST</code>
  * </ul>
  * The constraints are updated using a {@link GridBagFormula} when each component is added.
- * <p>The following components are automatically wrapped in a {@link JScrollPane}:
+ * <p>By default, the following components are automatically wrapped in a {@link JScrollPane}.
+ * Automatic wrapping of components in <code>JScrollPane</code> can be enabled/disabled using
+ * {@link #useScrollPane(Class)} and {@link #noUseScrollPane(Class)}
  * <ul>
  *     <li>{@link JTable}</li>
  *     <li>{@link JList}</li>
@@ -86,14 +91,20 @@ public class GridBagBuilder {
         .put(JPanel.class, FormElement.BUTTON_GROUP)
         .put(Box.class, FormElement.BUTTON_GROUP)
         .get();
+    private static final Set<Class<?>> USE_SCROLL_PANE = new ImmutableSet.Builder<Class<?>>()
+            .add(JTable.class)
+            .add(JTextArea.class)
+            .add(JList.class).build();
 
     private final Map<Class<?>, GridBagFormula> fieldConstrains;
+    private final Set<Class<?>> useScrollPane;
     private ResourceBundle bundle;
     private String resourcePrefix;
     private GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1d, 0d, WEST, HORIZONTAL, new Insets(RELATED_GAP, 0, 0, RELATED_GAP), 0, 0);
     private Container container;
     private final int columns;
     private JLabel lastLabel;
+    private int verticalGap = RELATED_GAP;
 
     /**
      * Create a new builder using 2 columns and the default {@link GridBagFormula}s.
@@ -128,11 +139,28 @@ public class GridBagBuilder {
     public GridBagBuilder(Container container, ResourceBundle bundle, String resourcePrefix,
             int columns, Map<Class<?>, GridBagFormula> fieldConstraints) {
         this.fieldConstrains = fieldConstraints;
+        this.useScrollPane = new HashSet<>(USE_SCROLL_PANE);
         this.bundle = bundle;
         this.resourcePrefix = resourcePrefix;
         this.columns = columns;
         this.container = container;
         container.setLayout(new GridBagLayout());
+    }
+
+    /**
+     * Automatically wrap instances of the class in a {@link JScrollPane}.
+     */
+    public GridBagBuilder useScrollPane(Class<? extends JComponent> componentClass) {
+        useScrollPane.add(componentClass);
+        return this;
+    }
+
+    /**
+     * Disable automatic wrapping of instances of the class in a {@link JScrollPane}.
+     */
+    public GridBagBuilder noUseScrollPane(Class<? extends JComponent> componentClass) {
+        useScrollPane.remove(componentClass);
+        return this;
     }
 
     /**
@@ -152,7 +180,7 @@ public class GridBagBuilder {
      * @return this builder
      */
     public GridBagBuilder relatedGap() {
-        return insets(RELATED_GAP, 0, 0, RELATED_GAP);
+        return insets(verticalGap, 0, 0, RELATED_GAP);
     }
 
     /**
@@ -160,7 +188,8 @@ public class GridBagBuilder {
      * @return this builder
      */
     public GridBagBuilder unrelatedVerticalGap() {
-        return insets(UNRELATED_GAP, 0, 0, RELATED_GAP);
+        verticalGap = UNRELATED_GAP;
+        return relatedGap();
     }
 
     /**
@@ -227,7 +256,7 @@ public class GridBagBuilder {
      * @return the component
      */
     public  <T extends JComponent> T append(T field, GridBagFormula formula) {
-        if (field instanceof JTextArea || field instanceof JTable || field instanceof JList) {
+        if (useScrollPane.stream().anyMatch(clazz -> clazz.isInstance(field))) {
             container.add(new JScrollPane(field), formula.setConstraints(gbc));
         }
         else {
@@ -255,6 +284,7 @@ public class GridBagBuilder {
      * Otherwise, moves to the first column of the next row.
      */
     public void nextCell() {
+        verticalGap = RELATED_GAP;
         gbc.gridx += gbc.gridwidth;
         if (gbc.gridx >= columns) {
             gbc.gridx = 0;
