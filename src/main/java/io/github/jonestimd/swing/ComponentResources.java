@@ -201,8 +201,8 @@ public class ComponentResources extends ListResourceBundle {
             { "multiSelectField.invalidItem.background", Color.PINK },
 
             { "popupListField.focusCursor", "\u23f5" },
-            { "popupListField.commitKey", "ctrl pressed ENTER" },
-            { "popupListField.cancelKey", "pressed ESCAPE" },
+            { "listField.commitKey", "ctrl pressed ENTER" },
+            { "listField.cancelKey", "pressed ESCAPE" },
         };
     }
 }

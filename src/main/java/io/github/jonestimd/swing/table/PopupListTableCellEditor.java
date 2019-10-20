@@ -36,7 +36,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Function;
 
 import javax.swing.AbstractCellEditor;
@@ -49,7 +48,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.Highlighter.HighlightPainter;
 
-import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.component.ListField;
 import io.github.jonestimd.swing.component.ListField.ItemValidator;
 import io.github.jonestimd.util.Streams;
@@ -95,10 +93,9 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
      * @param validator a validator for items in the popup editor
      * @param errorPainter a highlighter for indicating errors in the popup editor
      * @param rows the number of rows to display in the popup editor
-     * @param bundle the resource bundle to use to configure the {@link ListField}
      */
     public PopupListTableCellEditor(Function<T, String> format, Function<String, T> parser, ItemValidator validator,
-            HighlightPainter errorPainter, int rows, ResourceBundle bundle) {
+            HighlightPainter errorPainter, int rows) {
         textArea = new ListField(validator, errorPainter, this::cancelCellEditing, this::commitEdit);
         textArea.setRows(rows);
         this.format = format;
@@ -220,7 +217,6 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
         private ItemValidator validator = ListField.DEFAULT_VALIDATOR;
         private HighlightPainter errorPainter = ListField.DEFAULT_ERROR_HIGHLIGHTER;
         private int rows = ListField.DEFAULT_ROWS;
-        private ResourceBundle bundle = ComponentResources.BUNDLE;
 
         public Builder(Function<T, String> format, Function<String, T> parser) {
             this.format = format;
@@ -242,13 +238,8 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
             return this;
         }
 
-        public Builder<T> bundle(ResourceBundle bundle) {
-            this.bundle = bundle;
-            return this;
-        }
-
         public PopupListTableCellEditor<T> build() {
-            return new PopupListTableCellEditor<>(format, parser, validator, errorPainter, rows, bundle);
+            return new PopupListTableCellEditor<>(format, parser, validator, errorPainter, rows);
         }
     }
 }

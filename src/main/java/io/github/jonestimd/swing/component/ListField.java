@@ -49,11 +49,11 @@ import static io.github.jonestimd.swing.ComponentResources.*;
  * <p/>
  * The following resources are used to configure the behavior of this component and can be overridden by a custom resource bundle.
  * <ul>
- *     <li><strong>popupListField.commitKey</strong> - string definition of the commit key stroke</li>
- *     <li><strong>popupListField.cancelKey</strong> - string definition of the cancel key stroke</li>
+ *     <li><strong>listField.commitKey</strong> - string definition of the commit key stroke</li>
+ *     <li><strong>listField.cancelKey</strong> - string definition of the cancel key stroke</li>
  * </ul>
  * <p/>
- * Used by {@link PopupListField} and {@link PopupListTableCellEditor}.
+ * Used by {@link PopupListTableCellEditor}.
  */
 public class ListField extends JTextArea {
     public static final String VALID_PROPERTY = "valid";
@@ -71,8 +71,8 @@ public class ListField extends JTextArea {
             // can't render
         }
     };
-    private static final KeyStroke COMMIT_KEY = KeyStroke.getKeyStroke(lookupString("popupListField.commitKey"));
-    private static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke(lookupString("popupListField.cancelKey"));
+    private static final KeyStroke COMMIT_KEY = KeyStroke.getKeyStroke(lookupString("listField.commitKey"));
+    private static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke(lookupString("listField.cancelKey"));
     private final ItemValidator validator;
     private final HighlightPainter errorPainter;
     private final Runnable cancelCallback;
