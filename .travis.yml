@@ -4,7 +4,7 @@ services:
 dist: bionic
 language: java
 jdk:
-  - oraclejdk10
+  - oraclejdk11
   - openjdk10
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
