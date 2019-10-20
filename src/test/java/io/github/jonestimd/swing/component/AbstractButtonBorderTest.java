@@ -38,26 +38,19 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.component.AbstractButtonBorder.Side;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class AbstractButtonBorderTest {
     private final Dimension fieldSize = new Dimension(150, 20);
     private final Insets fieldInsets = new Insets(2, 2, 2, 2);
-    @Mock
-    private JTextField field = new JTextField();
-    @Mock
-    private JPanel popupPanel;
+    private JTextField field = mock(JTextField.class);
+    private JPanel popupPanel = mock(JPanel.class);
 
     private Boolean initializedPopup;
     private Point popupLocation;
@@ -113,7 +106,7 @@ public class AbstractButtonBorderTest {
         TestButtonBorder border = new TestButtonBorder(field, new JPanel(), Side.RIGHT);
         border.setTooltip("tooltip");
         triggerCreatePopupWindow();
-        ArgumentCaptor<MouseMotionListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<MouseMotionListener> listener = ArgumentCaptor.forClass(MouseMotionListener.class);
         verify(field).addMouseMotionListener(listener.capture());
 
         listener.getValue().mouseMoved(new MouseEvent(field, -1, 0L, 0, fieldSize.width, 0, 0, false));
@@ -126,7 +119,7 @@ public class AbstractButtonBorderTest {
         TestButtonBorder border = new TestButtonBorder(field, new JPanel(), Side.RIGHT);
         border.setTooltip("tooltip");
         triggerCreatePopupWindow();
-        ArgumentCaptor<MouseMotionListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<MouseMotionListener> listener = ArgumentCaptor.forClass(MouseMotionListener.class);
         verify(field).addMouseMotionListener(listener.capture());
 
         listener.getValue().mouseMoved(newMouseEvent(field, fieldSize.width - fieldSize.height));
@@ -136,7 +129,7 @@ public class AbstractButtonBorderTest {
 
     private void triggerCreatePopupWindow() {
         when(field.isShowing()).thenReturn(true);
-        ArgumentCaptor<HierarchyListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<HierarchyListener> listener = ArgumentCaptor.forClass(HierarchyListener.class);
         verify(field).addHierarchyListener(listener.capture());
         listener.getValue().hierarchyChanged(new HierarchyEvent(field, -1, field, new JPanel(), HierarchyEvent.SHOWING_CHANGED));
     }

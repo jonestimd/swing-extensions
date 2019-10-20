@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +58,6 @@ public class ComponentBinderTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void onChangeCallsHandler() throws Exception {
         Runnable handler = mock(Runnable.class);
 

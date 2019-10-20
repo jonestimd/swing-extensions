@@ -44,7 +44,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.swing.BackgroundTask.*;
 import static org.assertj.core.api.Assertions.*;
@@ -209,7 +209,7 @@ public class BackgroundTaskTest {
         JTextArea textArea = robot.finder().findByType(dialog.getContentPane(), JTextArea.class);
         assertThat(textArea.getText()).contains(message);
         SwingUtilities.invokeAndWait(dialog::dispose);
-        verifyZeroInteractions(consumer);
+        verifyNoInteractions(consumer);
     }
 
     @Test

@@ -36,10 +36,10 @@ import io.github.jonestimd.util.Streams;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,7 +68,6 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
         });
     }
 
-    @SuppressWarnings("unchecked")
     private void checkModel(LazyLoadComboBoxModel<TestBean> model, TestBean... otherBeans) {
         List<TestBean> items = Streams.toList(model);
         assertThat(items).hasSize(comboBoxValues.size() + 1 + otherBeans.length);
@@ -147,7 +146,7 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
 
             assertThat(editor.stopCellEditing()).isFalse();
 
-            verifyZeroInteractions(saveService);
+            verifyNoInteractions(saveService);
         });
     }
 

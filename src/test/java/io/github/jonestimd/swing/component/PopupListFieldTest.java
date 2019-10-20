@@ -411,7 +411,7 @@ public class PopupListFieldTest extends JFrameRobotTest {
         popupListField.removeValidationListener(listener);
         popupListField.setItems(Collections.singletonList("item"));
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     public static void main(String[] args) {

@@ -394,7 +394,7 @@ public class BufferedHeaderDetailTableModelTest {
         model.removeBean(new TestSummaryBean());
 
         assertThat(model.getRowCount()).isEqualTo(6);
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -427,8 +427,8 @@ public class BufferedHeaderDetailTableModelTest {
 
         model.queueAdd(new TestSummaryBean(new TestDetailBean()));
 
-        assertThat(model.isPendingAdd(0));
-        assertThat(model.isPendingAdd(1));
+        assertThat(model.isPendingAdd(0)).isTrue();
+        assertThat(model.isPendingAdd(1)).isTrue();
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(1, 0)).isTrue();

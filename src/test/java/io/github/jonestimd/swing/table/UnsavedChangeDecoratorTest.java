@@ -26,12 +26,13 @@ import java.awt.Font;
 import java.awt.font.TextAttribute;
 
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.swing.table.model.ChangeBufferTableModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,14 +50,16 @@ public class UnsavedChangeDecoratorTest {
 
     @Test
     public void setsStrikeoutFontForPendingDelete() throws Exception {
-        when(table.getModel()).thenReturn(model);
-        when(model.isPendingDelete(0)).thenReturn(true);
-        renderer.setBackground(Color.lightGray);
+        SwingUtilities.invokeAndWait(() -> {
+            when(table.getModel()).thenReturn(model);
+            when(model.isPendingDelete(0)).thenReturn(true);
+            renderer.setBackground(Color.lightGray);
 
-        decorator.prepareRenderer(table, renderer, 0, 0);
+            decorator.prepareRenderer(table, renderer, 0, 0);
 
-        assertThat(renderer.getBackground()).isEqualTo(new Color(190, 129, 129));
-        assertThat(renderer.getFont().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
+            assertThat(renderer.getBackground()).isEqualTo(new Color(190, 129, 129));
+            assertThat(renderer.getFont().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
+        });
     }
 
     @Test

@@ -12,7 +12,7 @@ import org.mockito.ArgumentCaptor;
 
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class ValidatedBeanListTableModelTest {

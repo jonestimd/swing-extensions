@@ -61,9 +61,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import static java.awt.event.InputEvent.*;
 import static java.awt.event.KeyEvent.*;
 import static java.util.Collections.*;
 import static javax.swing.JComponent.*;
@@ -319,7 +319,7 @@ public class DecoratedTableTest {
             final KeyEvent event = new KeyEvent(table, KEY_RELEASED, 0L, 0, VK_ENTER, CHAR_UNDEFINED);
             table.processKeyBinding(KeyStroke.getKeyStroke("released ENTER"), event, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true);
 
-            verifyZeroInteractions(cellEditor);
+            verifyNoInteractions(cellEditor);
         });
     }
 

@@ -42,7 +42,7 @@ import javax.swing.JTextField;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.awt.GridBagConstraints.*;
 import static org.assertj.core.api.Assertions.*;

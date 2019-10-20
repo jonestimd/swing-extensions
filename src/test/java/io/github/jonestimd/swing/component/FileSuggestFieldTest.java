@@ -43,22 +43,17 @@ import io.github.jonestimd.util.JavaPredicates;
 import io.github.jonestimd.util.Streams;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FileSuggestFieldTest {
     private final int SEPARATOR_KEY_CODE = KeyStroke.getKeyStroke(File.separatorChar).getKeyCode();
 
     @Rule
     public final SwingEdtRule swingEdtRule = new SwingEdtRule();
 
-    @Mock
-    private BasicComboBoxUI comboBoxUI;
+    private BasicComboBoxUI comboBoxUI = mock(BasicComboBoxUI.class);
     private File startDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
     private String requiredMessage = "File is required";
 

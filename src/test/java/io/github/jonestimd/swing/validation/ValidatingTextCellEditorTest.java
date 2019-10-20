@@ -40,16 +40,16 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class ValidatingTextCellEditorTest {
     @Mock
     private Validator<String> validator;
@@ -136,7 +136,7 @@ public class ValidatingTextCellEditorTest {
     public void addsListenerWhenViewportChanges() throws Exception {
         JViewport viewport2 = mock(JViewport.class);
         when(table.getParent()).thenReturn(viewport, viewport2);
-        final ValidatingTextCellEditor editor = new ValidatingTextCellEditor(table, validator);
+        new ValidatingTextCellEditor(table, validator);
         verify(viewport).addComponentListener(componentListener.capture());
         verify(table).addHierarchyListener(hierarchyListener.capture());
 

@@ -47,12 +47,10 @@ import javax.swing.text.Highlighter;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.filter.FilterParser;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -185,20 +183,8 @@ public class FilterFieldTest {
     }
 
     private PropertyChangeEvent event(Object oldValue, Object newValue) {
-        return argThat(new BaseMatcher<PropertyChangeEvent>() {
-            @Override
-            public boolean matches(Object o) {
-                PropertyChangeEvent event = (PropertyChangeEvent) o;
-                return event.getPropertyName().equals(FilterField.PREDICATE_PROPERTY) &&
-                        Objects.equals(oldValue, event.getOldValue()) && Objects.equals(newValue, event.getNewValue());
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("PropertyChangeEvent:oldValue=").appendValue(oldValue)
-                        .appendText(",newValue=").appendValue(newValue);
-            }
-        });
+        return argThat(event -> event.getPropertyName().equals(FilterField.PREDICATE_PROPERTY) &&
+                Objects.equals(oldValue, event.getOldValue()) && Objects.equals(newValue, event.getNewValue()));
     }
 
     public static void main(String[] args) {

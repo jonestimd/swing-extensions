@@ -41,15 +41,13 @@ import javax.swing.text.JTextComponent;
 
 import com.google.common.collect.Lists;
 import io.github.jonestimd.swing.validation.RequiredValidator;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.*;
@@ -112,18 +110,7 @@ public class BeanListComboBoxTest {
     }
 
     private ItemEvent itemEvent(Object item, int stateChange) {
-        return argThat(new BaseMatcher<ItemEvent>() {
-            @Override
-            public boolean matches(Object o) {
-                ItemEvent event = (ItemEvent) o;
-                return Objects.equals(event.getItem(), item) && event.getStateChange() == stateChange;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("ItemEvent:item=").appendValue(item);
-            }
-        });
+        return argThat(event -> Objects.equals(event.getItem(), item) && event.getStateChange() == stateChange);
     }
 
     @Test
@@ -134,7 +121,7 @@ public class BeanListComboBoxTest {
 
         comboBox.validateValue();
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -147,7 +134,7 @@ public class BeanListComboBoxTest {
         comboBox.validateValue();
 
         assertThat(comboBox.getValidationMessages()).isNull();
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -175,7 +162,7 @@ public class BeanListComboBoxTest {
 
         component.paint(g);
 
-        verifyZeroInteractions(g);
+        verifyNoInteractions(g);
     }
 
     @Test
@@ -205,7 +192,7 @@ public class BeanListComboBoxTest {
 
         comboBox.setSelectedIndex(0);
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -237,21 +224,8 @@ public class BeanListComboBoxTest {
     }
 
     private PropertyChangeEvent propertyEvent(String property, Object oldValue, Object newValue) {
-        return argThat(new BaseMatcher<PropertyChangeEvent>() {
-            @Override
-            public boolean matches(Object o) {
-                PropertyChangeEvent event = (PropertyChangeEvent) o;
-                return property.equals(event.getPropertyName()) &&
-                        Objects.equals(event.getOldValue(), oldValue) && Objects.equals(event.getNewValue(), newValue);
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("PropertyChangeEvent:name=").appendValue(property)
-                        .appendText(",oldValue=").appendValue(oldValue)
-                        .appendText(",newValue=").appendValue(newValue);
-            }
-        });
+        return argThat(event -> property.equals(event.getPropertyName()) &&
+                Objects.equals(event.getOldValue(), oldValue) && Objects.equals(event.getNewValue(), newValue));
     }
 
     @Test

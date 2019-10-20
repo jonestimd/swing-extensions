@@ -18,7 +18,7 @@ dependencies {
 
     testCompile( group: 'junit', name: 'junit', version: '4.7' )
     testCompile( group: 'org.assertj', name: 'assertj-swing-junit', version: '3.8.0' )
-    testCompile( group: 'org.mockito', name: 'mockito-core', version: '1.9.0' )
+    testCompile( group: 'org.mockito', name: 'mockito-core', version: '3.1.0' )
 
     testRuntime( group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.5.3' )
     testRuntime( group: 'com.jgoodies', name: 'jgoodies-common', version: '1.7.0' )
