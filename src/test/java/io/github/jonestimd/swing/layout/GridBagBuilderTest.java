@@ -92,6 +92,23 @@ public class GridBagBuilderTest {
     }
 
     @Test
+    public void overlayFields() throws Exception {
+        GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.");
+
+        JTextField field1 = builder.append("field1", new JTextField());
+        JTextField field2 = builder.overlay(new JTextField());
+
+        assertThat(panel.getComponentCount()).isEqualTo(3);
+        JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
+        assertThat(panel.getComponent(1)).isSameAs(field1);
+        assertThat(panel.getComponent(2)).isSameAs(field2);
+        verifyConstraints(getConstraints(label), textFieldLabelConstraints);
+        verifyConstraints(getConstraints(field1), textFieldConstraints);
+        verifyConstraints(getConstraints(field2), textFieldConstraints);
+    }
+
+    @Test
     public void unrelatedVerticalGap() throws Exception {
         GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.");
         builder.append("field1", new JTextField());

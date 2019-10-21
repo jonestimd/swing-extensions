@@ -101,10 +101,11 @@ public class GridBagBuilder {
     private ResourceBundle bundle;
     private String resourcePrefix;
     private GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1d, 0d, WEST, HORIZONTAL, new Insets(RELATED_GAP, 0, 0, RELATED_GAP), 0, 0);
+    private int lastx = 0;
+    private int lasty = 0;
     private Container container;
     private final int columns;
     private JLabel lastLabel;
-    private int verticalGap = RELATED_GAP;
 
     /**
      * Create a new builder using 2 columns and the default {@link GridBagFormula}s.
@@ -180,7 +181,7 @@ public class GridBagBuilder {
      * @return this builder
      */
     public GridBagBuilder relatedGap() {
-        return insets(verticalGap, 0, 0, RELATED_GAP);
+        return insets(RELATED_GAP, 0, 0, RELATED_GAP);
     }
 
     /**
@@ -188,8 +189,7 @@ public class GridBagBuilder {
      * @return this builder
      */
     public GridBagBuilder unrelatedVerticalGap() {
-        verticalGap = UNRELATED_GAP;
-        return relatedGap();
+        return insets(UNRELATED_GAP, 0, 0, RELATED_GAP);
     }
 
     /**
@@ -267,6 +267,18 @@ public class GridBagBuilder {
     }
 
     /**
+     * Add a component in the same location as the previous component.
+     * @return the component
+     */
+    public <T extends JComponent> T overlay(T field) {
+        gbc.gridx = lastx;
+        gbc.gridy = lasty;
+        container.add(field, gbc);
+        nextCell();
+        return field;
+    }
+
+    /**
      * Append a group of radio buttons in a horizontal box.
      * @param buttons the buttons to append
      */
@@ -284,7 +296,8 @@ public class GridBagBuilder {
      * Otherwise, moves to the first column of the next row.
      */
     public void nextCell() {
-        verticalGap = RELATED_GAP;
+        lastx = gbc.gridx;
+        lasty = gbc.gridy;
         gbc.gridx += gbc.gridwidth;
         if (gbc.gridx >= columns) {
             gbc.gridx = 0;
