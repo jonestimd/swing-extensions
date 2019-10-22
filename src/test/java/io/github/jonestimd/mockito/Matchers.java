@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.TableModelEvent;
 
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
 public class Matchers {
@@ -37,10 +38,19 @@ public class Matchers {
     }
 
     public static PropertyChangeEvent matches(final PropertyChangeEvent example) {
-        return Mockito.argThat(actual -> actual.getSource() == example.getSource() &&
-                actual.getPropertyName().equals(example.getPropertyName()) &&
-                Objects.equals(actual.getOldValue(), example.getOldValue()) &&
-                Objects.equals(actual.getNewValue(), example.getNewValue()));
+        return Mockito.argThat(new ArgumentMatcher<PropertyChangeEvent>() {
+            @Override
+            public boolean matches(PropertyChangeEvent actual) {
+                return actual.getSource() == example.getSource() &&
+                        actual.getPropertyName().equals(example.getPropertyName()) &&
+                        Objects.equals(actual.getOldValue(), example.getOldValue()) &&
+                        Objects.equals(actual.getNewValue(), example.getNewValue());
+            }
+
+            public String toString() {
+                return example.toString();
+            }
+        });
     }
 
     public static ListDataEvent listDataEvent(Object source, int type, int index0, int index1) {

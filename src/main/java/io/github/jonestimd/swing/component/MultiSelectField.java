@@ -119,7 +119,11 @@ public class MultiSelectField extends JTextPane {
      * Replace the list of values.
      */
     public void setItems(Collection<String> items) {
-        this.items.forEach(this::removeItem);
+        try {
+            getDocument().remove(0, this.items.size());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
         items.forEach(this::addItem);
     }
 
@@ -134,6 +138,7 @@ public class MultiSelectField extends JTextPane {
         items.add(item);
         insertComponent(item);
         setSelectionStart(items.size());
+        firePropertyChange(ITEMS_PROPERTY, null, getItems());
     }
 
     /**
@@ -164,7 +169,7 @@ public class MultiSelectField extends JTextPane {
     private void removeItems(int start, int count) {
         int lastItem = Math.min(items.size(), start + count);
         items.subList(start, lastItem).clear();
-        firePropertyChange(ITEMS_PROPERTY, null, Collections.unmodifiableList(items));
+        firePropertyChange(ITEMS_PROPERTY, null, getItems());
     }
 
     /** Get the list of values. */
