@@ -30,8 +30,11 @@ import javax.swing.SwingUtilities;
 
 import org.assertj.swing.core.BasicRobot;
 import org.assertj.swing.core.Robot;
+import org.assertj.swing.timing.Condition;
 import org.junit.After;
 import org.junit.Before;
+
+import static org.assertj.swing.timing.Pause.*;
 
 public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     protected T window;
@@ -62,4 +65,14 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     }
 
     protected abstract JPanel createContentPane();
+
+    protected void assertCondition(Supplier<Boolean> condition, String description, long timeout) {
+        pause(new Condition(description) {
+            @Override
+            public boolean test() {
+                return condition.get();
+            }
+        }, timeout);
+
+    }
 }

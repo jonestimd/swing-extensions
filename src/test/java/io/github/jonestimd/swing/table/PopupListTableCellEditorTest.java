@@ -99,7 +99,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         robot.enterText("Apple\nOrange\n");
         robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
 
-        assertThat(popupWindow.isShowing()).isFalse();
+        assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
         assertThat(tableModel.getValueAt(0, 0)).isEqualTo(Arrays.asList("Apple", "Orange"));
     }
 
@@ -114,7 +114,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         robot.enterText("Apple\nOrange\n");
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
 
-        assertThat(popupWindow.isShowing()).isFalse();
+        assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
         assertThat(tableModel.getValueAt(0, 0)).isNull();
     }
 
