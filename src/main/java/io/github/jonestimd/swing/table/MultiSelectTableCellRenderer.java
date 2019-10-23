@@ -66,12 +66,10 @@ public class MultiSelectTableCellRenderer<T> extends Box implements TableCellRen
     private Border getNoFocusBorder() {
         Border border = (Border) UIManager.get("Table.cellNoFocusBorder", getLocale());
         if (System.getSecurityManager() != null) {
-            if (border != null) return border;
-            return SAFE_NO_FOCUS_BORDER;
-        } else if (border != null) {
-            if (noFocusBorder == null || noFocusBorder == DEFAULT_NO_FOCUS_BORDER) {
-                return border;
-            }
+            return border != null ? border : SAFE_NO_FOCUS_BORDER;
+        }
+        if (border != null && (noFocusBorder == null || noFocusBorder == DEFAULT_NO_FOCUS_BORDER)) {
+            return border;
         }
         return noFocusBorder;
     }
