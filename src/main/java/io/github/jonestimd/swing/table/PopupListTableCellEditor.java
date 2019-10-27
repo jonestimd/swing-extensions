@@ -24,28 +24,14 @@ package io.github.jonestimd.swing.table;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.HierarchyBoundsAdapter;
-import java.awt.event.HierarchyBoundsListener;
-import java.awt.event.HierarchyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.FocusManager;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.Border;
+import javax.swing.JWindow;
 import javax.swing.border.LineBorder;
-import javax.swing.table.TableCellEditor;
 import javax.swing.text.Highlighter.HighlightPainter;
 
 import io.github.jonestimd.swing.component.ListField;
@@ -57,34 +43,11 @@ import io.github.jonestimd.util.Streams;
  * values.  {@link MultiSelectTableCellRenderer} can be used to render the list.
  * @param <T> the type of the list items
  */
-public class PopupListTableCellEditor<T> extends AbstractCellEditor implements TableCellEditor {
-    private final Border popupBorder = new LineBorder(Color.BLACK, 1);
-    protected Window popupWindow;
+public class PopupListTableCellEditor<T> extends PopupTableCellEditor {
     protected final ListField textArea;
     private final Function<T, String> format;
     private final Function<String, T> parser;
-    /**
-     * Added to the table to track position for the popup window.
-     */
-    private final JLabel editorComponent = new JLabel();
     private List<T> editorValue;
-    private final HierarchyBoundsListener movementListener = new HierarchyBoundsAdapter() {
-        public void ancestorMoved(HierarchyEvent e) {
-            popupWindow.setLocation(getPopupLocation());
-        }
-    };
-    private final ComponentListener componentListener = new ComponentAdapter() {
-        public void componentMoved(ComponentEvent e) {
-            popupWindow.setLocation(getPopupLocation());
-        }
-    };
-    private final PropertyChangeListener focusedWindowListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getOldValue() == popupWindow) {
-                fireEditingCanceled();
-            }
-        }
-    };
 
     /**
      * Create a {@code PopupListTableCellEditor}.
@@ -98,14 +61,21 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
             HighlightPainter errorPainter, int rows) {
         textArea = new ListField(validator, errorPainter, this::cancelCellEditing, this::commitEdit);
         textArea.setRows(rows);
+        textArea.setBorder(new LineBorder(Color.BLACK, 1));
         this.format = format;
         this.parser = parser;
-        editorComponent.addHierarchyListener(this::hierarchyChanged);
     }
 
     private void commitEdit(List<String> items) {
         editorValue = Streams.map(items, parser);
         fireEditingStopped();
+    }
+
+    @Override
+    protected Window createWindow(Window owner) {
+        JWindow window = new JWindow(owner);
+        window.add(textArea);
+        return window;
     }
 
     /**
@@ -115,24 +85,6 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
     @Override
     public boolean stopCellEditing() {
         return textArea.isValidList() && super.stopCellEditing();
-    }
-
-    /**
-     * Overridden to hide the popup window.
-     */
-    @Override
-    protected void fireEditingStopped() {
-        hidePopup();
-        super.fireEditingStopped();
-    }
-
-    /**
-     * Overridden to hide the popup window.
-     */
-    @Override
-    protected void fireEditingCanceled() {
-        hidePopup();
-        super.fireEditingCanceled();
     }
 
     @Override
@@ -146,7 +98,7 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
             editorValue = Collections.emptyList();
             textArea.setText("");
         }
-        return editorComponent;
+        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
     }
 
     @Override
@@ -154,51 +106,13 @@ public class PopupListTableCellEditor<T> extends AbstractCellEditor implements T
         return editorValue;
     }
 
-    private Point getPopupLocation() {
-        return editorComponent.getLocationOnScreen();
-    }
-
-    /**
-     * Hide the popup window if it is showing.
-     */
-    protected void hidePopup() {
-        if (popupWindow != null) {
-            FocusManager.getCurrentManager().removePropertyChangeListener("focusedWindow", focusedWindowListener);
-            editorComponent.removeHierarchyBoundsListener(movementListener);
-            editorComponent.removeComponentListener(componentListener);
-            popupWindow.dispose();
-            popupWindow = null;
-        }
-    }
-
-    /**
-     * Show the popup window.
-     */
+    @Override
     protected void showPopup() {
-        Dimension size = editorComponent.getSize();
+        Dimension size = getTableCellSize();
         size.height = size.height*5;
         textArea.setPreferredSize(size);
-        FocusManager.getCurrentManager().addPropertyChangeListener("focusedWindow", focusedWindowListener);
-        popupWindow.pack();
-        popupWindow.setLocation(getPopupLocation());
-        popupWindow.setVisible(true);
-        popupWindow.toFront();
+        super.showPopup();
         textArea.requestFocus();
-        editorComponent.addHierarchyBoundsListener(movementListener);
-        editorComponent.addComponentListener(componentListener);
-    }
-
-    /**
-     * Creates and displays the popup window when the {@code editorComponent} is added to the table.
-     */
-    private void hierarchyChanged(HierarchyEvent event) {
-        if ((event.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && editorComponent.isShowing()) {
-            popupWindow = new Window((Window) editorComponent.getTopLevelAncestor());
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            scrollPane.setBorder(popupBorder);
-            popupWindow.add(scrollPane);
-            showPopup();
-        }
     }
 
     /**

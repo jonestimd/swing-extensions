@@ -28,11 +28,7 @@ import java.awt.event.WindowEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.WindowConstants;
 
@@ -58,10 +54,7 @@ public class CancelAction extends AbstractAction {
     }
 
     protected static <T extends Window & RootPaneContainer> CancelAction initialize(T window, CancelAction action) {
-        InputMap inputMap = window.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), CLOSE);
-        ActionMap actionMap = window.getRootPane().getActionMap();
-        actionMap.put(CLOSE, action);
+        ActionUtils.install(window.getRootPane(), action, CLOSE, "ESCAPE");
         return action;
     }
 

@@ -167,6 +167,7 @@ public class ComponentResources extends ListResourceBundle {
             { "exceptionDialog.exception.rows", 20 },
 
             { "action.save.mnemonicAndName", "SSave" },
+            { "action.ok.name", "OK" },
             { "action.cancel.name", "Cancel" },
 
             { "confirm.unsavedChanges.title", "Confirm Discard Changes" },

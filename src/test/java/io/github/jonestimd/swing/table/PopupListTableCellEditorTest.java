@@ -23,7 +23,6 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JWindow;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Highlighter.HighlightPainter;
 
@@ -70,7 +70,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
 
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
 
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
         assertThat(popupWindow).isNotNull();
     }
 
@@ -83,7 +83,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
 
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
 
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
         ListField field = robot.finder().findByType(popupWindow, ListField.class);
         assertThat(field.getText()).isEqualTo("Apple\nBanana");
     }
@@ -94,12 +94,12 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         robot.enterText("Apple\nOrange\n");
         robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
 
-        assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
+        assertCondition(() -> !popupWindow.isShowing(), "popup JWindow closed", 1000L);
         assertThat(tableModel.getValueAt(0, 0)).isEqualTo(Arrays.asList("Apple", "Orange"));
     }
 
@@ -109,7 +109,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         robot.enterText("Apple\nOrange\n");
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
@@ -124,7 +124,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         robot.enterText("Apple\n\n");
 
@@ -138,7 +138,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         robot.enterText("Apple\nPeach\n");
 
@@ -153,7 +153,7 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
         robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        Window popupWindow = (Window) robot.finder().find(c -> c.getClass() == Window.class);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         window.setLocation(window.getX()+50, window.getY());
 
