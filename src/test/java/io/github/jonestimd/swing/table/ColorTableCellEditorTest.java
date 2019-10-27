@@ -23,19 +23,23 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
+import java.util.Collection;
 
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JWindow;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.JFrameRobotTest;
 import org.junit.Test;
 
+import static java.awt.event.InputEvent.*;
+import static java.awt.event.KeyEvent.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class ColorTableCellEditorTest extends JFrameRobotTest {
@@ -62,7 +66,7 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
 
-        robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
+        robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
 
         JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
         assertThat(popupWindow).isNotNull();
@@ -75,7 +79,7 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         showWindow();
         robot.focus(table);
 
-        robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
+        robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
 
         JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
         JColorChooser field = robot.finder().findByType(popupWindow, JColorChooser.class);
@@ -88,14 +92,18 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         cellEditor = new ColorTableCellEditor();
         showWindow();
         robot.focus(table);
-        robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
+        robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
         JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
-        robot.click(popupWindow, new Point(238, 125));
-        robot.pressAndReleaseKey(KeyEvent.VK_ENTER);
+        robot.pressAndReleaseKeys(VK_TAB, VK_TAB,
+                VK_DOWN, VK_DOWN, VK_DOWN, VK_DOWN,
+                VK_RIGHT, VK_RIGHT, VK_RIGHT, VK_RIGHT,
+                VK_RIGHT, VK_RIGHT, VK_RIGHT, VK_RIGHT,
+                VK_RIGHT, VK_RIGHT, VK_RIGHT, VK_RIGHT, VK_SPACE);
+        robot.pressAndReleaseKey(VK_ENTER);
 
         assertCondition(() -> !popupWindow.isShowing(), "popup JWindow closed", 1000L);
-        assertThat(tableModel.getValueAt(0, 0)).isEqualTo(Color.MAGENTA);
+        assertThat(tableModel.getValueAt(0, 0)).isEqualTo(new Color(255, 0, 204));
     }
 
     @Test
@@ -104,11 +112,11 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         cellEditor = new ColorTableCellEditor();
         showWindow();
         robot.focus(table);
-        robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
+        robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
         JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
 
         robot.click(popupWindow, new Point(238, 125));
-        robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
+        robot.pressAndReleaseKey(VK_ESCAPE);
 
         assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
         assertThat(tableModel.getValueAt(0, 0)).isEqualTo(Color.BLACK);
@@ -120,12 +128,14 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         cellEditor = new ColorTableCellEditor();
         showWindow();
         robot.focus(table);
-        robot.pressAndReleaseKeys(KeyEvent.VK_DOWN, KeyEvent.VK_SPACE);
-        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
+        robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
 
-        robot.pressAndReleaseKey(KeyEvent.VK_G, KeyEvent.ALT_MASK);
-        robot.click(popupWindow, new Point(168, 168));
-        robot.pressAndReleaseKey(KeyEvent.VK_ENTER);
+        robot.pressAndReleaseKey(VK_G, ALT_MASK);
+        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
+        Collection<Component> inputs = robot.finder().findAll(popupWindow, c -> c.isVisible() && c.isShowing() && c instanceof JTextComponent);
+        robot.click(inputs.stream().findFirst().get(), new Point(5,5));
+        robot.enterText("0\t187\t61\t");
+        robot.pressAndReleaseKeys(VK_ENTER);
 
         assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
         assertThat(tableModel.getValueAt(0, 0)).isEqualTo(new Color(0, 187, 61));
