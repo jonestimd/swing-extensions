@@ -73,7 +73,6 @@ public class ExceptionDialogTest {
 
         AsyncTest.timeout(SWING_TIMEOUT, dialog::isVisible);
         KeyEvent event = new KeyEvent(dialog.getRootPane(), KEY_PRESSED, System.currentTimeMillis(), 0, VK_ESCAPE, CHAR_UNDEFINED);
-        SwingUtilities.processKeyBindings(event);
         SwingUtilities.invokeAndWait(() -> SwingUtilities.processKeyBindings(event));
         AsyncTest.timeout(SWING_TIMEOUT, () -> ! dialog.isVisible());
     }
