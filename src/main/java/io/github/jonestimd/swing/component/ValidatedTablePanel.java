@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -40,7 +39,7 @@ import io.github.jonestimd.swing.ChangeBuffer;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.UnsavedChangesIndicator;
-import io.github.jonestimd.swing.action.ActionAdapter;
+import io.github.jonestimd.swing.action.LocalizedAction;
 import io.github.jonestimd.swing.table.DecoratedTable;
 import io.github.jonestimd.swing.table.TableSummary;
 import io.github.jonestimd.swing.table.TableSummaryPanel;
@@ -93,7 +92,6 @@ public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
      * @param table the table to include on the panel
      * @param resourceGroup a string used to look up component resources
      */
-    @SuppressWarnings("unchecked")
     protected ValidatedTablePanel(ResourceBundle bundle, DecoratedTable<T, ? extends ValidatedBeanListTableModel<T>> table, String resourceGroup) {
         super(bundle, 1, new JScrollPane(table));
         this.bundle = bundle;
@@ -263,9 +261,9 @@ public abstract class ValidatedTablePanel<T> extends ValidatedPanel {
         deleteAction.setEnabled(isDeleteEnabled(getSelectionMinusPendingDeletes()));
     }
 
-    private class DeleteAction extends AbstractAction {
+    private class DeleteAction extends LocalizedAction {
         private DeleteAction() {
-            ActionAdapter.initialize(this, bundle, resourceGroup + ".action.delete");
+            super(bundle, resourceGroup + ".action.delete");
             setEnabled(false);
         }
 

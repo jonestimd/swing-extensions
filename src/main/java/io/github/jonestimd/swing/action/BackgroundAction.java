@@ -25,19 +25,17 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.AbstractAction;
-
 import io.github.jonestimd.swing.BackgroundTask;
 
 /**
  * An abstract action for performing a task on a background thread.
  */
-public abstract class BackgroundAction<T> extends AbstractAction {
+public abstract class BackgroundAction<T> extends LocalizedAction {
     private final Component owner;
     private final String statusMessage;
 
     protected BackgroundAction(Component owner, ResourceBundle bundle, String resourcePrefix) {
-        ActionAdapter.initialize(this, bundle, resourcePrefix);
+        super(bundle, resourcePrefix);
         this.owner = owner;
         statusMessage = bundle.containsKey(resourcePrefix + ".status.initialize") ?
                 bundle.getString(resourcePrefix + ".status.initialize") : null;

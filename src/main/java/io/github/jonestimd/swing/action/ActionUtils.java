@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,28 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.action;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
-/**
- * Converts an {@link ActionListener} to an {@link Action}.
- */
-public class ActionAdapter extends AbstractAction {
-    private ActionListener handler;
-
-    public ActionAdapter(ActionListener handler) {
-        this.handler = handler;
-    }
-
-    public ActionAdapter(ActionListener handler, String name) {
-        this(handler);
-        putValue(NAME, name);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        handler.actionPerformed(e);
+public class ActionUtils {
+    /**
+     * Install a keyboard action on a component.
+     * @param actionMapKey the key to use for the <code>inputMap</code> and <code>actionMap</code>
+     * @param keyStroke the key stroke that invokes the action
+     */
+    public static void install(JComponent component, Action action, Object actionMapKey, String keyStroke) {
+        InputMap inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(keyStroke), actionMapKey);
+        ActionMap actionMap = component.getActionMap();
+        actionMap.put(actionMapKey, action);
     }
 }

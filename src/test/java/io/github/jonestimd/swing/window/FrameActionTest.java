@@ -63,7 +63,8 @@ public class FrameActionTest {
 
     @Test
     public void actionPerformedPublishesEvent() throws Exception {
-        FrameAction<TestWindowInfo> action = new FrameAction<>("NNew Window", null, frameManager, TestWindowInfo.MultiFrame);
+        ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
+        FrameAction<TestWindowInfo> action = new FrameAction<>(bundle, "FrameActionTest", frameManager, TestWindowInfo.MultiFrame);
 
         action.actionPerformed(null);
 
