@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import javax.swing.JTable;
@@ -55,15 +56,25 @@ public class TableInitializer {
     private final Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors;
     private final Map<String, TableCellRenderer> columnRenderers;
     private final Map<String, Supplier<TableCellEditor>> columnEditors;
+    private final BiFunction<JTable, ColumnConfiguration, ColumnWidthCalculator> columnWidthCalculatorBuilder;
 
     public TableInitializer(Map<Class<?>, TableCellRenderer> tableCellRenderers,
                             Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors,
                             Map<String, TableCellRenderer> columnRenderers,
                             Map<String, Supplier<TableCellEditor>> columnEditors) {
+        this(tableCellRenderers, tableCellEditors, columnRenderers, columnEditors, ValueClassColumnWidthCalculator::new);
+    }
+
+    public TableInitializer(Map<Class<?>, TableCellRenderer> tableCellRenderers,
+                            Map<Class<?>, Supplier<TableCellEditor>> tableCellEditors,
+                            Map<String, TableCellRenderer> columnRenderers,
+                            Map<String, Supplier<TableCellEditor>> columnEditors,
+            BiFunction<JTable, ColumnConfiguration, ColumnWidthCalculator> columnWidthCalculatorBuilder) {
         this.tableCellRenderers = tableCellRenderers;
         this.tableCellEditors = tableCellEditors;
         this.columnRenderers = columnRenderers;
         this.columnEditors = columnEditors;
+        this.columnWidthCalculatorBuilder = columnWidthCalculatorBuilder;
     }
 
     private String getColumnResource(Object columnId, String resourceId) {
@@ -99,7 +110,7 @@ public class TableInitializer {
             initializeColumn(columnModel.getColumn(i));
         }
         BeanListColumnConfiguration configuration = new BeanListColumnConfiguration(table);
-        new ColumnResizeHandler(table, configuration, new ValueClassColumnWidthCalculator(table, configuration));
+        new ColumnResizeHandler(table, configuration, columnWidthCalculatorBuilder.apply(table, configuration));
         setDecorators(table);
         addActions(table);
         return table;
@@ -172,5 +183,16 @@ public class TableInitializer {
         if (editorName == null || columnEditors == null) return null;
         Supplier<TableCellEditor> supplier = columnEditors.get(editorName);
         return supplier == null ? null : supplier.get();
+    }
+
+    /**
+     * Set the minimum, preferred and maximum widths on a column.
+     * @param column the table column
+     * @param width the width for the column
+     */
+    public static void setFixedWidth(TableColumn column, int width) {
+        column.setMinWidth(width);
+        column.setPreferredWidth(width);
+        column.setMaxWidth(width);
     }
 }

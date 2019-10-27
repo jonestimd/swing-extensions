@@ -121,17 +121,11 @@ public class ColumnResizeHandler implements SettingsPersister {
             width = widthCalculator.preferredWidth(column);
         }
         if (widthCalculator.isFixedWidth(column)) {
-            setFixedWidth(column, width);
+            TableInitializer.setFixedWidth(column, width);
         }
         else {
             column.setPreferredWidth(width);
         }
-    }
-
-    private void setFixedWidth(TableColumn column, int width) {
-        column.setMinWidth(width);
-        column.setPreferredWidth(width);
-        column.setMaxWidth(width);
     }
 
     private void unlockWidth(TableColumn column) {
@@ -182,10 +176,10 @@ public class ColumnResizeHandler implements SettingsPersister {
 
         public void mouseReleased(MouseEvent e) {
             if (resizingColumn != null) {
-                setFixedWidth(resizingColumn, resizingColumn.getWidth());
+                TableInitializer.setFixedWidth(resizingColumn, resizingColumn.getWidth());
             }
             if (lastColumn != null) {
-                setFixedWidth(lastColumn, lastColumn.getWidth());
+                TableInitializer.setFixedWidth(lastColumn, lastColumn.getWidth());
             }
         }
     }
