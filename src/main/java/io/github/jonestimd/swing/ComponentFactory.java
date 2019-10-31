@@ -59,6 +59,7 @@ import io.github.jonestimd.swing.border.OblongBorder;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.swing.component.IconBorder.Side;
+import io.github.jonestimd.swing.layout.GridBagBuilder;
 
 public class ComponentFactory {
     public static final char NO_MNEMONIC = ' ';
@@ -208,9 +209,20 @@ public class ComponentFactory {
         return field;
     }
 
+    /**
+     * Create a component for displaying a summary (e.g. total) at the bottom of a table.  The right border will provide an
+     * offset to account for a vertical scroll bar on the table.
+     * @param mnemonicAndName label for the summary
+     * @param summary the summary information
+     * @return a component with the label and summary on the right
+     */
     public static JComponent newTableSummaryPanel(String mnemonicAndName, JComponent summary) {
         JLabel label = new LabelBuilder().mnemonicAndName(mnemonicAndName).bold().get();
-        JComponent summaryPanel = new ButtonBarFactory().alignRight().add(label, summary).get();
+        Box summaryPanel = Box.createHorizontalBox();
+        summaryPanel.add(Box.createHorizontalGlue());
+        summaryPanel.add(label);
+        summaryPanel.add(Box.createHorizontalStrut(GridBagBuilder.RELATED_GAP));
+        summaryPanel.add(summary);
         summaryPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, UIManager.getInt("ScrollBar.width")));
         return summaryPanel;
     }
