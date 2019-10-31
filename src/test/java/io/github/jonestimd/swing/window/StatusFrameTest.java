@@ -112,8 +112,8 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isBetween(getInt(WIDTH_RESOURCE)-10, getInt(WIDTH_RESOURCE));
-        assertThat(frame.getHeight()).isBetween(getInt(HEIGHT_RESOURCE)-10, getInt(HEIGHT_RESOURCE));
+        assertThat(frame.getWidth()).isBetween(getInt(WIDTH_RESOURCE) - 10, getInt(WIDTH_RESOURCE));
+        assertThat(frame.getHeight()).isBetween(getInt(HEIGHT_RESOURCE) - 10, getInt(HEIGHT_RESOURCE));
     }
 
     private int getInt(String key) {
@@ -176,8 +176,8 @@ public class StatusFrameTest {
         });
 
         assertThat(System.getProperty(STATE_RESOURCE)).isEqualTo(Integer.toString(state));
-        assertThat(System.getProperty(WIDTH_RESOURCE)).isEqualTo(Integer.toString(size.width));
-        assertThat(System.getProperty(HEIGHT_RESOURCE)).isEqualTo(Integer.toString(size.height));
+        assertThat(Integer.getInteger(WIDTH_RESOURCE)).isBetween(size.width - 10, size.width);
+        assertThat(Integer.getInteger(HEIGHT_RESOURCE)).isBetween(size.height - 10, size.height);
     }
 
     @Test
