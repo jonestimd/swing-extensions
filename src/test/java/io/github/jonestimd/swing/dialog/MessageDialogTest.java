@@ -58,7 +58,7 @@ public class MessageDialogTest {
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
 
         SwingUtilities.invokeAndWait(() -> dialog.disableUI("wait..."));
-        AsyncTest.timeout(SWING_TIMEOUT, dialog.getGlassPane()::isFocusOwner);
+        // AsyncTest.timeout(SWING_TIMEOUT, dialog.getGlassPane()::isFocusOwner);
         SwingUtilities.invokeAndWait(dialog::enableUI);
 
         AsyncTest.timeout(SWING_TIMEOUT, () -> !dialog.getGlassPane().isFocusOwner());
