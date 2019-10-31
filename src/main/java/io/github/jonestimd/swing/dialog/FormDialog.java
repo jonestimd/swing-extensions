@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -57,7 +58,7 @@ public class FormDialog extends MessageDialog {
     protected final CancelAction cancelAction = CancelAction.install(this);
     protected final Action saveAction;
     private final JButton saveButton;
-    protected final Box buttonBar;
+    protected final JComponent buttonBar;
     private final JTextArea statusArea;
     private final JScrollPane statusScrollPane;
     private boolean changed = false;
@@ -107,11 +108,10 @@ public class FormDialog extends MessageDialog {
     }
 
     /**
-     * Add a button to the button bar.
+     * Add a button to the button bar.  The button is added before the Cancel button.
      */
     protected void addButton(Action action) {
         buttonBar.add(new JButton(action), buttonBar.getComponentCount()-1);
-        buttonBar.add(Box.createHorizontalStrut(ButtonBarFactory.BUTTON_GAP), buttonBar.getComponentCount()-1);
     }
 
     protected void setSaveEnabled(boolean enabled) {

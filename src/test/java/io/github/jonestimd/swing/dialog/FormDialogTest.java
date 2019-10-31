@@ -160,7 +160,7 @@ public class FormDialogTest {
     }
 
     private JButton getButton(int index) {
-        return (JButton) getDialogComponent(1).getComponent(index * 2 + 1);
+        return (JButton) getDialogComponent(1).getComponent(index);
     }
 
     private Container getDialogComponent(int index) {
