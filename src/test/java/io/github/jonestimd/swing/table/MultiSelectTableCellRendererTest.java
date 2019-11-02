@@ -72,7 +72,7 @@ public class MultiSelectTableCellRendererTest {
     protected void verifyComponent(Component component, String text) {
         assertThat(component).isInstanceOf(MultiSelectItem.class);
         assertThat(component.getFont()).isSameAs(font);
-        assertThat(component.isOpaque()).isTrue();
+        assertThat(((MultiSelectItem) component).isFill()).isTrue();
         assertThat(((MultiSelectItem) component).getText()).isEqualTo(text);
         assertThat(((MultiSelectItem) component).isShowDelete()).isFalse();
     }
