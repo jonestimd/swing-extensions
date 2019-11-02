@@ -29,7 +29,6 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -48,6 +47,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
 import io.github.jonestimd.swing.border.OblongBorder;
+import io.github.jonestimd.swing.component.BeanListComboBox;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.util.JavaPredicates;
@@ -72,10 +72,10 @@ public class ComponentFactoryTest {
         assertThat(group[1].getText()).isEqualTo("Choice 2");
         assertThat(group[2].getMnemonic()).isEqualTo(0);
         assertThat(group[2].getText()).isEqualTo("Choice 3");
-        ButtonGroup buttonGroup = ((DefaultButtonModel) group[0].getModel()).getGroup();
+        ButtonGroup buttonGroup = group[0].getModel().getGroup();
         assertThat(buttonGroup.getButtonCount()).isEqualTo(3);
-        assertThat(((DefaultButtonModel) group[1].getModel()).getGroup()).isSameAs(buttonGroup);
-        assertThat(((DefaultButtonModel) group[2].getModel()).getGroup()).isSameAs(buttonGroup);
+        assertThat(group[1].getModel().getGroup()).isSameAs(buttonGroup);
+        assertThat(group[2].getModel().getGroup()).isSameAs(buttonGroup);
     }
 
     @Test
@@ -292,5 +292,19 @@ public class ComponentFactoryTest {
         assertThat(((JLabel) summary.getComponent(1)).getText()).isEqualTo("Summary");
         assertThat(((JLabel) summary.getComponent(1)).getDisplayedMnemonic()).isEqualTo(0);
         assertThat(summary.getComponent(3)).isSameAs(field);
+    }
+
+    private enum TestEnum {ONE, TWO, THREE}
+
+    @Test
+    public void newComboBox_createsValidatedComboBox() throws Exception {
+        final String message = "value is required";
+
+        BeanListComboBox<TestEnum> comboBox = newComboBox(TestEnum.class, message);
+
+        assertThat(comboBox.getValidationMessages()).isEqualTo(message);
+        assertThat(comboBox.getModel().indexOf(TestEnum.ONE)).isEqualTo(0);
+        assertThat(comboBox.getModel().indexOf(TestEnum.TWO)).isEqualTo(1);
+        assertThat(comboBox.getModel().indexOf(TestEnum.THREE)).isEqualTo(2);
     }
 }

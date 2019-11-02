@@ -24,6 +24,7 @@ package io.github.jonestimd.swing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
@@ -56,10 +57,12 @@ import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.border.OblongBorder;
+import io.github.jonestimd.swing.component.BeanListComboBox;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.swing.component.IconBorder.Side;
 import io.github.jonestimd.swing.layout.GridBagBuilder;
+import io.github.jonestimd.text.ToStringFormat;
 
 public class ComponentFactory {
     public static final char NO_MNEMONIC = ' ';
@@ -225,5 +228,9 @@ public class ComponentFactory {
         summaryPanel.add(summary);
         summaryPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, UIManager.getInt("ScrollBar.width")));
         return summaryPanel;
+    }
+
+    public static <T extends Enum<T>> BeanListComboBox<T> newComboBox(Class<T> enumClass, String requiredMessage) {
+        return BeanListComboBox.builder(new ToStringFormat(), Arrays.asList(enumClass.getEnumConstants())).required(requiredMessage).get();
     }
 }
