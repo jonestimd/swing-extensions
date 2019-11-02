@@ -29,6 +29,8 @@ import javax.swing.JLabel;
  * A builder class for creating labels.
  */
 public class LabelBuilder {
+    /** Character to use for a combined mnemonic and name when the label has no mnemonic. */
+    public static final char NO_MNEMONIC = '_';
     private final JLabel label = new JLabel();
 
     /**
@@ -37,7 +39,7 @@ public class LabelBuilder {
      * {@code '_'} then the label will not have a mnemonic.
      */
     public LabelBuilder mnemonicAndName(String mnemonicAndName) {
-        if (mnemonicAndName.charAt(0) != '_') {
+        if (mnemonicAndName.charAt(0) != NO_MNEMONIC) {
             mnemonic(mnemonicAndName.charAt(0));
         }
         return name(mnemonicAndName.substring(1));
