@@ -21,9 +21,13 @@ package io.github.jonestimd.swing;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.util.ResourceBundle;
 
 import javax.swing.JLabel;
 
+/**
+ * A builder class for creating labels.
+ */
 public class LabelBuilder {
     private final JLabel label = new JLabel();
 
@@ -39,21 +43,33 @@ public class LabelBuilder {
         return name(mnemonicAndName.substring(1));
     }
 
-    public LabelBuilder name(String name) {
-        label.setText(name);
+    /**
+     * Set the label text.
+     */
+    public LabelBuilder name(String text) {
+        label.setText(text);
         return this;
     }
 
+    /**
+     * Set the label mnemonic.
+     */
     public LabelBuilder mnemonic(char mnemonic) {
         label.setDisplayedMnemonic(mnemonic);
         return this;
     }
 
+    /**
+     * @param component the component to be associated with the label
+     */
     public LabelBuilder forComponent(Component component) {
         label.setLabelFor(component);
         return this;
     }
 
+    /**
+     * Make the label font bold.
+     */
     public LabelBuilder bold() {
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         return this;
@@ -61,5 +77,54 @@ public class LabelBuilder {
 
     public JLabel get() {
         return label;
+    }
+
+    /**
+     * A factory class for building multiple labels using the same <code>ResourceBundle</code> and a common resource prefix.
+     */
+    public static class Factory {
+        private final ResourceBundle bundle;
+        private final String resourcePrefix;
+
+        public Factory(ResourceBundle bundle, String resourcePrefix) {
+            this.bundle = bundle;
+            this.resourcePrefix = resourcePrefix;
+        }
+
+        /**
+         * Return a new factory for creating bold labels using this factory's <code>ResourceBundle</code> and resource prefix.
+         */
+        public Factory bold() {
+            return new Factory(bundle, resourcePrefix) {
+                @Override
+                protected LabelBuilder builder(String resourceKey) {
+                    return super.builder(resourceKey).bold();
+                }
+            };
+        }
+
+        /**
+         * @param resourceSuffix the suffix for the label's mnemonic and name resource key
+         * @see LabelBuilder#mnemonicAndName(String)
+         */
+        public JLabel newLabel(String resourceSuffix) {
+            return builder(resourceSuffix).get();
+        }
+
+        /**
+         * @param resourceSuffix the suffix for the label's mnemonic and name resource key
+         * @param component the component to be associated with the label
+         * @see LabelBuilder#mnemonicAndName(String)
+         */
+        public JLabel newLabel(String resourceSuffix, Component component) {
+            return builder(resourceSuffix).forComponent(component).get();
+        }
+
+        /**
+         * Create a label builder using <code>resourceSuffix</code> to get the mnemonic and name.
+         */
+        protected LabelBuilder builder(String resourceSuffix) {
+            return new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix + resourceSuffix));
+        }
     }
 }

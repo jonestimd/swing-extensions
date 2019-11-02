@@ -46,7 +46,7 @@ import javax.swing.JTextField;
 
 import com.google.common.collect.ImmutableSet;
 import io.github.jonestimd.collection.MapBuilder;
-import io.github.jonestimd.swing.LabelBuilder;
+import io.github.jonestimd.swing.LabelBuilder.Factory;
 
 import static java.awt.GridBagConstraints.*;
 
@@ -98,8 +98,7 @@ public class GridBagBuilder {
 
     private final Map<Class<?>, GridBagFormula> fieldConstrains;
     private final Set<Class<?>> useScrollPane;
-    private ResourceBundle bundle;
-    private String resourcePrefix;
+    private final Factory labelFactory;
     private GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1d, 0d, WEST, HORIZONTAL, new Insets(RELATED_GAP, 0, 0, RELATED_GAP), 0, 0);
     private int lastx = 0;
     private int lasty = 0;
@@ -141,8 +140,7 @@ public class GridBagBuilder {
             int columns, Map<Class<?>, GridBagFormula> fieldConstraints) {
         this.fieldConstrains = fieldConstraints;
         this.useScrollPane = new HashSet<>(USE_SCROLL_PANE);
-        this.bundle = bundle;
-        this.resourcePrefix = resourcePrefix;
+        this.labelFactory = new Factory(bundle, resourcePrefix);
         this.columns = columns;
         this.container = container;
         container.setLayout(new GridBagLayout());
@@ -231,7 +229,7 @@ public class GridBagBuilder {
      */
     public <T extends JComponent> T append(String labelKey, T field, GridBagFormula formula) {
         relatedGap();
-        lastLabel = new LabelBuilder().mnemonicAndName(bundle.getString(resourcePrefix+labelKey)).forComponent(field).get();
+        lastLabel = labelFactory.newLabel(labelKey, field);
         container.add(lastLabel, formula.getLabelConstraints().setConstraints(gbc));
         relatedGap();
         nextCell();
