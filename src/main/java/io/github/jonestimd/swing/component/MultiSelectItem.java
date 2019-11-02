@@ -83,6 +83,7 @@ public class MultiSelectItem extends JLabel {
     protected final float outlineRoundness;
     protected final ButtonGeometry buttonGeometry;
     private final boolean showDelete;
+    private boolean fill;
     private boolean isOverButton = false;
     private final List<Consumer<MultiSelectItem>> deleteListeners = new ArrayList<>();
     private boolean selected;
@@ -92,15 +93,15 @@ public class MultiSelectItem extends JLabel {
      * Create a new {@code MultiSelectItem}.
      * @param text the text to display
      * @param showDelete true to show the delete button
-     * @param opaque true to fill the outline with the background color
+     * @param fill true to fill the outline with the background color
      */
-    public MultiSelectItem(String text, boolean showDelete, boolean opaque) {
+    public MultiSelectItem(String text, boolean showDelete, boolean fill) {
         super(text);
         this.showDelete = showDelete;
+        this.fill = fill;
         outlineRoundness = showDelete ? buttonRoundness : noButtonRoundness;
         buttonGeometry = new ButtonGeometry(buttonSize, strokeWidth);
         setFont(getFont().deriveFont(Font.PLAIN));
-        setOpaque(opaque);
         setBackground(background);
         setCursor(Cursor.getDefaultCursor());
         if (showDelete) {
@@ -186,6 +187,15 @@ public class MultiSelectItem extends JLabel {
         return showDelete;
     }
 
+    public boolean isFill() {
+        return fill;
+    }
+
+    public void setFill(boolean fill) {
+        this.fill = fill;
+        firePropertyChange("fill", null, fill);
+    }
+
     /**
      * Overridden to add space for the outline and delete button.
      */
@@ -223,7 +233,7 @@ public class MultiSelectItem extends JLabel {
         try {
             g2d.setStroke(new BasicStroke(strokeWidth));
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (isOpaque()) {
+            if (fill) {
                 g2d.setColor(getBackground());
                 g2d.fill(outline);
             }
@@ -235,10 +245,7 @@ public class MultiSelectItem extends JLabel {
         } finally {
             g2d.dispose();
         }
-        boolean opaque = isOpaque();
-        setOpaque(false);
         super.paintComponent(g);
-        setOpaque(opaque);
     }
 
     /**
@@ -260,7 +267,7 @@ public class MultiSelectItem extends JLabel {
     protected void drawDeleteButton(Graphics2D g2d, boolean hoverEffect) {
         g2d.setColor(hoverEffect ? buttonHoverColor : buttonColor);
         g2d.fill(new Ellipse2D.Double(GAP*2 + strokeWidth, GAP + strokeWidth, buttonSize, buttonSize));
-        g2d.setColor(isOpaque() ? getBackground() : getParent().getBackground());
+        g2d.setColor(fill ? getBackground() : getParent().getBackground());
         g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
         g2d.drawLine(buttonGeometry.crossLeft, buttonGeometry.crossTop, buttonGeometry.crossRight, buttonGeometry.crossBottom);
         g2d.drawLine(buttonGeometry.crossRight, buttonGeometry.crossTop, buttonGeometry.crossLeft, buttonGeometry.crossBottom);

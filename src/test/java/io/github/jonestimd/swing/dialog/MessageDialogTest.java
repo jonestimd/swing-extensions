@@ -35,7 +35,7 @@ import org.junit.Test;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
 public class MessageDialogTest {
-    private static final long SWING_TIMEOUT = 500L;
+    private static final long SWING_TIMEOUT = 5000L;
     private MessageDialog dialog;
     private JTextField field;
 

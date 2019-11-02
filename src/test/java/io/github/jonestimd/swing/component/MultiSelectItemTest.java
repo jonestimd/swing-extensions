@@ -55,8 +55,8 @@ public class MultiSelectItemTest extends JFrameRobotTest {
     }
 
     @Test
-    public void fillsOutlineWhenOpaque() throws Exception {
-        multiSelectItem.setOpaque(true);
+    public void fillsOutlineWhenFillIsTrue() throws Exception {
+        multiSelectItem.setFill(true);
         Graphics2D g2d = mock(Graphics2D.class);
         when(g2d.create()).thenReturn(g2d);
         when(g2d.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);

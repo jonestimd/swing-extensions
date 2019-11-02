@@ -314,10 +314,9 @@ public class StatusFrameTest {
     public void enableUIRestoresFocusOwner() throws Exception {
         JTextField field = new JTextField();
         createStatusFrame(RESOURCE_PREFIX, new JTextField(), field);
-        SwingUtilities.invokeLater(() -> {
-            frame.setVisible(true);
-            field.requestFocus();
-        });
+        SwingUtilities.invokeLater(() -> frame.setVisible(true));
+        AsyncTest.timeout(SWING_TIMEOUT, field::isShowing);
+        SwingUtilities.invokeLater(field::requestFocusInWindow);
         AsyncTest.timeout(SWING_TIMEOUT, field::isFocusOwner);
 
         SwingUtilities.invokeAndWait(() -> frame.disableUI("wait..."));
