@@ -130,8 +130,16 @@ public class FieldChangeTracker extends ContainerTracker {
             changedFields.add(source);
         }
         if (changedFields.size() != oldSize) {
-            changeHandler.fieldsChanged(! changedFields.isEmpty());
+            changeHandler.fieldsChanged(isChanged());
         }
+    }
+
+    public boolean isChanged() {
+        return !changedFields.isEmpty();
+    }
+
+    public void resetChanges() {
+        changedFields.clear();
     }
 
     private class TextFieldHandler implements DocumentListener {

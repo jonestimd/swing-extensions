@@ -23,30 +23,24 @@ package io.github.jonestimd.swing.dialog;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.util.Collection;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.AsyncTest;
-import io.github.jonestimd.mockito.Matchers;
-import io.github.jonestimd.swing.validation.RequiredValidator;
-import io.github.jonestimd.swing.validation.ValidatedTextField;
 import org.junit.After;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class FormDialogTest {
     private static final long SWING_TIMEOUT = 500L;
-    public static final String REQUIRED_MESSAGE = "value required";
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
     private FormDialog dialog;
 
@@ -127,28 +121,34 @@ public class FormDialogTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void validation() throws Exception {
+    public void saveButtonDisabledWithoutChanges() throws Exception {
         dialog = new FormDialog(JOptionPane.getRootFrame(), "", bundle);
-        Consumer<Collection<String>> validationListener = mock(Consumer.class);
-        dialog.addValidationListener(validationListener);
-        ValidatedTextField field = new ValidatedTextField(new RequiredValidator(REQUIRED_MESSAGE));
+        dialog.getFormPanel().add(new JTextField());
+
+        assertThat(dialog.isSaveEnabled()).isFalse();
+    }
+
+    @Test
+    public void saveButtonEnabledAfterChange() throws Exception {
+        dialog = new FormDialog(JOptionPane.getRootFrame(), "", bundle);
+        JTextField field = new JTextField();
         dialog.getFormPanel().add(field);
 
-        showDialog();
+        field.setText("changed value");
 
-        JScrollPane scrollPane = (JScrollPane) getDialogComponent(2);
-        assertThat(scrollPane.isVisible()).isTrue();
-        JTextArea statusArea = (JTextArea) scrollPane.getViewport().getView();
-        assertThat(statusArea.getText()).isEqualTo(REQUIRED_MESSAGE);
-        assertThat(dialog.getValidationMessages()).containsOnly(REQUIRED_MESSAGE);
+        assertThat(dialog.isSaveEnabled()).isTrue();
+    }
 
-        SwingUtilities.invokeAndWait(() -> field.setText("value"));
+    @Test
+    public void saveButtonDisabledAfterResettingChanges() throws Exception {
+        dialog = new FormDialog(JOptionPane.getRootFrame(), "", bundle);
+        JTextField field = new JTextField();
+        dialog.getFormPanel().add(field);
+        field.setText("changed value");
 
-        AsyncTest.timeout(SWING_TIMEOUT, () -> ! scrollPane.isVisible());
-        verify(validationListener).accept(Matchers.isEmpty());
-        verify(validationListener).accept(Matchers.containsOnly(REQUIRED_MESSAGE));
-        assertThat(dialog.getValidationMessages()).isEmpty();
+        dialog.resetChanges();
+
+        assertThat(dialog.isSaveEnabled()).isFalse();
     }
 
     private void showDialog() {
