@@ -39,7 +39,7 @@ import io.github.jonestimd.swing.ComponentResources;
  * closing the window.
  */
 public class CancelAction extends AbstractAction {
-    private static final String CLOSE = "close";
+    public static final String ACTION_MAP_KEY = "close";
     private final Window window;
     private ConfirmClose confirmClose = null;
     private boolean cancelled = false;
@@ -54,7 +54,7 @@ public class CancelAction extends AbstractAction {
     }
 
     protected static <T extends Window & RootPaneContainer> CancelAction initialize(T window, CancelAction action) {
-        ActionUtils.install(window.getRootPane(), action, CLOSE, "ESCAPE");
+        ActionUtils.install(window.getRootPane(), action, ACTION_MAP_KEY, "ESCAPE");
         return action;
     }
 
