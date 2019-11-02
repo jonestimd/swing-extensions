@@ -77,6 +77,10 @@ public class StatusFrameTest {
         frame.dispose();
     }
 
+    private void checkSize(int actual, int expected) {
+        assertThat(actual).isBetween(expected - 10, expected);
+    }
+
     @Test
     public void savesSizeToSystemProperties() throws Exception {
         createStatusFrame(RESOURCE_PREFIX);
@@ -90,8 +94,8 @@ public class StatusFrameTest {
         });
 
         assertThat(System.getProperty(STATE_RESOURCE)).isEqualTo(Integer.toString(state));
-        assertThat(System.getProperty(WIDTH_RESOURCE)).isEqualTo(Integer.toString(size.width));
-        assertThat(System.getProperty(HEIGHT_RESOURCE)).isEqualTo(Integer.toString(size.height));
+        checkSize(Integer.getInteger(WIDTH_RESOURCE), size.width);
+        checkSize(Integer.getInteger(HEIGHT_RESOURCE), size.height);
     }
 
     @Test
@@ -101,8 +105,8 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(StatusFrame.DEFAULT_WIDTH);
-        assertThat(frame.getHeight()).isEqualTo(StatusFrame.DEFAULT_HEIGHT);
+        checkSize(frame.getWidth(), StatusFrame.DEFAULT_WIDTH);
+        checkSize(frame.getHeight(), StatusFrame.DEFAULT_HEIGHT);
     }
 
     @Test
@@ -112,8 +116,8 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isBetween(getInt(WIDTH_RESOURCE) - 10, getInt(WIDTH_RESOURCE));
-        assertThat(frame.getHeight()).isBetween(getInt(HEIGHT_RESOURCE) - 10, getInt(HEIGHT_RESOURCE));
+        checkSize(frame.getWidth(), getInt(WIDTH_RESOURCE));
+        checkSize(frame.getHeight(), getInt(HEIGHT_RESOURCE));
     }
 
     private int getInt(String key) {
@@ -130,8 +134,8 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
-        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+        checkSize(frame.getWidth(), RESTORE_WIDTH);
+        checkSize(frame.getHeight(), RESTORE_HEIGHT);
     }
 
     @Test
@@ -144,8 +148,9 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(getInt(WIDTH_RESOURCE));
-        assertThat(frame.getHeight()).isEqualTo(RESTORE_HEIGHT);
+        int expectedWidth = getInt(WIDTH_RESOURCE);
+        checkSize(frame.getWidth(), expectedWidth);
+        checkSize(frame.getHeight(), RESTORE_HEIGHT);
     }
 
     @Test
@@ -158,8 +163,8 @@ public class StatusFrameTest {
         SwingUtilities.invokeAndWait(() -> frame.setVisible(true));
 
         assertThat(frame.getExtendedState()).isEqualTo(0);
-        assertThat(frame.getWidth()).isEqualTo(RESTORE_WIDTH);
-        assertThat(frame.getHeight()).isEqualTo(getInt(HEIGHT_RESOURCE));
+        checkSize(frame.getWidth(), RESTORE_WIDTH);
+        checkSize(frame.getHeight(), getInt(HEIGHT_RESOURCE));
     }
 
     @Test
@@ -176,8 +181,8 @@ public class StatusFrameTest {
         });
 
         assertThat(System.getProperty(STATE_RESOURCE)).isEqualTo(Integer.toString(state));
-        assertThat(Integer.getInteger(WIDTH_RESOURCE)).isBetween(size.width - 10, size.width);
-        assertThat(Integer.getInteger(HEIGHT_RESOURCE)).isBetween(size.height - 10, size.height);
+        checkSize(Integer.getInteger(WIDTH_RESOURCE), size.width);
+        checkSize(Integer.getInteger(HEIGHT_RESOURCE), size.height);
     }
 
     @Test
@@ -343,7 +348,7 @@ public class StatusFrameTest {
         frame.getContentPane().add(panel);
     }
 
-    private class TestAction extends AbstractAction {
+    private static class TestAction extends AbstractAction {
         private boolean actionPerformed = false;
 
         public TestAction() {
