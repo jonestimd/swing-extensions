@@ -30,6 +30,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+import io.github.jonestimd.swing.action.LocalizedAction.Factory;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -51,7 +52,7 @@ public class LocalizedActionTest {
 
     @Test
     public void setsMnemonicNameAndAccelerator() throws Exception {
-        Action action = LocalizedAction.create(bundle, "testAction", e -> {});
+        Action action = LocalizedAction.create(bundle, "localizedAction.testAction", e -> {});
 
         assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'T');
         assertThat(action.getValue(Action.NAME)).isEqualTo("Test Action");
@@ -61,11 +62,22 @@ public class LocalizedActionTest {
     @Test
     public void callsHandler() throws Exception {
         ActionListener handler = mock(ActionListener.class);
-        Action action = LocalizedAction.create(bundle, "testAction", handler);
+        Action action = LocalizedAction.create(bundle, "localizedAction.testAction", handler);
 
         ActionEvent event = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "x");
         action.actionPerformed(event);
 
         verify(handler).actionPerformed(event);
+    }
+
+    @Test
+    public void factoryUsesResourceBundle() throws Exception {
+        Factory factory = new Factory(bundle, "localizedAction.");
+
+        Action action = factory.newAction("testAction", e -> {});
+
+        assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'T');
+        assertThat(action.getValue(Action.NAME)).isEqualTo("Test Action");
+        assertThat(action.getValue(Action.ACCELERATOR_KEY)).isEqualTo(KeyStroke.getKeyStroke('T', KeyEvent.CTRL_DOWN_MASK));
     }
 }

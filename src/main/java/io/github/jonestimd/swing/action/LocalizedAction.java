@@ -34,16 +34,21 @@ import javax.swing.KeyStroke;
  * An abstract class for an action that is configured using values from a resource bundle.  The following values
  * are used from the resource bundle:
  * <ul>
- *     <li>{@code resourcePrefix + ".mnemonicAndName"} (required)</li>
+ *     <li>{@code keyPrefix + ".mnemonicAndName"} (optional)</li>
  *     <ul>
  *         <li>First character provides the mnemonic</li>
  *         <li>Remainder provides the name</li>
  *     </ul>
- *     <li>{@code resourcePrefix + ".iconImage"} (optional, path to image resource)</li>
- *     <li>{@code resourcePrefix + ".accelerator"} (optional, keystroke string)</li>
+ *     <li>{@code keyPrefix + ".iconImage"} (optional, path to image resource)</li>
+ *     <li>{@code keyPrefix + ".accelerator"} (optional, keystroke string)</li>
  * </ul>
  */
 public abstract class LocalizedAction extends AbstractAction {
+    /**
+     * Create an action using an {@link ActionListener}.
+     * @param bundle the resource bundle containing the action's properties.
+     * @param keyPrefix the key prefix for the action's property resources.
+     */
     public LocalizedAction(ResourceBundle bundle, String keyPrefix) {
         if (bundle.containsKey(keyPrefix + ".mnemonicAndName")) {
             String mnemonicAndName = bundle.getString(keyPrefix + ".mnemonicAndName");
@@ -58,6 +63,12 @@ public abstract class LocalizedAction extends AbstractAction {
         }
     }
 
+    /**
+     * Create an action using an {@link ActionListener}.
+     * @param bundle the resource bundle containing the action's properties.
+     * @param keyPrefix the key prefix for the action's property resources.
+     * @param handler the action listener to invoke when the action is performed.
+     */
     public static Action create(ResourceBundle bundle, String keyPrefix, ActionListener handler) {
         return new LocalizedAction(bundle, keyPrefix) {
             @Override
@@ -65,5 +76,26 @@ public abstract class LocalizedAction extends AbstractAction {
                 handler.actionPerformed(event);
             }
         };
+    }
+
+    /**
+     * A factory class for creating multiple actions using the same <code>ResourceBundle</code> and a common resource prefix.
+     */
+    public static class Factory {
+        private final ResourceBundle bundle;
+        private final String resourcePrefix;
+
+        public Factory(ResourceBundle bundle, String resourcePrefix) {
+            this.bundle = bundle;
+            this.resourcePrefix = resourcePrefix;
+        }
+
+        /**
+         * Create an action using an {@link ActionListener}.  The action's resource keys must begin with
+         * <code>resourcePrefix+keySuffix</code>.
+         */
+        public Action newAction(String keySuffix, ActionListener handler) {
+            return LocalizedAction.create(bundle, resourcePrefix + keySuffix, handler);
+        }
     }
 }
