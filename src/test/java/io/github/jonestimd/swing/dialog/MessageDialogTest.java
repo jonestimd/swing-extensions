@@ -87,7 +87,7 @@ public class MessageDialogTest {
     public void enableUIRestoresFocusOwner() throws Exception {
         createDialog();
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
-        SwingUtilities.invokeAndWait(() -> field.requestFocusInWindow());
+        SwingUtilities.invokeLater(() -> field.requestFocus());
         AsyncTest.timeout(SWING_TIMEOUT, field::isFocusOwner);
 
         SwingUtilities.invokeAndWait(() -> dialog.disableUI("wait..."));

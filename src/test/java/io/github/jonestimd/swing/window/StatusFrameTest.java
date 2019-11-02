@@ -309,7 +309,7 @@ public class StatusFrameTest {
     public void enableUIRestoresFocusOwner() throws Exception {
         JTextField field = new JTextField();
         createStatusFrame(RESOURCE_PREFIX, new JTextField(), field);
-        SwingUtilities.invokeAndWait(() -> {
+        SwingUtilities.invokeLater(() -> {
             frame.setVisible(true);
             field.requestFocus();
         });
