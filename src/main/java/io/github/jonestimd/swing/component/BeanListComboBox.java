@@ -27,7 +27,6 @@ import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Format;
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
@@ -50,101 +49,130 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     private String requiredMessage;
     private String validationMessages;
 
+    public static class Builder<T> {
+        private final Format format;
+        private final BeanListComboBox<T> comboBox;
+
+        /**
+         * @param format display format for the items in the popup list
+         * @param model the model containing the list of items
+         */
+        public Builder(Format format, LazyLoadComboBoxModel<T> model) {
+            this.format = format;
+            this.comboBox = new BeanListComboBox<>(format, model);
+        }
+
+        /**
+         * Require that an item must be selected.
+         * @param message the error message if no item is selected
+         */
+        public Builder<T> required(String message) {
+            comboBox.requiredMessage = message;
+            comboBox.addItemListener(event -> comboBox.validateValue());
+            comboBox.validateValue();
+            return this;
+        }
+
+        /**
+         * Make the combo box editable using the same <code>format</code> as the popup list.
+         * @param validator validator for input text
+         */
+        public Builder<T> editable(Validator<String> validator) {
+            return editable(format, validator, new FormatPrefixSelector<>(format));
+        }
+
+        /**
+         * Make the combo box editable using the same <code>format</code> as the popup list.
+         * @param validator validator for input text
+         * @param prefixSelector selector for the best matching item for the editor content
+         */
+        public Builder<T> editable(Validator<String> validator, PrefixSelector<T> prefixSelector) {
+            return editable(format, validator, prefixSelector);
+        }
+
+        /**
+         * Make the combo box editable.
+         * @param itemFormat the format for converting an item to/from a string
+         * @param validator validator for input text
+         */
+        public Builder<T> editable(Format itemFormat, Validator<String> validator) {
+            return editable(itemFormat, validator, new FormatPrefixSelector<>(itemFormat));
+        }
+
+        /**
+         * Make the combo box editable.
+         * @param itemFormat the format for converting an item to/from a string
+         * @param validator validator for input text
+         * @param prefixSelector selector for the best matching item for the editor content
+         */
+        public Builder<T> editable(Format itemFormat, Validator<String> validator, PrefixSelector<T> prefixSelector) {
+            comboBox.setEditor(new BeanListComboBoxEditor<>(comboBox, itemFormat, validator, prefixSelector));
+            comboBox.getEditorComponent().addValidationListener(event -> {
+                comboBox.firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue());
+            });
+            comboBox.setEditable(true);
+            return this;
+        }
+
+        public BeanListComboBox<T> get() {
+            if (!comboBox.isEditable) comboBox.setKeySelectionManager(format);
+            return comboBox;
+        }
+    }
+
+    /**
+     * @param format display format for the items
+     * @param <T> item type
+     */
+    public static <T> Builder<T> builder(Format format) {
+        return builder(format, new BeanListComboBoxModel<>());
+    }
+
+    /**
+     * @param format display format for the items
+     * @param items the combo box items
+     */
+    public static <T> Builder<T> builder(Format format, Collection<T> items) {
+        return builder(format, new BeanListComboBoxModel<>(items));
+    }
+
+    /**
+     * @param format display format for the items
+     * @param model the model containing the list of items
+     */
+    public static <T> Builder<T> builder(Format format, LazyLoadComboBoxModel<T> model) {
+        return new Builder<>(format, model);
+    }
+
     /**
      * Create a non-editable combo box.
      * @param format display format for the items
      */
     public BeanListComboBox(Format format) {
-        this(format, Collections.emptyList());
-    }
-
-    /**
-     * Create a non-editable combo box for a required value.
-     * @param format display format for the items
-     * @param requiredMessage the message to display when no value is selected
-     */
-    public BeanListComboBox(Format format, String requiredMessage) {
-        this(format, Collections.emptyList());
-        this.requiredMessage = requiredMessage;
-        addItemListener(event -> validateValue());
-        validateValue();
-    }
-
-    /**
-     * Create a non-editable combo box.
-     * @param format display format for the items
-     * @param items  the list of items
-     */
-    public BeanListComboBox(Format format, Collection<? extends T> items) {
-        this(format, new BeanListComboBoxModel<>(items));
-        setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
+        this(format, new BeanListComboBoxModel<>());
+        setKeySelectionManager(format);
     }
 
     /**
      * Create an editable combo box.
-     * @param format    display format for the items
-     * @param validator validator for new items (applied to the editor value)
-     * @param items     the list of items
-     */
-    public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items) {
-        this(format, validator, new BeanListComboBoxModel<>(items));
-    }
-
-    /**
-     * Create an editable combo box.
-     * @param format    display format for the items
-     * @param validator validator for new items (applied to the editor value)
-     * @param model     the model containing the list of items
-     */
-    public BeanListComboBox(Format format, Validator<String> validator, LazyLoadComboBoxModel<T> model) {
-        this(format, format, validator, model, new FormatPrefixSelector<>(format));
-    }
-
-    /**
-     * Create an editable combo box.
-     * @param format     display format for the popup items
+     * @param format display format for the popup items
      * @param itemFormat display format for the selected item
-     * @param validator  validator for new items (applied to the editor value)
-     * @param model      the model containing the list of items
+     * @param validator validator for new items (applied to the editor value)
+     * @param model the model containing the list of items
      */
     public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, LazyLoadComboBoxModel<T> model) {
-        this(format, itemFormat, validator, model, new FormatPrefixSelector<>(itemFormat));
-    }
-
-    /**
-     * Create an editable combo box.
-     * @param format         display format for the items
-     * @param validator      validator for new items (applied to the editor value)
-     * @param items          the list of items
-     * @param prefixSelector selector for the best matching item for the editor content
-     */
-    public BeanListComboBox(Format format, Validator<String> validator, Collection<? extends T> items, PrefixSelector<T> prefixSelector) {
-        this(format, format, validator, new BeanListComboBoxModel<>(items), prefixSelector);
-    }
-
-    /**
-     * Create an editable combo box.
-     * @param format         display format for the popup items
-     * @param itemFormat     display format for the selected item
-     * @param validator      validator for new items (applied to the editor value)
-     * @param model          the model containing the list of items
-     * @param prefixSelector selector for the best matching item for the editor content
-     */
-    public BeanListComboBox(Format format, Format itemFormat, Validator<String> validator, LazyLoadComboBoxModel<T> model, PrefixSelector<T> prefixSelector) {
         this(format, model);
-        setEditor(new BeanListComboBoxEditor<>(this, itemFormat, validator, prefixSelector));
+        setEditor(new BeanListComboBoxEditor<>(this, itemFormat, validator, new FormatPrefixSelector<>(itemFormat)));
         getEditorComponent().addValidationListener(event -> firePropertyChange(VALIDATION_MESSAGES, event.getOldValue(), event.getNewValue()));
         setEditable(true);
     }
 
-    @SuppressWarnings("unchecked")
-    private BeanListComboBox(Format format, LazyLoadComboBoxModel<T> model) {
+    public BeanListComboBox(Format format, LazyLoadComboBoxModel<T> model) {
         super(model);
         setRenderer(new Renderer(format));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public LazyLoadComboBoxModel<T> getModel() {
         return (LazyLoadComboBoxModel<T>) super.getModel();
     }
@@ -244,6 +272,10 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
 
     protected ValidatedTextField getEditorComponent() {
         return (ValidatedTextField) getEditor().getEditorComponent();
+    }
+
+    protected void setKeySelectionManager(Format format) {
+        setKeySelectionManager(new PrefixKeySelectionManager(new FormatPrefixSelector<>(format)));
     }
 
     private class PrefixKeySelectionManager implements KeySelectionManager {

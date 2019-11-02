@@ -32,14 +32,15 @@ import java.beans.PropertyChangeListener;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 import javax.swing.text.JTextComponent;
 
-import com.google.common.collect.Lists;
 import io.github.jonestimd.swing.validation.RequiredValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,17 +55,24 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BeanListComboBoxTest {
+
+    private final BeanFormat format = new BeanFormat();
+
     @Test(expected = IllegalArgumentException.class)
     public void setModelRequiresBeanListComboBoxModel() throws Exception {
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat());
+        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(format);
 
         comboBox.setModel(new DefaultComboBoxModel<>());
+    }
+
+    protected List<TestBean> beanList(String... names) {
+        return Arrays.stream(names).map(name -> name == null ? null : new TestBean(name)).collect(Collectors.toList());
     }
 
     @Test
     public void firesItemStateChangeForNullSelection() throws Exception {
         ItemListener listener = mock(ItemListener.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), Lists.newArrayList(null, new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "aaa")).get();
         comboBox.addItemListener(listener);
 
         comboBox.setSelectedIndex(1);
@@ -80,8 +88,7 @@ public class BeanListComboBoxTest {
 
     @Test
     public void keySelectionNoMatch() throws Exception {
-        ArrayList<TestBean> beans = Lists.newArrayList(null, new TestBean("abc"), new TestBean("aei"), new TestBean("eio"));
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), beans);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "abc", "aei", "eio")).get();
 
         comboBox.selectWithKeyChar('x');
 
@@ -90,8 +97,7 @@ public class BeanListComboBoxTest {
 
     @Test
     public void keySelectionByInitialChar() throws Exception {
-        ArrayList<TestBean> beans = Lists.newArrayList(null, new TestBean("abc"), new TestBean("aei"), new TestBean("eio"));
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), beans);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "abc", "aei", "eio")).get();
 
         comboBox.selectWithKeyChar('a');
 
@@ -100,8 +106,7 @@ public class BeanListComboBoxTest {
 
     @Test
     public void keySelectionByPrefix() throws Exception {
-        ArrayList<TestBean> beans = Lists.newArrayList(null, new TestBean("abc"), new TestBean("aei"), new TestBean("eio"));
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), beans);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "abc", "aei", "eio")).get();
 
         comboBox.selectWithKeyChar('a');
         comboBox.selectWithKeyChar('e');
@@ -116,7 +121,7 @@ public class BeanListComboBoxTest {
     @Test
     public void noValidation() throws Exception {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), Lists.newArrayList(null, new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "aaa")).get();
         comboBox.addPropertyChangeListener(BeanListComboBox.VALIDATION_MESSAGES, listener);
 
         comboBox.validateValue();
@@ -127,7 +132,7 @@ public class BeanListComboBoxTest {
     @Test
     public void editableNotValidated() throws Exception {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), Lists.newArrayList(null, new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList(null, "aaa")).get();
         comboBox.setEditable(true);
         comboBox.addPropertyChangeListener(BeanListComboBox.VALIDATION_MESSAGES, listener);
 
@@ -140,9 +145,9 @@ public class BeanListComboBoxTest {
     @Test
     public void validatesValueWhenSelectionChanges() throws Exception {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();
         comboBox.addValidationListener(listener);
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")), false);
+        comboBox.getModel().setElements(beanList("aaa"), false);
         assertThat(comboBox.getValidationMessages()).isEqualTo("required");
 
         comboBox.setSelectedIndex(0);
@@ -156,8 +161,8 @@ public class BeanListComboBoxTest {
     @Test
     public void rendererDoesNotShowValidationErrorForSelectedValue() throws Exception {
         Graphics2D g = mock(Graphics2D.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")), false);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();
+        comboBox.getModel().setElements(beanList("aaa", "bbb"), false);
         Component component = comboBox.getRenderer().getListCellRendererComponent(new JList<TestBean>(), null, 0, false, false);
 
         component.paint(g);
@@ -172,8 +177,8 @@ public class BeanListComboBoxTest {
         Graphics2D g2d = mock(Graphics2D.class);
         when(g.getFontMetrics(any())).thenReturn(fm);
         when(g.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(g2d);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa"), new TestBean("bbb")), false);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();
+        comboBox.getModel().setElements(beanList("aaa", "bbb"), false);
         Component component = comboBox.getRenderer().getListCellRendererComponent(new JList<TestBean>(), null, -1, false, false);
 
         component.paint(g);
@@ -185,10 +190,10 @@ public class BeanListComboBoxTest {
     @Test
     public void removeValidationListener() throws Exception {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), "required");
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();
         comboBox.addValidationListener(listener);
         comboBox.removeValidationListener(listener);
-        comboBox.getModel().setElements(Lists.newArrayList(new TestBean("aaa")), false);
+        comboBox.getModel().setElements(beanList("aaa"), false);
 
         comboBox.setSelectedIndex(0);
 
@@ -198,7 +203,7 @@ public class BeanListComboBoxTest {
     @Test
     public void validatedEditableComboBox() throws Exception {
         RequiredValidator validator = new RequiredValidator("required");
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), validator, Lists.newArrayList(new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList("aaa")).editable(validator).get();
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
         comboBox.addValidationListener(listener);
         assertThat(comboBox.getValidationMessages()).isEqualTo("required");
@@ -214,7 +219,7 @@ public class BeanListComboBoxTest {
     @Test
     public void settingEnabledSetsEditorEditable() throws Exception {
         RequiredValidator validator = new RequiredValidator("required");
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), validator, Lists.newArrayList(new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList("aaa")).editable(validator).get();
 
         comboBox.setEnabled(false);
         assertThat(comboBox.getEditorComponent().isEditable()).isFalse();
@@ -231,7 +236,7 @@ public class BeanListComboBoxTest {
     @Test
     public void getSelectedItemParsesTextInput() throws Exception {
         RequiredValidator validator = new RequiredValidator("required");
-        BeanListComboBox<TestBean> comboBox = new BeanListComboBox<>(new BeanFormat(), validator, Lists.newArrayList(new TestBean("aaa")));
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.builder(format, beanList("aaa")).editable(validator).get();
 
         ((JTextComponent) comboBox.getEditor().getEditorComponent()).setText("bbb");
 
