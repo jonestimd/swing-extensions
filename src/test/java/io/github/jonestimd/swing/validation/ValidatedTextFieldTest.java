@@ -22,12 +22,13 @@
 package io.github.jonestimd.swing.validation;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 
 import org.junit.Test;
 
@@ -38,37 +39,39 @@ public class ValidatedTextFieldTest {
     private final Validator<String> validator = new RequiredValidator(MESSAGE);
 
     @Test
-    public void setNonNullBorderWrappsValidationBorder() throws Exception {
+    public void setNonNullBorderWrapsValidationBorder() throws Exception {
         ValidatedTextField field = new ValidatedTextField(validator);
-        Border border = BorderFactory.createEmptyBorder();
+        field.setSize(new Dimension(30, 16));
+        Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
         field.setBorder(border);
 
-        assertThat(field.getBorder()).isInstanceOf(CompoundBorder.class);
-        CompoundBorder compoundBorder = (CompoundBorder) field.getBorder();
-        assertThat(compoundBorder.getInsideBorder()).isInstanceOf(ValidationBorder.class);
-        assertThat(compoundBorder.getOutsideBorder()).isSameAs(border);
+        assertThat(field.getBorder()).isSameAs(border);
+        assertThat(field.getValidationBorder().isValid()).isFalse();
+        assertThat(field.getInsets()).isEqualTo(new Insets(1, 1, 1, 17));
     }
 
     @Test
-    public void setNullBorderWrappsValidationBorder() throws Exception {
+    public void setNullBorderWrapsValidationBorder() throws Exception {
         ValidatedTextField field = new ValidatedTextField(validator);
+        field.setSize(new Dimension(30, 16));
 
         field.setBorder(null);
 
-        assertThat(field.getBorder()).isInstanceOf(ValidationBorder.class);
+        assertThat(field.getBorder()).isNull();
+        assertThat(field.getValidationBorder()).isNotNull();
+        assertThat(field.getInsets()).isEqualTo(new Insets(0, 0, 0, 16));
     }
 
     @Test
     public void validatesValueWhenTextChanges() throws Exception {
         ValidatedTextField field = new ValidatedTextField(validator);
-        field.setBorder(null);
-        assertThat(((ValidationBorder) field.getBorder()).isValid()).isFalse();
+        assertThat(field.getValidationBorder().isValid()).isFalse();
         assertThat(field.getValidationMessages()).isEqualTo(MESSAGE);
 
         field.setText("abc");
 
-        assertThat(((ValidationBorder) field.getBorder()).isValid()).isTrue();
+        assertThat(field.getValidationBorder().isValid()).isTrue();
         assertThat(field.getValidationMessages()).isNull();
     }
 
@@ -99,27 +102,25 @@ public class ValidatedTextFieldTest {
     @Test
     public void settingNotEditableClearsError() throws Exception {
         ValidatedTextField field = new ValidatedTextField(validator);
-        field.setBorder(null);
         field.validateValue();
         assertThat(field.getValidationMessages()).isEqualTo(MESSAGE);
 
         field.setEditable(false);
 
         assertThat(field.getValidationMessages()).isNull();
-        assertThat(((ValidationBorder) field.getBorder()).isValid()).isTrue();
+        assertThat(field.getValidationBorder().isValid()).isTrue();
     }
 
     @Test
     public void settingEditableShowsError() throws Exception {
         ValidatedTextField field = new ValidatedTextField(validator);
         field.setEditable(false);
-        field.setBorder(null);
         field.validateValue();
         assertThat(field.getValidationMessages()).isNull();
 
         field.setEditable(true);
 
         assertThat(field.getValidationMessages()).isEqualTo(MESSAGE);
-        assertThat(((ValidationBorder) field.getBorder()).isValid()).isFalse();
+        assertThat(field.getValidationBorder().isValid()).isFalse();
     }
 }

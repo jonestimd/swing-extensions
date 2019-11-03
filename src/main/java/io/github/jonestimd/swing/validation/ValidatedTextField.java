@@ -31,7 +31,7 @@ import javax.swing.text.Document;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
 /**
- * Extends {@link JTextField} to add validation.  Uses {@link ValidationBorder} to provide visual feedback when
+ * Extends {@link JTextField} to add validation.  Uses {@link ValidationTooltipBorder} to provide visual feedback when
  * there is a validation error.  Validation is disabled when the component is not editable.
  */
 public class ValidatedTextField extends JTextField implements ValidatedComponent {
@@ -48,7 +48,16 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     }
 
     /**
-     * Overridden to wrap the {@link ValidationBorder} with the input border.
+     * Overridden return the border wrapping the {@link ValidationTooltipBorder}.
+     */
+    public Border getBorder() {
+        Border border = super.getBorder();
+        if (border instanceof CompoundBorder) return ((CompoundBorder) border).getOutsideBorder();
+        return null;
+    }
+
+    /**
+     * Overridden to wrap the {@link ValidationTooltipBorder} with the input border.
      * @param border the border to add around the {@code ValidationBorder} or null
      *        to use the {@code ValidationBorder} alone
      */
@@ -60,6 +69,10 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         else {
             super.setBorder(new CompoundBorder(border, validationBorder));
         }
+    }
+
+    protected ValidationTooltipBorder getValidationBorder() {
+        return validationBorder;
     }
 
     /**
