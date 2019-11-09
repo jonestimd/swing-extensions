@@ -23,17 +23,15 @@ package io.github.jonestimd.swing.table;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.util.Collection;
 
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JWindow;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.JFrameRobotTest;
 import org.junit.Test;
@@ -131,13 +129,8 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         robot.pressAndReleaseKeys(VK_DOWN, VK_SPACE);
 
         robot.pressAndReleaseKey(VK_G, ALT_MASK);
-        JWindow popupWindow = (JWindow) robot.finder().find(c -> c.getClass() == JWindow.class);
-        Collection<Component> inputs = robot.finder().findAll(popupWindow, c -> c.isVisible() && c.isShowing() && c instanceof JTextComponent);
-        robot.click(inputs.stream().findFirst().get(), new Point(5,5));
-        robot.enterText("0\t187\t61\t");
-        robot.pressAndReleaseKeys(VK_ENTER);
 
-        assertCondition(() -> !popupWindow.isShowing(), "popup window closed", 1000L);
-        assertThat(tableModel.getValueAt(0, 0)).isEqualTo(new Color(0, 187, 61));
+        JTabbedPane tabbedPane = robot.finder().findByType(JTabbedPane.class);
+        assertThat(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex())).isEqualTo("RGB");
     }
 }
