@@ -48,15 +48,6 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     }
 
     /**
-     * Overridden to return the border wrapping the {@link ValidationTooltipBorder}.
-     */
-    public Border getBorder() {
-        Border border = super.getBorder();
-        if (border instanceof CompoundBorder) return ((CompoundBorder) border).getOutsideBorder();
-        return null;
-    }
-
-    /**
      * Overridden to wrap the {@link ValidationTooltipBorder} with the input border.
      * @param border the border to add around the {@code ValidationBorder} or null
      *        to use the {@code ValidationBorder} alone
@@ -69,10 +60,6 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         else {
             super.setBorder(new CompoundBorder(border, validationBorder));
         }
-    }
-
-    protected ValidationTooltipBorder getValidationBorder() {
-        return validationBorder;
     }
 
     /**
