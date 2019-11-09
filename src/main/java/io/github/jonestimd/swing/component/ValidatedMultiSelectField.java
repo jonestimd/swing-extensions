@@ -21,22 +21,16 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.function.BiPredicate;
 
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-
 import io.github.jonestimd.swing.validation.ValidatedComponent;
 import io.github.jonestimd.swing.validation.ValidationSupport;
-import io.github.jonestimd.swing.validation.ValidationTooltipBorder;
 import io.github.jonestimd.swing.validation.Validator;
 
 public class ValidatedMultiSelectField extends MultiSelectField implements ValidatedComponent {
     private final ValidationSupport<List<String>> validationSupport = new ValidationSupport<>(this);
-    private ValidationTooltipBorder validationBorder;
 
     public ValidatedMultiSelectField(boolean showItemDelete, boolean opaqueItems) {
         this(showItemDelete, opaqueItems, DEFAULT_IS_VALID_ITEM);
@@ -44,33 +38,7 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
 
     public ValidatedMultiSelectField(boolean showItemDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
         super(showItemDelete, opaqueItems, isValidItem);
-        this.validationBorder = new ValidationTooltipBorder(this);
-        super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
         validateValue();
-    }
-
-    /**
-     * Overridden to return the border wrapping the {@link ValidationTooltipBorder}.
-     */
-    public Border getBorder() {
-        Border border = super.getBorder();
-        if (border instanceof CompoundBorder) return ((CompoundBorder) border).getOutsideBorder();
-        return null;
-    }
-
-    /**
-     * Overridden to wrap the {@link ValidationTooltipBorder} with the input border.
-     * @param border the border to add around the {@code ValidationBorder} or null
-     *        to use the {@code ValidationBorder} alone
-     */
-    @Override
-    public void setBorder(Border border) {
-        if (border == null) {
-            super.setBorder(validationBorder);
-        }
-        else {
-            super.setBorder(new CompoundBorder(border, validationBorder));
-        }
     }
 
     @Override
@@ -79,17 +47,13 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
         validateValue();
     }
 
-    protected ValidationTooltipBorder getValidationBorder() {
-        return validationBorder;
-    }
-
     public void setValidator(Validator<List<String>> validator) {
-        validationBorder.setValid(validationSupport.setValidator(validator, getItems()) == null);
+        validationSupport.setValidator(validator, getItems());
     }
 
     @Override
     public void validateValue() {
-        validationBorder.setValid(validationSupport.validateValue(getItems()) == null);
+        validationSupport.validateValue(getItems());
     }
 
     @Override
@@ -105,15 +69,5 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
     @Override
     public void removeValidationListener(PropertyChangeListener listener) {
         validationSupport.removeValidationListener(listener);
-    }
-
-    @Override
-    public Cursor getCursor() {
-        return validationBorder.isMouseOverIndicator() ? Cursor.getDefaultCursor() : super.getCursor();
-    }
-
-    @Override
-    public String getToolTipText() {
-        return validationBorder.isMouseOverIndicator() ? validationSupport.getMessages() : super.getToolTipText();
     }
 }

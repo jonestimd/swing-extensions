@@ -21,17 +21,11 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.border.Border;
-
-import io.github.jonestimd.swing.component.MultiSelectField.Builder;
 import io.github.jonestimd.swing.validation.Validator;
 import org.junit.Test;
 
@@ -45,13 +39,6 @@ public class ValidatedMultiSelectFieldTest {
     private ValidatedMultiSelectField field;
     private Validator<List<String>> validator = (items) -> items.isEmpty() ? REQUIRED : null;
     private PropertyChangeListener listener = mock(PropertyChangeListener.class);
-
-    @Test
-    public void indicatesValidationError() throws Exception {
-        field = (ValidatedMultiSelectField) new Builder(false, true).validator(validator).get();
-
-        assertThat(field.getValidationBorder().isValid()).isFalse();
-    }
 
     protected void newField() {
         field = new ValidatedMultiSelectField(false, true);
@@ -68,30 +55,5 @@ public class ValidatedMultiSelectFieldTest {
 
         verify(listener).propertyChange(matches(new PropertyChangeEvent(field, VALIDATION_MESSAGES, REQUIRED, null)));
         assertThat(field.getValidationMessages()).isNull();
-    }
-
-    @Test
-    public void setNonNullBorderWrapsValidationBorder() throws Exception {
-        newField();
-        field.setSize(new Dimension(30, 16));
-        Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-
-        field.setBorder(border);
-
-        assertThat(field.getBorder()).isSameAs(border);
-        assertThat(field.getValidationBorder().isValid()).isFalse();
-        assertThat(field.getInsets()).isEqualTo(new Insets(1, 1, 1, 17));
-    }
-
-    @Test
-    public void setNullBorderWrapsValidationBorder() throws Exception {
-        newField();
-        field.setSize(new Dimension(30, 16));
-
-        field.setBorder(null);
-
-        assertThat(field.getBorder()).isNull();
-        assertThat(field.getValidationBorder()).isNotNull();
-        assertThat(field.getInsets()).isEqualTo(new Insets(0, 0, 0, 16));
     }
 }
