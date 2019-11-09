@@ -291,7 +291,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void builder_setsIsValidPredicate() throws Exception {
-        BiPredicate<MultiSelectField, String> isValid = (field, text) -> field.getItems().contains(text);
+        BiPredicate<MultiSelectField, String> isValid = (field, text) -> !field.getItems().contains(text);
         multiSelectField = MultiSelectField.builder(false, true).pendingItemValidator(isValid).items(Arrays.asList("one", "two")).get();
         showWindow();
 
