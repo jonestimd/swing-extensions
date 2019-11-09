@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.UIManager;
 
@@ -33,24 +34,28 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class MultiSelectListCellRendererTest {
-    private static final Function<String, List<String>> GETTER = (value) -> Arrays.asList(value.split(","));
+    private static final Function<String[], List<String>> GETTER = Arrays::asList;
 
-    private JList<String> listComponent = new JList<>();
+    private JList<String[]> listComponent = new JList<>();
+
+    private String[] items(String... items) {
+        return items;
+    }
 
     @Test
     public void defaultsToOpaque() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(false, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(false, GETTER);
 
         assertThat(renderer.isOpaque()).isTrue();
         assertThat(renderer.isEnabled()).isEqualTo(listComponent.isEnabled());
-        assertThat(renderer.getListCellRendererComponent(listComponent, "abc", 0, false, false)).isSameAs(renderer);
+        assertThat(renderer.getListCellRendererComponent(listComponent, items("abc"), 0, false, false)).isSameAs(renderer);
     }
 
     @Test
     public void usesListColors() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
-        renderer.getListCellRendererComponent(listComponent, "abc,xyz", 0, false, false);
+        renderer.getListCellRendererComponent(listComponent, items("abc", "xyz"), 0, false, false);
 
         assertThat(renderer.getForeground()).isEqualTo(listComponent.getForeground());
         assertThat(renderer.getBackground()).isEqualTo(listComponent.getBackground());
@@ -58,28 +63,53 @@ public class MultiSelectListCellRendererTest {
 
     @Test
     public void usesListSelectionColors() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
-        renderer.getListCellRendererComponent(listComponent, "abc,xyz", 0, true, false);
+        renderer.getListCellRendererComponent(listComponent, items("abc,xyz"), 0, true, false);
 
         assertThat(renderer.getForeground()).isEqualTo(listComponent.getSelectionForeground());
         assertThat(renderer.getBackground()).isEqualTo(listComponent.getSelectionBackground());
     }
 
     @Test
-    public void displaysNothingForNullValue() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+    public void displaysMarkerForNullValue() throws Exception {
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
         renderer.getListCellRendererComponent(listComponent, null, 0, false, false);
 
-        assertThat(renderer.getComponentCount()).isEqualTo(0);
+        assertMarker(renderer);
+    }
+
+    @Test
+    public void displaysMarkerForEmptyItems() throws Exception {
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+
+        renderer.getListCellRendererComponent(listComponent, items(), 0, false, false);
+
+        assertMarker(renderer);
+    }
+
+    @Test
+    public void displaysMarkerForNullItems() throws Exception {
+        Function<String[], List<String>> getter = (value) -> null;
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, getter);
+
+        renderer.getListCellRendererComponent(listComponent, items(), 0, false, false);
+
+        assertMarker(renderer);
+    }
+
+    private void assertMarker(MultiSelectListCellRenderer<String[]> renderer) {
+        assertThat(renderer.getComponentCount()).isEqualTo(1);
+        assertThat(renderer.getComponent(0)).isInstanceOf(JLabel.class);
+        assertThat(((JLabel) renderer.getComponent(0)).getText()).isEqualTo("\u2023");
     }
 
     @Test
     public void displaysMultiSelectItemsForValue() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
-        renderer.getListCellRendererComponent(listComponent, "abc,def", 0, false, false);
+        renderer.getListCellRendererComponent(listComponent, items("abc", "def"), 0, false, false);
 
         assertThat(renderer.getComponentCount()).isEqualTo(2);
         assertThat(((MultiSelectItem) renderer.getComponent(0)).getText()).isEqualTo("abc");
@@ -88,18 +118,18 @@ public class MultiSelectListCellRendererTest {
 
     @Test
     public void displaysFocusBorder() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
-        renderer.getListCellRendererComponent(listComponent, "abc", 0, false, true);
+        renderer.getListCellRendererComponent(listComponent, items("abc"), 0, false, true);
 
         assertThat(renderer.getBorder()).isEqualTo(UIManager.getBorder("List.focusCellHighlightBorder", renderer.getLocale()));
     }
 
     @Test
     public void displaysSelectedFocusBorder() throws Exception {
-        MultiSelectListCellRenderer<String> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
+        MultiSelectListCellRenderer<String[]> renderer = new MultiSelectListCellRenderer<>(true, GETTER);
 
-        renderer.getListCellRendererComponent(listComponent, "abc", 0, true, true);
+        renderer.getListCellRendererComponent(listComponent, items("abc"), 0, true, true);
 
         assertThat(renderer.getBorder()).isEqualTo(UIManager.getBorder("List.focusCellHighlightBorder", renderer.getLocale()));
     }

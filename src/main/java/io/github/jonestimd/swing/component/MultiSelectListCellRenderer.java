@@ -22,11 +22,13 @@
 package io.github.jonestimd.swing.component;
 
 import java.awt.Component;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
@@ -62,12 +64,13 @@ public class MultiSelectListCellRenderer<T> extends Box implements ListCellRende
         }
 
         removeAll();
-        if (value != null) {
-            for (String item : getter.apply(value)) {
+        List<String> items = value == null ? Collections.emptyList() : getter.apply(value);
+        if (items == null || items.isEmpty()) add(new JLabel("\u2023"));
+        else {
+            for (String item : items) {
                 add(getMultiSelectItem(list, item));
             }
         }
-
         setEnabled(list.isEnabled());
 
         Border border = null;
