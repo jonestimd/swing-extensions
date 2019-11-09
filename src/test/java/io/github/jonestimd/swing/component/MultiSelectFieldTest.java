@@ -41,6 +41,12 @@ import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.JFrameRobotTest;
 import io.github.jonestimd.swing.component.MultiSelectField.*;
 import org.junit.Test;
+import org.mockito.exceptions.verification.VerificationInOrderFailure;
+import org.mockito.internal.verification.AtLeast;
+import org.mockito.internal.verification.api.VerificationData;
+import org.mockito.invocation.Invocation;
+import org.mockito.invocation.MatchableInvocation;
+import org.mockito.verification.VerificationMode;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static io.github.jonestimd.swing.component.MultiSelectField.*;
@@ -87,7 +93,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
         List<String> newItems = Arrays.asList("apple", "banana", "cherry");
         assertThat(multiSelectField.getItems()).isEqualTo(newItems);
-        verify(listener).propertyChange(matches(new PropertyChangeEvent(multiSelectField, ITEMS_PROPERTY, null, newItems)));
+        verify(listener, last()).propertyChange(matches(new PropertyChangeEvent(multiSelectField, ITEMS_PROPERTY, null, newItems)));
     }
 
     @Test
@@ -104,7 +110,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void jumpsToEndOnTextKeystrokesBetweenItems() throws Exception {
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
         robot.enterText("pea");
@@ -119,7 +125,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
     @Test
     public void deleteRemovesAnItem() throws Exception {
         List<String> items = Arrays.asList("apple", "banana", "cherry");
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(items).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(items).get();
         multiSelectField.addPropertyChangeListener(ITEMS_PROPERTY, listener);
         showWindow();
         robot.focus(multiSelectField);
@@ -133,7 +139,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void deleteRemovesACharacter() throws Exception {
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(Arrays.asList("apple", "banana", "cherry")).get();
         multiSelectField.addPropertyChangeListener(ITEMS_PROPERTY, listener);
         showWindow();
         robot.focus(multiSelectField);
@@ -142,9 +148,10 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.pressAndReleaseKeys(KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, KeyEvent.VK_DELETE);
         robot.waitForIdle();
 
-        assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
+        assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry", "peach");
         assertThat(multiSelectField.getText()).endsWith("peach");
-        verifyNoInteractions(listener);
+        verify(listener, last()).propertyChange(matches(new PropertyChangeEvent(multiSelectField, ITEMS_PROPERTY, null,
+                Arrays.asList("apple", "banana", "cherry", "peach"))));
     }
 
     @Test
@@ -175,7 +182,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void backspaceRemovesACharacter() throws Exception {
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(Arrays.asList("apple", "banana", "cherry")).get();
         showWindow();
         robot.focus(multiSelectField);
         robot.enterText("peacch");
@@ -183,14 +190,14 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.pressAndReleaseKeys(KeyEvent.VK_LEFT, KeyEvent.VK_BACK_SPACE);
         robot.waitForIdle();
 
-        assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry");
+        assertThat(multiSelectField.getItems()).containsExactly("apple", "banana", "cherry", "peach");
         assertThat(multiSelectField.getText()).endsWith("peach");
     }
 
     @Test
     public void deleteButtonRemovesItem() throws Exception {
         List<String> items = Arrays.asList("apple", "banana", "cherry");
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(items).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(items).get();
         multiSelectField.addPropertyChangeListener(ITEMS_PROPERTY, listener);
         showWindow();
 
@@ -203,7 +210,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
 
     @Test
     public void removeItemIgnoresInvalidValue() throws Exception {
-        multiSelectField = new MultiSelectField.Builder(true, true).setItems(Arrays.asList("apple", "banana", "cherry")).get();
+        multiSelectField = new MultiSelectField.Builder(true, true).items(Arrays.asList("apple", "banana", "cherry")).get();
 
         multiSelectField.removeItem(new MultiSelectItem("mango", true, true));
 
@@ -256,7 +263,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.waitForIdle();
 
         assertThat(multiSelectField.isFocusOwner()).isFalse();
-        assertThat(multiSelectField.getItems()).isEmpty();
+        assertThat(multiSelectField.getItems()).containsExactly("peach");
         assertThat(multiSelectField.getText()).isEqualTo("peach");
     }
 
@@ -286,7 +293,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
     @Test
     public void builder_setsIsValidPredicate() throws Exception {
         BiPredicate<MultiSelectField, String> isValid = (field, text) -> !field.getItems().contains(text);
-        multiSelectField = new Builder(false, true, isValid).setItems(Arrays.asList("one", "two")).get();
+        multiSelectField = new Builder(false, true).pendingItemValidator(isValid).items(Arrays.asList("one", "two")).get();
         showWindow();
 
         robot.focus(multiSelectField);
@@ -294,6 +301,21 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         robot.pressAndReleaseKeys(KeyEvent.VK_ENTER);
         robot.waitForIdle();
 
-        assertThat(multiSelectField.getItems()).containsExactly("one", "two");
+        assertThat(multiSelectField.isValidItem()).isFalse();
+        assertThat(multiSelectField.getText().substring(2)).isEqualTo("one");
+    }
+
+    private static VerificationMode last() {
+        return new AtLeast(1) {
+            @Override
+            public void verify(VerificationData data) {
+                super.verify(data);
+                MatchableInvocation wanted = data.getTarget();
+                List<Invocation> invocations = data.getAllInvocations();
+                if (!wanted.matches(invocations.get(invocations.size()-1))) {
+                    throw new VerificationInOrderFailure("Last invocation does not match " + wanted.toString());
+                }
+            }
+        };
     }
 }

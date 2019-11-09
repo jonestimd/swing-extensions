@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -17,34 +19,34 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-package io.github.jonestimd.swing.validation;
+package io.github.jonestimd.swing.component;
 
 import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.function.BiPredicate;
 
-import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
-import io.github.jonestimd.swing.DocumentChangeHandler;
+import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidationSupport;
+import io.github.jonestimd.swing.validation.ValidationTooltipBorder;
+import io.github.jonestimd.swing.validation.Validator;
 
-/**
- * Extends {@link JTextField} to add validation.  Uses {@link ValidationTooltipBorder} to provide visual feedback when
- * there is a validation error.  Validation is disabled when the component is not editable.
- */
-public class ValidatedTextField extends JTextField implements ValidatedComponent {
+public class ValidatedMultiSelectField extends MultiSelectField implements ValidatedComponent {
+    private final ValidationSupport<List<String>> validationSupport = new ValidationSupport<>(this);
     private ValidationTooltipBorder validationBorder;
-    private final ValidationSupport<String> validationSupport;
-    private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
-    public ValidatedTextField(Validator<String> validator) {
-        this.validationSupport = new ValidationSupport<>(this, value -> isEditable() ? validator.validate(value) : null);
+    public ValidatedMultiSelectField(boolean showItemDelete, boolean opaqueItems) {
+        this(showItemDelete, opaqueItems, DEFAULT_IS_VALID_ITEM);
+    }
+
+    public ValidatedMultiSelectField(boolean showItemDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem) {
+        super(showItemDelete, opaqueItems, isValidItem);
         this.validationBorder = new ValidationTooltipBorder(this);
         super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
         validateValue();
-        getDocument().addDocumentListener(validationHandler);
     }
 
     /**
@@ -71,22 +73,23 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
         }
     }
 
+    @Override
+    protected void fireItemsChanged() {
+        super.fireItemsChanged();
+        validateValue();
+    }
+
     protected ValidationTooltipBorder getValidationBorder() {
         return validationBorder;
     }
 
-    /**
-     * Overridden to update validation.
-     */
-    @Override
-    public void setEditable(boolean editable) {
-        super.setEditable(editable);
-        if (getDocument() != null) validateValue();
+    public void setValidator(Validator<List<String>> validator) {
+        validationBorder.setValid(validationSupport.setValidator(validator, getItems()) == null);
     }
 
     @Override
     public void validateValue() {
-        validationBorder.setValid(validationSupport.validateValue(getText()) == null);
+        validationBorder.setValid(validationSupport.validateValue(getItems()) == null);
     }
 
     @Override
@@ -102,15 +105,6 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     @Override
     public void removeValidationListener(PropertyChangeListener listener) {
         validationSupport.removeValidationListener(listener);
-    }
-
-    @Override
-    public void setDocument(Document document) {
-        if (getDocument() != null) {
-            getDocument().removeDocumentListener(validationHandler);
-        }
-        super.setDocument(document);
-        document.addDocumentListener(validationHandler);
     }
 
     @Override

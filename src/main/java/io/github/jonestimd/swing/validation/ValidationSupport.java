@@ -44,9 +44,9 @@ public class ValidationSupport<T> {
         this.validator = validator;
     }
 
-    public void setValidator(Validator<T> validator, T value) {
+    public String setValidator(Validator<T> validator, T value) {
         this.validator = validator;
-        validateValue(value);
+        return validateValue(value);
     }
 
     public String validateValue(T value) {
