@@ -291,31 +291,47 @@ public class MultiSelectField extends JTextPane {
         }
     }
 
+    public static Builder<MultiSelectField> builder(boolean showDelete, boolean opaqueItems) {
+        return new Builder<>(showDelete, opaqueItems, MultiSelectField::new);
+    }
+
     /**
      * Helper class for building a {@link MultiSelectField}.
      */
-    public static class Builder {
+    public static class Builder<T extends MultiSelectField> {
         private final boolean showDelete;
         private final boolean opaqueItems;
         private BiPredicate<MultiSelectField, String> isValidItem = DEFAULT_IS_VALID_ITEM;
         private Collection<String> items;
-        private Validator<List<String>> validator;
         private boolean disableTab;
         private boolean yieldFocusOnError = true;
         private boolean keepTextOnFocusLost;
+        private Constructor<T> constructor;
 
         /**
          * @see MultiSelectField#MultiSelectField(boolean, boolean)
          */
-        public Builder(boolean showDelete, boolean opaqueItems) {
+        protected Builder(boolean showDelete, boolean opaqueItems, Constructor<T> constructor) {
+            this.constructor = constructor;
             this.showDelete = showDelete;
             this.opaqueItems = opaqueItems;
+        }
+
+        protected Builder(Builder<?> source, Constructor<T> constructor) {
+            this.showDelete = source.showDelete;
+            this.opaqueItems = source.opaqueItems;
+            this.isValidItem = source.isValidItem;
+            this.items = source.items;
+            this.disableTab = source.disableTab;
+            this.yieldFocusOnError = source.yieldFocusOnError;
+            this.keepTextOnFocusLost = source.keepTextOnFocusLost;
+            this.constructor = constructor;
         }
 
         /**
          * Set the pending item validator.
          */
-        public Builder pendingItemValidator(BiPredicate<MultiSelectField, String> isValidItem) {
+        public Builder<T> pendingItemValidator(BiPredicate<MultiSelectField, String> isValidItem) {
             this.isValidItem = isValidItem;
             return this;
         }
@@ -323,7 +339,7 @@ public class MultiSelectField extends JTextPane {
         /**
          * Initialize the list of values in the field.
          */
-        public Builder items(Collection<String> items) {
+        public Builder<T> items(Collection<String> items) {
             this.items = items;
             return this;
         }
@@ -331,25 +347,29 @@ public class MultiSelectField extends JTextPane {
         /**
          * Set the item list validator.  Creates a {@link ValidatedMultiSelectField}.
          */
-        public Builder validator(Validator<List<String>> validator) {
-            this.validator = validator;
-            return this;
+        public Builder<ValidatedMultiSelectField> validator(Validator<List<String>> validator) {
+            Constructor<ValidatedMultiSelectField> constructor = (showDelete, opaqueItems, isValidItem) -> {
+                ValidatedMultiSelectField validatedField = new ValidatedMultiSelectField(showDelete, opaqueItems, isValidItem);
+                validatedField.setValidator(validator);
+                return validatedField;
+            };
+            return new Builder<>(this, constructor);
         }
 
         /**
          * Disable <code>tab</code> as text input and enable focus traversal using <code>tab</code> and <code>shift tab</code>.
          */
-        public Builder disableTab() {
+        public Builder<T> disableTab() {
             this.disableTab = true;
             return this;
         }
 
-        public Builder setYieldFocusOnError(boolean yieldFocusOnError) {
+        public Builder<T> setYieldFocusOnError(boolean yieldFocusOnError) {
             this.yieldFocusOnError = yieldFocusOnError;
             return this;
         }
 
-        public Builder setKeepTextOnFocusLost(boolean keepTextOnFocusLost) {
+        public Builder<T> setKeepTextOnFocusLost(boolean keepTextOnFocusLost) {
             this.keepTextOnFocusLost = keepTextOnFocusLost;
             return this;
         }
@@ -357,8 +377,8 @@ public class MultiSelectField extends JTextPane {
         /**
          * @return a {@link MultiSelectField} or {@link ValidatedMultiSelectField}
          */
-        public MultiSelectField get() {
-            final MultiSelectField field = newField();
+        public T get() {
+            final T field = constructor.get(showDelete, opaqueItems, isValidItem);
             if (items != null) field.setItems(items);
             if (disableTab) {
                 field.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "disable-insert-tab");
@@ -369,12 +389,9 @@ public class MultiSelectField extends JTextPane {
             field.setKeepTextOnFocusLost(keepTextOnFocusLost);
             return field;
         }
+    }
 
-        private MultiSelectField newField() {
-            if (validator == null) return new MultiSelectField(showDelete, opaqueItems, isValidItem);
-            ValidatedMultiSelectField validatedField = new ValidatedMultiSelectField(showDelete, opaqueItems, isValidItem);
-            validatedField.setValidator(validator);
-            return validatedField;
-        }
+    protected interface Constructor<T extends MultiSelectField> {
+        T get(boolean showDelete, boolean opaqueItems, BiPredicate<MultiSelectField, String> isValidItem);
     }
 }
