@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
@@ -231,6 +232,10 @@ public class ComponentFactory {
     }
 
     public static <T extends Enum<T>> BeanListComboBox<T> newComboBox(Class<T> enumClass, String requiredMessage) {
-        return BeanListComboBox.builder(new ToStringFormat(), Arrays.asList(enumClass.getEnumConstants())).required(requiredMessage).get();
+        return newComboBox(Arrays.asList(enumClass.getEnumConstants()), requiredMessage);
+    }
+
+    public static <T extends Enum<T>> BeanListComboBox<T> newComboBox(List<T> items, String requiredMessage) {
+        return BeanListComboBox.builder(new ToStringFormat(), items).required(requiredMessage).get();
     }
 }
