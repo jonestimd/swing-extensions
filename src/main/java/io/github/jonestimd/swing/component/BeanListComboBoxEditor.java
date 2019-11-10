@@ -106,7 +106,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         return item != null && indexOf(format.format(item)) < 0;
     }
 
-    @SuppressWarnings("unchecked")
     protected T getItem(String displayText) {
         if (displayText != null && displayText.length() > 0) {
             int index = indexOf(displayText);
@@ -137,7 +136,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         return item == null ? null : format.format(item);
     }
 
-    @SuppressWarnings("unchecked")
     protected String getFirstMatch(String displayText) {
         Object item = prefixSelector.selectMatch(model, displayText);
         if (item != null) {
@@ -151,7 +149,6 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
 
     private void documentChange() {
         String text = editor.getText();
-        ((ValidatedTextField) editor).validateValue();
         String selected = itemToString(model.getSelectedItem());
         if (text.length() > 0 && (selected == null || !selected.equalsIgnoreCase(text))) {
             SwingUtilities.invokeLater(this::autoComplete);

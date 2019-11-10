@@ -30,7 +30,7 @@ public interface ValidatedComponent {
     String VALIDATION_MESSAGES = "validationMessages";
 
     /**
-     * Perform validation of the current value.
+     * Perform validation of the current value.  Useful when validation depends on another component.
      */
     void validateValue();
 

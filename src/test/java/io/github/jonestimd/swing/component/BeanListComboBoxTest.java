@@ -213,7 +213,6 @@ public class BeanListComboBoxTest {
         assertThat(comboBox.getValidationMessages()).isNull();
         InOrder inOrder = inOrder(listener);
         inOrder.verify(listener).propertyChange(propertyEvent(BeanListComboBox.VALIDATION_MESSAGES, "required", null));
-        inOrder.verify(listener).propertyChange(propertyEvent(BeanListComboBox.VALIDATION_MESSAGES, null, null));
     }
 
     @Test
