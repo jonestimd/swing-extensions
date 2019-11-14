@@ -31,7 +31,7 @@ import io.github.jonestimd.swing.list.BeanListModel;
  * A {@link MutableComboBoxModel} that supports lazy loading.
  * @param <T> the class of the beans in the model
  */
-public class BeanListComboBoxModel<T> extends BeanListModel<T> implements LazyLoadComboBoxModel<T> {
+public class BeanListComboBoxModel<T> extends BeanListModel<T> implements LazyLoadComboBoxModel<T>, MutableComboBoxModel<T> {
     private T selectedElement;
 
     public BeanListComboBoxModel() {
