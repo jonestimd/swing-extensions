@@ -26,6 +26,7 @@ import java.awt.Graphics;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Format;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.ComboBoxModel;
@@ -36,6 +37,7 @@ import io.github.jonestimd.swing.validation.ValidatedComponent;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.ValidationBorder;
 import io.github.jonestimd.swing.validation.Validator;
+import io.github.jonestimd.text.ToStringFormat;
 
 /**
  * Extends {@link JComboBox} to display a list of beans using a {@link Format} to render the list items.  Also handles
@@ -46,7 +48,7 @@ import io.github.jonestimd.swing.validation.Validator;
  * @see BeanListComboBoxEditor
  */
 public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedComponent {
-    private String requiredMessage;
+    private Validator<T> validator;
     private String validationMessages;
 
     public static class Builder<T> {
@@ -63,13 +65,28 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
         }
 
         /**
+         * Add a null item to the beginning of the list of options.
+         */
+        public Builder<T> optional() {
+            if (comboBox.getModel().getElementAt(0) != null) comboBox.insertItemAt(null, 0);
+            return this;
+        }
+
+        /**
          * Require that an item must be selected.
          * @param message the error message if no item is selected
          */
         public Builder<T> required(String message) {
-            comboBox.requiredMessage = message;
+            return validated(item -> item == null ? message : null);
+        }
+
+        /**
+         * Add validation of the selected item (does not make the combo box editable).
+         * @param validator the selected item validator (<strong>not</strong> the input text validator)
+         */
+        public Builder<T> validated(Validator<T> validator) {
+            comboBox.setValidator(validator);
             comboBox.addItemListener(event -> comboBox.validateValue());
-            comboBox.validateValue();
             return this;
         }
 
@@ -126,6 +143,20 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      */
     public static <T> Builder<T> builder(Format format) {
         return builder(format, new BeanListComboBoxModel<>());
+    }
+
+    /**
+     * Create a builder for a combo box that displays enum values.
+     */
+    public static <T extends Enum<T>> Builder<T> builder(Class<T> enumClass) {
+        return builder(new ToStringFormat(), Arrays.asList(enumClass.getEnumConstants()));
+    }
+
+    /**
+     * Create a builder using {@link ToStringFormat}.
+     */
+    public static <T> Builder<T> builder(Collection<T> items) {
+        return builder(new ToStringFormat(), items);
     }
 
     /**
@@ -188,6 +219,11 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
         super.setModel(aModel);
     }
 
+    public void setValidator(Validator<T> validator) {
+        this.validator = validator;
+        validateValue();
+    }
+
     @SuppressWarnings("unchecked")
     public T getSelectedItem() {
         return (T) super.getSelectedItem();
@@ -240,11 +276,10 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
 
     @Override
     public void validateValue() {
-        if (requiredMessage != null) {
+        if (validator != null) {
             String oldValue = validationMessages;
-            validationMessages = getSelectedItem() == null ? requiredMessage : null;
-            setToolTipText(validationMessages);
-            firePropertyChange(VALIDATION_MESSAGES, oldValue, validationMessages);
+            validationMessages = validator.validate(getSelectedItem());
+            firePropertyChange(ValidatedComponent.VALIDATION_MESSAGES, oldValue, validationMessages);
         }
     }
 
