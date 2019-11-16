@@ -51,8 +51,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class ValidatingTextCellEditorTest {
-    @Mock
-    private Validator<String> validator;
+    private Validator<String> validator = (value) -> "invalid".equals(value) ? "error" : null;
     @Mock
     private JTable table;
     @Mock
@@ -71,8 +70,6 @@ public class ValidatingTextCellEditorTest {
     @Test
     public void validatesOnStopEditing() throws Exception {
         when(table.getParent()).thenReturn(viewport);
-        when(validator.validate("invalid")).thenReturn("error");
-        when(validator.validate("valid")).thenReturn(null);
         ValidatingTextCellEditor editor = new ValidatingTextCellEditor(table, validator);
         ValidatedTextField component = (ValidatedTextField) editor.getTableCellEditorComponent(table, null, false, 0, 0);
 
