@@ -200,7 +200,7 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
         multiSelectField.addPropertyChangeListener(ITEMS_PROPERTY, listener);
         showWindow();
 
-        robot.click(multiSelectField, new Point(15, 12));
+        robot.click(multiSelectField.getComponent(0), new Point(5, 5));
         robot.waitForIdle();
 
         assertThat(multiSelectField.getItems()).isEqualTo(items.subList(1, 3));
