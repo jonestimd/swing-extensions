@@ -56,4 +56,15 @@ public class ValidatedMultiSelectFieldTest {
         verify(listener).propertyChange(matches(new PropertyChangeEvent(field, VALIDATION_MESSAGES, REQUIRED, null)));
         assertThat(field.getValidationMessages()).isNull();
     }
+
+    @Test
+    public void ignoresValidationWhenNotEditable() throws Exception {
+        newField();
+        field.addValidationListener(listener);
+
+        field.setEditable(false);
+
+        verify(listener).propertyChange(matches(new PropertyChangeEvent(field, VALIDATION_MESSAGES, REQUIRED, null)));
+        assertThat(field.getValidationMessages()).isNull();
+    }
 }

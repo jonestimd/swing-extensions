@@ -38,7 +38,7 @@ public class Matchers {
     }
 
     public static PropertyChangeEvent matches(final PropertyChangeEvent example) {
-        return Mockito.argThat(new ArgumentMatcher<PropertyChangeEvent>() {
+        return Mockito.argThat(new ArgumentMatcher<>() {
             @Override
             public boolean matches(PropertyChangeEvent actual) {
                 return actual.getSource() == example.getSource() &&

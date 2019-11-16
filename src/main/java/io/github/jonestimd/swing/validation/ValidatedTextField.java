@@ -40,7 +40,7 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
     public ValidatedTextField(Validator<String> validator) {
-        this.validationSupport = new ValidationSupport<>(this, value -> isEditable() ? validator.validate(value) : null);
+        this.validationSupport = new ValidationSupport<>(this, validator.when(this::isEditable));
         this.validationBorder = new ValidationTooltipBorder(this);
         super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
         validateValue();

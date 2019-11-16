@@ -159,6 +159,18 @@ public class BeanListComboBoxTest {
     }
 
     @Test
+    public void ignoresValidationWhenNotEnabled() throws Exception {
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();
+        comboBox.addValidationListener(listener);
+
+        comboBox.setEnabled(false);
+
+        assertThat(comboBox.getValidationMessages()).isNull();
+        verify(listener).propertyChange(propertyEvent(BeanListComboBox.VALIDATION_MESSAGES, "required", null));
+    }
+
+    @Test
     public void rendererDoesNotShowValidationErrorForSelectedValue() throws Exception {
         Graphics2D g = mock(Graphics2D.class);
         BeanListComboBox<TestBean> comboBox = BeanListComboBox.<TestBean>builder(format).required("required").get();

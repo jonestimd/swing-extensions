@@ -48,7 +48,7 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
     }
 
     public void setValidator(Validator<List<String>> validator) {
-        validationSupport.setValidator(validator, getItems());
+        validationSupport.setValidator(validator.when(this::isEditable), getItems());
     }
 
     @Override
@@ -69,5 +69,11 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
     @Override
     public void removeValidationListener(PropertyChangeListener listener) {
         validationSupport.removeValidationListener(listener);
+    }
+
+    @Override
+    public void setEditable(boolean editable) {
+        super.setEditable(editable);
+        if (getDocument() != null) validateValue();
     }
 }

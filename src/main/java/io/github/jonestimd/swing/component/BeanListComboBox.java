@@ -219,8 +219,11 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
         super.setModel(aModel);
     }
 
+    /**
+     * Set the validator for the selected item.
+     */
     public void setValidator(Validator<T> validator) {
-        this.validator = validator;
+        this.validator = validator.when(this::isEnabled);
         validateValue();
     }
 
@@ -272,6 +275,7 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         if (isEditable()) getEditorComponent().setEditable(enabled);
+        validateValue();
     }
 
     @Override
