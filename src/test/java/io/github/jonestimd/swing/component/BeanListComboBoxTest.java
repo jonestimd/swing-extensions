@@ -259,21 +259,21 @@ public class BeanListComboBoxTest {
     public void builderUsesEnumValues() throws Exception {
         BeanListComboBox<TestEnum> comboBox = BeanListComboBox.builder(TestEnum.class).get();
 
-        assertThat(comboBox.getModel()).containsExactly(TestEnum.ONE, TestEnum.TWO, TestEnum.THREE);
+        assertThat(comboBox.getModel()).containsExactly(TestEnum.ONE, TestEnum.THREE, TestEnum.TWO);
     }
 
     @Test
     public void builder_optional_addsNull() throws Exception {
         BeanListComboBox<TestEnum> comboBox = BeanListComboBox.builder(TestEnum.class).optional().get();
 
-        assertThat(comboBox.getModel()).containsExactly(null, TestEnum.ONE, TestEnum.TWO, TestEnum.THREE);
+        assertThat(comboBox.getModel()).containsExactly(null, TestEnum.ONE, TestEnum.THREE, TestEnum.TWO);
     }
 
     @Test
     public void builder_optional_addsNullOnce() throws Exception {
         BeanListComboBox<TestEnum> comboBox = BeanListComboBox.builder(TestEnum.class).optional().optional().get();
 
-        assertThat(comboBox.getModel()).containsExactly(null, TestEnum.ONE, TestEnum.TWO, TestEnum.THREE);
+        assertThat(comboBox.getModel()).containsExactly(null, TestEnum.ONE, TestEnum.THREE, TestEnum.TWO);
     }
 
     private enum TestEnum {ONE, TWO, THREE}

@@ -28,6 +28,9 @@ import java.beans.PropertyChangeListener;
 import java.text.Format;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
@@ -149,7 +152,9 @@ public class BeanListComboBox<T> extends JComboBox<T> implements ValidatedCompon
      * Create a builder for a combo box that displays enum values.
      */
     public static <T extends Enum<T>> Builder<T> builder(Class<T> enumClass) {
-        return builder(new ToStringFormat(), Arrays.asList(enumClass.getEnumConstants()));
+        List<T> items = Arrays.asList(enumClass.getEnumConstants());
+        items.sort(Comparator.comparing(Objects::toString));
+        return builder(new ToStringFormat(), items);
     }
 
     /**
