@@ -48,7 +48,12 @@ public abstract class PopupTableCellEditor extends AbstractCellEditor implements
     /**
      * Added to the table to track position for the popup window.
      */
-    private final JLabel editorComponent = new JLabel();
+    private final JLabel editorComponent = new JLabel() {
+        @Override
+        public void requestFocus() {
+            // called by JTable but can cause the popup to close, so ignore it
+        }
+    };
     private final HierarchyBoundsListener movementListener = new HierarchyBoundsAdapter() {
         public void ancestorMoved(HierarchyEvent e) {
             popupWindow.setLocation(getPopupLocation());
