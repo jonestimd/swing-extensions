@@ -47,6 +47,7 @@ public class MultiSelectTableCellRendererTest {
     private JTable table;
 
     private Font font = new Font(Font.DIALOG, Font.PLAIN, 12);
+    private Font altFont = new Font(Font.DIALOG, Font.BOLD, 12);
 
     @Before
     public void setupTable() throws Exception {
@@ -55,8 +56,6 @@ public class MultiSelectTableCellRendererTest {
 
     @Test
     public void addsMultiSelectItemPerListItem() throws Exception {
-        when(table.getBackground()).thenReturn(Color.PINK);
-        when(table.getForeground()).thenReturn(Color.BLUE);
         MultiSelectTableCellRenderer<String> renderer = new MultiSelectTableCellRenderer<>(true);
 
         renderer.getTableCellRendererComponent(table, Arrays.asList("one", "two"), false, false, 0, 0);
@@ -64,8 +63,6 @@ public class MultiSelectTableCellRendererTest {
         assertThat(renderer.getComponentCount()).isEqualTo(2);
         verifyComponent(renderer.getComponent(0), "one");
         verifyComponent(renderer.getComponent(1), "two");
-        assertThat(renderer.getBackground()).isEqualTo(Color.PINK);
-        assertThat(renderer.getForeground()).isEqualTo(Color.BLUE);
         assertThat(renderer.getBorder()).isInstanceOf(EmptyBorder.class);
     }
 
@@ -75,6 +72,18 @@ public class MultiSelectTableCellRendererTest {
         assertThat(((MultiSelectItem) component).isFill()).isTrue();
         assertThat(((MultiSelectItem) component).getText()).isEqualTo(text);
         assertThat(((MultiSelectItem) component).isShowDelete()).isFalse();
+    }
+
+    @Test
+    public void usesSelectedFont() throws Exception {
+        MultiSelectTableCellRenderer<String> renderer = new MultiSelectTableCellRenderer<>(true);
+        renderer.getTableCellRendererComponent(table, Arrays.asList("one", "two"), false, false, 0, 0);
+
+        renderer.setFont(altFont);
+
+        for (int i = 0; i < renderer.getComponentCount(); i++) {
+            assertThat(renderer.getComponent(i).getFont()).isSameAs(altFont);
+        }
     }
 
     @Test
