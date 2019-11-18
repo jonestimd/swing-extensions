@@ -61,7 +61,7 @@ public class FormatTableCellRendererTest {
     public void testFormatTableCellRenderer_NumberFormat() throws Exception {
         NumberFormat numberInstance = NumberFormat.getNumberInstance();
         numberInstance.setMaximumFractionDigits(9);
-        FormatTableCellRenderer renderer = new FormatTableCellRenderer(numberInstance, Highlighter.NOOP_HIGHLIGHTER);
+        FormatTableCellRenderer renderer = new FormatTableCellRenderer(numberInstance);
         BigDecimal value = new BigDecimal("98765.4321");
 
         renderer.getTableCellRendererComponent(new JTable(), value, false, false, 0, 0);
@@ -73,7 +73,7 @@ public class FormatTableCellRendererTest {
 
     @Test
     public void testFormatTableCellRenderer_NumberFormatWithNull() throws Exception {
-        FormatTableCellRenderer renderer = new FormatTableCellRenderer(NumberFormat.getNumberInstance(), Highlighter.NOOP_HIGHLIGHTER);
+        FormatTableCellRenderer renderer = new FormatTableCellRenderer(NumberFormat.getNumberInstance());
 
         renderer.getTableCellRendererComponent(new JTable(), null, false, false, 0, 0);
 
@@ -92,7 +92,7 @@ public class FormatTableCellRendererTest {
 
     @Test
     public void testFormatTableCellRenderer_IconSourceFormat() throws Exception {
-        FormatTableCellRenderer renderer = new FormatTableCellRenderer(new IconSourceFormat(), Highlighter.NOOP_HIGHLIGHTER);
+        FormatTableCellRenderer renderer = new FormatTableCellRenderer(new IconSourceFormat());
 
         renderer.getTableCellRendererComponent(new JTable(), null, false, false, 0, 0);
 

@@ -35,6 +35,14 @@ public class FormatTableCellRenderer extends HighlightTableCellRenderer {
     private final IconSource iconSource;
 
     /**
+     * Create a table cell renderer without highlighting. Will display an icon if the format implements {@link IconSource}.
+     * @param format the value format
+     */
+    public FormatTableCellRenderer(Format format) {
+        this(format, Highlighter.NOOP_HIGHLIGHTER);
+    }
+
+    /**
      * Create a table cell renderer. Will display an icon if the format implements {@link IconSource}.
      * @param format the value format
      * @param highlighter the value highlighter

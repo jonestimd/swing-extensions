@@ -28,6 +28,6 @@ import java.text.SimpleDateFormat;
  */
 public class DateTableCellRenderer extends FormatTableCellRenderer {
     public DateTableCellRenderer(String pattern) {
-        super(new SimpleDateFormat(pattern), Highlighter.NOOP_HIGHLIGHTER);
+        super(new SimpleDateFormat(pattern));
     }
 }
