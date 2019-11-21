@@ -147,6 +147,7 @@ public class TableFactory {
 
         public T get() {
             if (sortKeys != null) {
+                table.setAutoCreateRowSorter(true);  // because reusing the sorter when the model changes doesn't work
                 table.setRowSorter(newRowSorter(model, sortKeys));
             }
             return initialize(table);

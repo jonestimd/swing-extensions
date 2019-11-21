@@ -29,6 +29,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -47,6 +49,7 @@ import javax.swing.plaf.UIResource;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.ComponentDefaults;
@@ -114,6 +117,14 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
             getModel().handleClick(event, this, convertRowIndexToModel(hitRowIndex), convertColumnIndexToModel(hitColumnIndex));
         }
+    }
+
+    @Override
+    public void setModel(TableModel dataModel) {
+        boolean setSortKeys = getRowSorter() != null && getAutoCreateRowSorter();
+        List<? extends SortKey> sortKeys = setSortKeys ? getRowSorter().getSortKeys() : Collections.emptyList();
+        super.setModel(dataModel);
+        if (setSortKeys) getRowSorter().setSortKeys(sortKeys);
     }
 
     /**

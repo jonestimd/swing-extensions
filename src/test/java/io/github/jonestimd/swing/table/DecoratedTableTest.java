@@ -173,6 +173,30 @@ public class DecoratedTableTest {
         verify(mockAdapter1, never()).handleClick(event, table, table.getModel().getBean(0));
     }
 
+    @Test
+    public void setModelRestoresSortKeysForAutoCreateSorterTrue() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+        table.setAutoCreateRowSorter(true);
+        SortKey sortKey = new SortKey(0, SortOrder.DESCENDING);
+        table.getRowSorter().setSortKeys(Collections.singletonList(sortKey));
+
+        table.setModel(new BeanListTableModel<>(ImmutableList.of(columnAdapter1, columnAdapter2)));
+
+        assertThat(table.getRowSorter().getSortKeys()).isEqualTo(Collections.singletonList(sortKey));
+    }
+
+    @Test
+    public void setModelDoesNotRestoresSortKeysForAutoCreateSorterFalse() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+        SortKey sortKey = new SortKey(0, SortOrder.DESCENDING);
+        table.setRowSorter(new TableRowSorter<>(table.getModel()));
+        table.getRowSorter().setSortKeys(Collections.singletonList(sortKey));
+
+        table.setModel(new BeanListTableModel<>(ImmutableList.of(columnAdapter1, columnAdapter2)));
+
+        assertThat(table.getRowSorter().getSortKeys()).isEmpty();
+    }
+
     private MouseEvent mockEvent(int x, int y) {
         MouseEvent event = mock(MouseEvent.class);
         when(event.getPoint()).thenReturn(new Point(x, y));

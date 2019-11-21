@@ -77,6 +77,7 @@ public class TableFactoryTest {
         verify(initializer).initialize(table);
         assertThat(table.getCellSelectionEnabled()).isFalse();
         assertThat(table.getRowSorter().getSortKeys()).isEmpty();
+        assertThat(table.getAutoCreateRowSorter()).isTrue();
     }
 
     @Test
