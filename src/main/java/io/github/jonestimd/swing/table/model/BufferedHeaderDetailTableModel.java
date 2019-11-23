@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -101,6 +101,11 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
         for (int i = 0; i < getBeanCount(); i++) {
             updateGroupValidation(i);
         }
+    }
+
+    @Override
+    public boolean queueDelete(H bean) {
+        return queueDelete(rowIndexOf(bean));
     }
 
     /**
@@ -357,7 +362,6 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void setCellValue(Object value, int rowIndex, int columnIndex) {
         super.setCellValue(value, rowIndex, columnIndex);
         // validate header row

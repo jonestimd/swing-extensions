@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,4 +32,9 @@ public interface ValidatedTableModel {
      * @return error message or <code>null</code> if specified value is valid.
      */
     <V> String validateAt(int rowIndex, int columnIndex, V value);
+
+    /**
+     * @return true if there are no validation errors.
+     */
+    boolean isNoErrors();
 }
