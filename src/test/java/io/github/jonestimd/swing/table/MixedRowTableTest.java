@@ -250,7 +250,7 @@ public class MixedRowTableTest {
     private BufferedHeaderDetailTableModel<TestSummaryBean> newModel(int beanCount, IntFunction<TestSummaryBean> beanSupplier) {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = new BufferedHeaderDetailTableModel<>(new TestDetailAdapter(),
                 ImmutableList.of(summaryColumnAdapter1, summaryColumnAdapter2),
-                singletonList(ImmutableList.of(detailColumnAdapter, new EmptyColumnAdapter<>("dummy1"))));
+                singletonList(ImmutableList.of(detailColumnAdapter, new EmptyColumnAdapter<>("dummy1", String.class))));
         model.setBeans(IntStream.range(0, beanCount).mapToObj(beanSupplier).collect(Collectors.toList()));
         return model;
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,17 @@ package io.github.jonestimd.swing.table.model;
 /**
  * No-op adapter for filler columns in a {@link MixedRowTableModel}.
  */
-public class EmptyColumnAdapter<T> implements ColumnAdapter<T, String> {
-    private String identifier;
+public class EmptyColumnAdapter<T, V> implements ColumnAdapter<T, V> {
+    private final String identifier;
+    private final Class<V> type;
 
-    public EmptyColumnAdapter(String identifier) {
+    /**
+     * @param identifier the column identifier
+     * @param type the value type
+     */
+    public EmptyColumnAdapter(String identifier, Class<V> type) {
         this.identifier = identifier;
+        this.type = type;
     }
 
     @Override
@@ -36,7 +42,7 @@ public class EmptyColumnAdapter<T> implements ColumnAdapter<T, String> {
 
     @Override
     public String getResource(String resourceId, String defaultValue) {
-        return null;
+        return defaultValue;
     }
 
     @Override
@@ -45,12 +51,12 @@ public class EmptyColumnAdapter<T> implements ColumnAdapter<T, String> {
     }
 
     @Override
-    public Class<String> getType() {
-        return String.class;
+    public Class<V> getType() {
+        return type;
     }
 
     @Override
-    public String getValue(T row) {
+    public V getValue(T row) {
         return null;
     }
 
@@ -60,6 +66,6 @@ public class EmptyColumnAdapter<T> implements ColumnAdapter<T, String> {
     }
 
     @Override
-    public void setValue(T row, String value) {
+    public void setValue(T row, V value) {
     }
 }
