@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -179,15 +182,14 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     }
 
     /**
-     * Get the selected rows.
+     * Get the selected beans.
      */
     public List<Bean> getSelectedItems() {
-        List<Bean> items = new ArrayList<>();
-        int[] indexes = getSelectedRows();
-        for (int index : indexes) {
-            items.add(getModel().getBean(convertRowIndexToModel(index)));
-        }
-        return items;
+        return getBeanIndexes(getSelectedRows()).mapToObj(getModel()::getBean).collect(Collectors.toList());
+    }
+
+    protected IntStream getBeanIndexes(int[] viewIndexes) {
+        return Arrays.stream(viewIndexes).map(this::convertRowIndexToModel);
     }
 
     private Component getEditorField() {

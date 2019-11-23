@@ -5,6 +5,10 @@ import java.awt.Component;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
@@ -42,8 +46,8 @@ public class MixedRowTableTest {
 
     @Test
     public void testSetModel() throws Exception {
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel());
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(0));
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(0);
 
         table.setModel(model);
 
@@ -57,14 +61,14 @@ public class MixedRowTableTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetModelThrowsException() throws Exception {
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel());
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(0));
 
         table.setModel(new DefaultTableModel());
     }
 
     @Test
     public void testConstructorWithModel() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(0);
 
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
 
@@ -78,8 +82,7 @@ public class MixedRowTableTest {
 
     @Test
     public void testAddColumnCreatesMixedRowTableColumn() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(0));
 
         TableColumn column = new TableColumn(0);
         column.setIdentifier("new column");
@@ -94,8 +97,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getCellEditorUsesDefaultEditor() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(singletonList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
 
         assertThat(table.getCellEditor(0, 0).getClass().getName()).isEqualTo("io.github.jonestimd.swing.table.MixedRowTable$GenericCellEditor");
@@ -105,8 +107,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getCellEditorUsesColumnEditor() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(singletonList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
         MixedRowTableColumn column = (MixedRowTableColumn) table.getColumnModel().getColumn(0);
         final DefaultCellEditor cellEditor = new DefaultCellEditor(new JTextField());
@@ -119,8 +120,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getCellRendererUsesDefaultRenderer() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(singletonList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
 
         assertThat(table.getCellRenderer(0, 0)).isSameAs(table.getDefaultRenderer(String.class));
@@ -130,8 +130,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getCellRendererUsesColumnRenderer() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(singletonList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
         MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
         DefaultTableCellRenderer renderer1 = new DefaultTableCellRenderer();
         DefaultTableCellRenderer renderer2 = new DefaultTableCellRenderer();
@@ -145,11 +144,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getRowBackgroundWithoutSorter() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(
-                new TestSummaryBean(new TestDetailBean()),
-                new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(2, this::newBean));
 
         assertThat(table.getRowBackground(0)).isEqualTo(evenBackground);
         assertThat(table.getRowBackground(1)).isEqualTo(evenBackground);
@@ -160,11 +155,7 @@ public class MixedRowTableTest {
 
     @Test
     public void getRowBackgroundWithSorter() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(
-                new TestSummaryBean(new TestDetailBean()),
-                new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(2, this::newBean));
         HeaderDetailTableRowSorter<?, ?> sorter = new HeaderDetailTableRowSorter<>(table);
         sorter.setSortKeys(Lists.newArrayList(new SortKey(0, SortOrder.DESCENDING)));
         table.setRowSorter(sorter);
@@ -178,9 +169,7 @@ public class MixedRowTableTest {
 
     @Test
     public void selectRowAt() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(1));
         table.setRowSelectionInterval(0, 0);
         table.setColumnSelectionInterval(1, 1);
 
@@ -193,9 +182,7 @@ public class MixedRowTableTest {
 
     @Test
     public void editSummaryCell() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(1));
         final TableCellEditor editor = table.getDefaultEditor(String.class);
 
         Component component = editor.getTableCellEditorComponent(table, "", false, 0, 0);
@@ -207,9 +194,7 @@ public class MixedRowTableTest {
 
     @Test
     public void editSummaryCellEmptyString() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(1));
         final TableCellEditor editor = table.getDefaultEditor(String.class);
 
         Component component = editor.getTableCellEditorComponent(table, "old value", false, 0, 0);
@@ -221,9 +206,7 @@ public class MixedRowTableTest {
 
     @Test
     public void editSubRowCell() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(1));
         final TableCellEditor editor = table.getDefaultEditor(String.class);
 
         Component component = editor.getTableCellEditorComponent(table, "", false, 1, 0);
@@ -235,9 +218,7 @@ public class MixedRowTableTest {
 
     @Test
     public void editSubRowCellInvalidValue() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
-        model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean())));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(1));
         final TableCellEditor editor = table.getDefaultEditor(String.class);
 
         Component component = editor.getTableCellEditorComponent(table, "", false, 1, 0);
@@ -247,11 +228,31 @@ public class MixedRowTableTest {
         assertThat(editor.getCellEditorValue()).isNull();
     }
 
-    @SuppressWarnings("unchecked")
-    private BufferedHeaderDetailTableModel<TestSummaryBean> newModel() {
-        return new BufferedHeaderDetailTableModel<>(new TestDetailAdapter(),
+    @Test
+    public void getSelectedItemsReturnsUniqueBeans() throws Exception {
+        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(newModel(3));
+        table.setRowSelectionInterval(1, 4);
+
+        List<TestSummaryBean> items = table.getSelectedItems();
+
+        assertThat(items).isEqualTo(table.getModel().getBeans());
+    }
+
+    private TestSummaryBean newBean(int size) {
+        TestDetailBean[] details = Stream.generate(TestDetailBean::new).limit(size + 1).toArray(TestDetailBean[]::new);
+        return new TestSummaryBean(details);
+    }
+
+    private BufferedHeaderDetailTableModel<TestSummaryBean> newModel(int beanCount) {
+        return newModel(beanCount, (i) -> new TestSummaryBean(new TestDetailBean()));
+    }
+
+    private BufferedHeaderDetailTableModel<TestSummaryBean> newModel(int beanCount, IntFunction<TestSummaryBean> beanSupplier) {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = new BufferedHeaderDetailTableModel<>(new TestDetailAdapter(),
                 ImmutableList.of(summaryColumnAdapter1, summaryColumnAdapter2),
                 singletonList(ImmutableList.of(detailColumnAdapter, new EmptyColumnAdapter<>("dummy1"))));
+        model.setBeans(IntStream.range(0, beanCount).mapToObj(beanSupplier).collect(Collectors.toList()));
+        return model;
     }
 
     private class TestDetailBean {

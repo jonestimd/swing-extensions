@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.lang.reflect.Constructor;
+import java.util.stream.IntStream;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
@@ -83,7 +84,6 @@ public class MixedRowTable<Bean, Model extends MixedRowTableModel & BeanTableMod
      * Overridden to use editors that handle multiple value types in a single column.
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected void createDefaultEditors() {
         super.createDefaultEditors();
         defaultEditorsByColumnClass.put(Object.class, new GenericCellEditor());
@@ -130,6 +130,11 @@ public class MixedRowTable<Bean, Model extends MixedRowTableModel & BeanTableMod
             viewGroup = getModel().getGroupNumber(convertRowIndexToModel(row));
         }
         return super.getRowBackground(viewGroup);
+    }
+
+    @Override
+    protected IntStream getBeanIndexes(int[] viewIndexes) {
+        return super.getBeanIndexes(viewIndexes).map(getModel()::getGroupNumber).distinct();
     }
 
     /**
