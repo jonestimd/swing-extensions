@@ -150,6 +150,20 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     }
 
     /**
+     * Get the background color for even rows.
+     */
+    public Color getAlternateBackground() {
+        return evenBackground;
+    }
+
+    /**
+     * Set the background color for even rows.
+     */
+    public void setAlternateBackground(Color background) {
+        this.evenBackground = background;
+    }
+
+    /**
      * Overridden to handle multiline column headers.
      */
     @Override

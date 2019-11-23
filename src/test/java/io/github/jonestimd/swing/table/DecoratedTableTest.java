@@ -204,13 +204,30 @@ public class DecoratedTableTest {
     }
 
     @Test
-    public void alternateRowColors() throws Exception {
+    public void alternatesRowColors() throws Exception {
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
 
         assertThat(table.getColumn(columnAdapter1).getModelIndex()).isEqualTo(0);
-        assertThat(table.getRowBackground(0)).isEqualTo(evenBackground);
-        assertThat(table.getRowBackground(1)).isEqualTo(oddBackground);
+        assertThat(table.getRowBackground(0)).isEqualTo(table.getAlternateBackground());
+        assertThat(table.getRowBackground(1)).isEqualTo(table.getBackground());
         assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(19);
+    }
+
+    @Test
+    public void defaultBackgroundColors() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1");
+
+        assertThat(table.getBackground()).isEqualTo(oddBackground);
+        assertThat(table.getAlternateBackground()).isEqualTo(evenBackground);
+    }
+
+    @Test
+    public void overrideAlternateBackground() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+
+        table.setAlternateBackground(Color.PINK);
+
+        assertThat(table.getRowBackground(0)).isEqualTo(Color.PINK);
     }
 
     @Test
@@ -461,10 +478,10 @@ public class DecoratedTableTest {
         verify(renderer1).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
         verifyNoMoreInteractions(renderer1);
         InOrder inOrder = inOrder(renderer2);
-        inOrder.verify((JComponent) renderer2).setBackground(evenBackground);
+        inOrder.verify((JComponent) renderer2).setBackground(table.getAlternateBackground());
         inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
         inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
-        inOrder.verify((JComponent) renderer2).setBackground(oddBackground);
+        inOrder.verify((JComponent) renderer2).setBackground(table.getBackground());
         inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
         inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean2", false, false, 1, 0);
     }
