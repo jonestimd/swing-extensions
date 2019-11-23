@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -76,11 +76,11 @@ public class TableFactory {
         return new TableBuilder<>(model, table).cellSelectionEnabled();
     }
 
-    protected <B, M extends BeanTableModel<B>, T extends DecoratedTable<B, M>> T initialize(T table) {
+    public  <B, M extends BeanTableModel<B>, T extends DecoratedTable<B, M>> T initialize(T table) {
         return tableInitializer.initialize(table);
     }
 
-    protected RowSorter<BeanTableModel<?>> newRowSorter(BeanTableModel<?> model, List<SortKey> sortColumns) {
+    public RowSorter<BeanTableModel<?>> newRowSorter(BeanTableModel<?> model, List<SortKey> sortColumns) {
         TableRowSorter<BeanTableModel<?>> sorter = new TableRowSorter<>(model);
         sorter.setSortsOnUpdates(true);
         if (sortColumns.size() > 0) {
