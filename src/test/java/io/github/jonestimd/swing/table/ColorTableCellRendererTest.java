@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static io.github.jonestimd.swing.table.ColorTableCellRenderer.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ColorTableCellRendererTest {
@@ -68,6 +69,13 @@ public class ColorTableCellRendererTest {
         verify(scratchGraphics).fillRect(DEFAULT_INSET, DEFAULT_INSET, SIZE-2*DEFAULT_INSET, SIZE-2*DEFAULT_INSET);
         verify(scratchGraphics, times(2)).dispose();
         verify(ui).update(scratchGraphics, renderer);
+    }
+
+    @Test
+    public void setValueClearsLabelText() throws Exception {
+        renderer.setValue(Color.RED);
+
+        assertThat(renderer.getText()).isEqualTo("");
     }
 
     @Test

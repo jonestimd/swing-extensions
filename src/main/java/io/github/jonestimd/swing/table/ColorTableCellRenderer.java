@@ -44,7 +44,7 @@ public class ColorTableCellRenderer extends DefaultTableCellRenderer {
     protected void setValue(Object value) {
         if (value instanceof Color) this.value = (Color) value;
         else this.value = null;
-        super.setValue(value);
+        super.setValue(null);
     }
 
     @Override
