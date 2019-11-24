@@ -22,7 +22,7 @@ public class BufferedHeaderDetailTableModelTest {
     private TableModelListener listener = mock(TableModelListener.class);
     private TestSummaryColumnAdapter summaryColumnAdapter = new TestSummaryColumnAdapter();
 
-    private final DetailAdapter<TestSummaryBean> detailAdapter = new SingleTypeDetailAdapter<TestSummaryBean>() {
+    private final DetailAdapter<TestSummaryBean> detailAdapter = new SingleTypeDetailAdapter<>() {
         public List<?> getDetails(TestSummaryBean bean, int subRowTypeIndex) {
             return bean.details;
         }
@@ -669,6 +669,9 @@ public class BufferedHeaderDetailTableModelTest {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
         model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
         model.queueAdd(new TestSummaryBean(new TestDetailBean()));
+        model.setValueAt(-1, 4, 0);
+        assertThat(model.isNoErrors()).isFalse();
+        model.addTableModelListener(e -> assertThat(model.isNoErrors()).isTrue());
 
         assertThat(model.queueDelete(3)).isFalse();
 

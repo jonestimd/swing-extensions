@@ -215,11 +215,11 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
      */
     @Override
     public void fireTableRowsDeleted(int firstRow, int lastRow) {
-        super.fireTableRowsDeleted(firstRow, lastRow);
         for (int i = firstRow; i <= lastRow; i++) {
             errors.row(i).clear();
         }
         shiftErrors(firstRow, firstRow - lastRow - 1);
+        super.fireTableRowsDeleted(firstRow, lastRow);
     }
 
     private H resetChanges(H bean) {
