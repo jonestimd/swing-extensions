@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ public class MultiSelectField extends JTextPane {
     private boolean keepTextOnFocusLost = false;
 
     /**
-     * Create a new {@code MultiSelectField}.
+     * Create a {@code MultiSelectField} that requires non-blank items.
      * @param showItemDelete true to show delete buttons on the list items
      * @param opaqueItems true to fill the list items with their background color
      */
@@ -77,7 +77,7 @@ public class MultiSelectField extends JTextPane {
     }
 
     /**
-     * Create a new {@code MultiSelectField}.
+     * Create a {@code MultiSelectField}.
      * @param showItemDelete true to show delete buttons on the list items
      * @param opaqueItems true to fill the list items with their background color
      * @param isValidItem predicate to use to validate input text before adding an item to the list
@@ -181,7 +181,7 @@ public class MultiSelectField extends JTextPane {
     }
 
     /**
-     * Get the list of values.
+     * Get the list of values, including the current input text as the last item.
      */
     public List<String> getItems() {
         List<String> items = Streams.map(this.items, MultiSelectItem::getText);
@@ -191,12 +191,15 @@ public class MultiSelectField extends JTextPane {
     }
 
     /**
-     * Check if the input text is valid.
+     * Check if the input text is a valid item.
      */
     public boolean isValidItem() {
         return isValidItem.test(this, getPendingItem());
     }
 
+    /**
+     * Get the pending item text (the current input text).
+     */
     protected String getPendingItem() {
         return getText().substring(items.size());
     }

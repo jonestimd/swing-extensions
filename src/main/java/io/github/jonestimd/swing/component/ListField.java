@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.Position.Bias;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import io.github.jonestimd.swing.table.PopupListTableCellEditor;
 
 import static io.github.jonestimd.swing.ComponentResources.*;
@@ -79,6 +80,9 @@ public class ListField extends JTextArea {
     private final Consumer<List<String>> commitCallback;
     private boolean isValid = true;
 
+    /**
+     * Create a list field that requires non-blank list items and highlights invalid items with a {@link Color#PINK} background.
+     */
     public ListField(Runnable cancelCallback, Consumer<List<String>> commitCallback) {
         this(DEFAULT_VALIDATOR, DEFAULT_ERROR_HIGHLIGHTER, cancelCallback, commitCallback);
     }
@@ -98,10 +102,16 @@ public class ListField extends JTextArea {
         validateText();
     }
 
+    /**
+     * Set the component text using a list of items.
+     */
     public void setText(List<String> value) {
         setText(Joiner.on(LINE_SEPARATOR).join(value));
     }
 
+    /**
+     * @return true if all of the items are valid
+     */
     public boolean isValidList() {
         return isValid;
     }
@@ -127,21 +137,14 @@ public class ListField extends JTextArea {
         if (oldValue != isValid) firePropertyChange(VALID_PROPERTY, oldValue, isValid);
     }
 
+    /**
+     * Parse the component text and return the list of items.
+     */
     public List<String> parseItems() {
         final String text = getText();
-        final int length = text.length();
-        final List<String> items = new ArrayList<>();
-        for (int pos = 0; pos < length;) {
-            final int end = text.indexOf(LINE_SEPARATOR, pos);
-            if (end >= 0) {
-                items.add(text.substring(pos, end));
-                pos = end + 1;
-            }
-            else {
-                items.add(text.substring(pos));
-                pos = length;
-            }
-        }
+        if (text.isEmpty()) return new ArrayList<>();
+        final List<String> items = Lists.newArrayList(text.split(LINE_SEPARATOR, -1));
+        if (text.endsWith(LINE_SEPARATOR)) items.remove(items.size()-1);
         return items;
     }
 
@@ -169,7 +172,15 @@ public class ListField extends JTextArea {
         }
     }
 
+    /**
+     * Interface for validating items in the list.
+     */
     public interface ItemValidator {
+        /**
+         * @param items the items in the list
+         * @param index the index of the current item
+         * @return true if the item is valid
+         */
         boolean isValid(List<String> items, int index);
     }
 }

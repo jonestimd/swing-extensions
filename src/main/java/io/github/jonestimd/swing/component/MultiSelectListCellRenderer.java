@@ -35,6 +35,10 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
+/**
+ * A {@link ListCellRenderer} that draws a list of items as {@link MultiSelectItem}s.
+ * @param <T> the type of the list items
+ */
 public class MultiSelectListCellRenderer<T> extends Box implements ListCellRenderer<T> {
     private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
@@ -43,6 +47,10 @@ public class MultiSelectListCellRenderer<T> extends Box implements ListCellRende
     private final boolean opaque;
     private final Function<T, List<String>> getter;
 
+    /**
+     * @param opaque whether to fill the {@link MultiSelectItem}s' background
+     * @param getter returns the string to display for a list item
+     */
     public MultiSelectListCellRenderer(boolean opaque, Function<T, List<String>> getter) {
         super(BoxLayout.X_AXIS);
         this.opaque = opaque;

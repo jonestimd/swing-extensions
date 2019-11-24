@@ -29,9 +29,16 @@ import io.github.jonestimd.swing.validation.ValidatedComponent;
 import io.github.jonestimd.swing.validation.ValidationSupport;
 import io.github.jonestimd.swing.validation.Validator;
 
+/**
+ * Extends {@link MultiSelectField} to provide validation of the list of items.
+ * @see MultiSelectField.Builder#validator(Validator)
+ */
 public class ValidatedMultiSelectField extends MultiSelectField implements ValidatedComponent {
     private final ValidationSupport<List<String>> validationSupport = new ValidationSupport<>(this);
 
+    /**
+     * Create a {@code ValidatedMultiSelectField} that requires non-blank items.
+     */
     public ValidatedMultiSelectField(boolean showItemDelete, boolean opaqueItems) {
         this(showItemDelete, opaqueItems, DEFAULT_IS_VALID_ITEM);
     }
@@ -47,6 +54,9 @@ public class ValidatedMultiSelectField extends MultiSelectField implements Valid
         validateValue();
     }
 
+    /**
+     * Set the validator for the list of items.
+     */
     public void setValidator(Validator<List<String>> validator) {
         validationSupport.setValidator(validator.when(this::isEditable), getItems());
     }

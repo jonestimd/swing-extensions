@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,13 +56,18 @@ import io.github.jonestimd.swing.ComponentResources;
  * The following resources are used to configure the apearance of this component and can be overridden by a custom resource bundle.
  * <ul>
  * <li><strong>multiSelectItem.background</strong> - the background color used to fill the outline</li>
+ * <li><strong>multiSelectItem.selectedBackground</strong> - the background color used to fill the outline when {@link #selected} is true</li>
  * <li><strong>multiSelectItem.outline.color</strong> - the color of the outline</li>
  * <li><strong>multiSelectItem.outline.strokeWidth</strong> - the stroke width of the outline</li>
  * <li><strong>multiSelectItem.outline.flatness</strong> - length of the sides to be drawn as a straight line (0 for semicircle sides)</li>
+ * <li><strong>multiSelectItem.outline.roundness.button</strong> - roundness of the outline when {@link #showDelete} is true</li>
+ * <li><strong>multiSelectItem.outline.roundness.noButton</strong> - roundness of the outline when {@link #showDelete} is false</li>
  * <li><strong>multiSelectItem.button.color</strong> - color of the delete button</li>
  * <li><strong>multiSelectItem.button.hoverColor</strong> - highlight color for the delete button when the mouse cursor is over it</li>
  * <li><strong>multiSelectItem.button.size</strong> - radius of the delete button</li>
  * </ul>
+ * @see ComponentResources
+ * @see MultiSelectField
  */
 public class MultiSelectItem extends JLabel {
     public static final int GAP = 2;
@@ -90,7 +95,7 @@ public class MultiSelectItem extends JLabel {
     private Function<MultiSelectItem, Color> backgroundSupplier = defaultBackgroundSupplier;
 
     /**
-     * Create a new {@code MultiSelectItem}.
+     * Create a {@code MultiSelectItem}.
      * @param text the text to display
      * @param showDelete true to show the delete button
      * @param fill true to fill the outline with the background color
