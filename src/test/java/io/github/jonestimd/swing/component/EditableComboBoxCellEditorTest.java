@@ -36,16 +36,13 @@ import io.github.jonestimd.util.Streams;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTest {
-    @Mock
-    private Validator<String> validator;
     @Mock
     private Supplier<TestBean> saveService;
     private TestBean savedBean;
@@ -55,7 +52,7 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
     @Test
     public void tableCellEditorComponentLoadsValues() throws Exception {
         final TestBean selectedItem = new TestBean("cdf");
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor(Validator.empty());
 
         SwingUtilities.invokeAndWait(() -> {
             editor.getTableCellEditorComponent(new JTable(), selectedItem, false, 0, 0);
@@ -68,7 +65,6 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
         });
     }
 
-    @SuppressWarnings("unchecked")
     private void checkModel(LazyLoadComboBoxModel<TestBean> model, TestBean... otherBeans) {
         List<TestBean> items = Streams.toList(model);
         assertThat(items).hasSize(comboBoxValues.size() + 1 + otherBeans.length);
@@ -81,8 +77,7 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
 
     @Test
     public void stopCellEditingReturnsTrueForEmptyOptionalValue() throws Exception {
-        when(validator.validate(anyString())).thenReturn(null);
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor(Validator.empty());
         SwingUtilities.invokeAndWait(() -> {
             editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
 
@@ -94,8 +89,7 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
 
     @Test
     public void stopCellEditingReturnsTrueForExistingValue() throws Exception {
-        when(validator.validate(anyString())).thenReturn(null);
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor(Validator.empty());
         SwingUtilities.invokeAndWait(() -> {
             editor.getTableCellEditorComponent(new JTable(), comboBoxValues.get(1), false, 0, 0);
 
@@ -108,9 +102,8 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
     @Test
     public void stopCellEditingReturnsTrueForNewlySavedValue() throws Exception {
         final TestBean savedItem = new TestBean("saved");
-        when(validator.validate(anyString())).thenReturn(null);
         when(saveService.get()).thenReturn(savedItem);
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor(Validator.empty());
         SwingUtilities.invokeAndWait(() -> {
             BeanListComboBox component = (BeanListComboBox) editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
             ((JTextField)component.getEditor().getEditorComponent()).setText("selected");
@@ -125,8 +118,7 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
     @Test
     public void stopCellEditingReturnsFalseForUnsavedValue() throws Exception {
         final String name = "new item";
-        when(validator.validate(anyString())).thenReturn(null);
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor(Validator.empty());
         SwingUtilities.invokeAndWait(() -> {
             BeanListComboBox component = (BeanListComboBox) editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
             ((JTextField)component.getEditor().getEditorComponent()).setText(name);
@@ -140,19 +132,18 @@ public class EditableComboBoxCellEditorTest extends AbstractComboBoxCellEditorTe
 
     @Test
     public void stopCellEditingReturnsFalseForValidationError() throws Exception {
-        when(validator.validate(anyString())).thenReturn("error");
-        TestEditor editor = new TestEditor();
+        TestEditor editor = new TestEditor((value) -> "error");
         SwingUtilities.invokeAndWait(() -> {
             editor.getTableCellEditorComponent(new JTable(), null, false, 0, 0);
 
             assertThat(editor.stopCellEditing()).isFalse();
 
-            verifyZeroInteractions(saveService);
+            verifyNoInteractions(saveService);
         });
     }
 
     private class TestEditor extends EditableComboBoxCellEditor<TestBean> {
-        protected TestEditor() {
+        protected TestEditor(Validator<String> validator) {
             super(new TestFormat(), validator, "loading");
         }
 

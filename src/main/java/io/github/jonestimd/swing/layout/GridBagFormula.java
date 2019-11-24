@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,8 @@ public interface GridBagFormula {
             @Override
             public GridBagConstraints setConstraints(GridBagConstraints gbc) {
                 if (labelConstraints == null && anchor == GridBagConstraints.WEST && width == 1) {
-                    gbc.gridx = 1;
+                    // unlabeled component, e.g. checkbox
+                    gbc.gridx = Math.max(gbc.gridx, 0) + 1;
                 }
                 gbc.anchor = anchor;
                 gbc.gridwidth = width;

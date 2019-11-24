@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,14 @@ import io.github.jonestimd.swing.component.IconSource;
 public class FormatTableCellRenderer extends HighlightTableCellRenderer {
     private final Format format;
     private final IconSource iconSource;
+
+    /**
+     * Create a table cell renderer without highlighting. Will display an icon if the format implements {@link IconSource}.
+     * @param format the value format
+     */
+    public FormatTableCellRenderer(Format format) {
+        this(format, Highlighter.NOOP_HIGHLIGHTER);
+    }
 
     /**
      * Create a table cell renderer. Will display an icon if the format implements {@link IconSource}.

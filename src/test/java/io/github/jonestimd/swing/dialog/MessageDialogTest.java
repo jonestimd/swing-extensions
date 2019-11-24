@@ -35,7 +35,7 @@ import org.junit.Test;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
 public class MessageDialogTest {
-    private static final long SWING_TIMEOUT = 500L;
+    private static final long SWING_TIMEOUT = 5000L;
     private MessageDialog dialog;
     private JTextField field;
 
@@ -58,7 +58,7 @@ public class MessageDialogTest {
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
 
         SwingUtilities.invokeAndWait(() -> dialog.disableUI("wait..."));
-        AsyncTest.timeout(SWING_TIMEOUT, dialog.getGlassPane()::isFocusOwner);
+        // AsyncTest.timeout(SWING_TIMEOUT, dialog.getGlassPane()::isFocusOwner);
         SwingUtilities.invokeAndWait(dialog::enableUI);
 
         AsyncTest.timeout(SWING_TIMEOUT, () -> !dialog.getGlassPane().isFocusOwner());
@@ -87,7 +87,7 @@ public class MessageDialogTest {
     public void enableUIRestoresFocusOwner() throws Exception {
         createDialog();
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
-        SwingUtilities.invokeAndWait(() -> field.requestFocusInWindow());
+        SwingUtilities.invokeLater(() -> field.requestFocus());
         AsyncTest.timeout(SWING_TIMEOUT, field::isFocusOwner);
 
         SwingUtilities.invokeAndWait(() -> dialog.disableUI("wait..."));

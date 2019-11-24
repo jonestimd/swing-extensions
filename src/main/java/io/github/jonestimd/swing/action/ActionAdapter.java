@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,39 +21,15 @@ package io.github.jonestimd.swing.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
 
 /**
  * Converts an {@link ActionListener} to an {@link Action}.
  */
 public class ActionAdapter extends AbstractAction {
     private ActionListener handler;
-
-    public static Action forMnemonicAndName(ActionListener handler, String mnemonicAndName) {
-        ActionAdapter action = new ActionAdapter(handler, mnemonicAndName.substring(1));
-        action.putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
-        return action;
-    }
-
-    public static <T extends Action> T initialize(T action, ResourceBundle bundle, String keyPrefix) {
-        if (bundle.containsKey(keyPrefix + ".mnemonicAndName")) {
-            String mnemonicAndName = bundle.getString(keyPrefix+".mnemonicAndName");
-            action.putValue(NAME, mnemonicAndName.substring(1));
-            action.putValue(MNEMONIC_KEY, (int) mnemonicAndName.charAt(0));
-        }
-        if (bundle.containsKey(keyPrefix + ".iconImage")) {
-            action.putValue(SMALL_ICON, new ImageIcon(action.getClass().getResource(bundle.getString(keyPrefix + ".iconImage"))));
-        }
-        if (bundle.containsKey(keyPrefix + ".accelerator")) {
-            action.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(bundle.getString(keyPrefix + ".accelerator")));
-        }
-        return action;
-    }
 
     public ActionAdapter(ActionListener handler) {
         this.handler = handler;
@@ -62,22 +38,6 @@ public class ActionAdapter extends AbstractAction {
     public ActionAdapter(ActionListener handler, String name) {
         this(handler);
         putValue(NAME, name);
-    }
-
-    /**
-     * Create an action using settings from a resource bundle.  The following resource bundle keys will be used if available:
-     * <ul>
-     *     <li><em>keyPrefix</em>.mnemonicAndName - string containing the mnemonic character followed by the action name</li>
-     *     <li><em>keyPrefix</em>.imageIcon - the location of the image to use for the {@link Action#SMALL_ICON}</li>
-     *     <li><em>keyPrefix</em>.accelerator - the accelerator keystroke for the action</li>
-     * </ul>
-     * @param handler action handler
-     * @param bundle the resource bundle containing the action settings
-     * @param keyPrefix the key prefix for the action settings
-     */
-    public ActionAdapter(ActionListener handler, ResourceBundle bundle, String keyPrefix) {
-        this(handler);
-        initialize(this, bundle, keyPrefix);
     }
 
     public void actionPerformed(ActionEvent e) {

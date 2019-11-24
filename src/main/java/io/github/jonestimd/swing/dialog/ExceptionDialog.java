@@ -98,7 +98,7 @@ public class ExceptionDialog extends MessageDialog {
         try {
             return Integer.parseInt(bundle.getObject(MoreObjects.firstNonNull(resourcePrefix, "") + key).toString());
         } catch (Exception ex) {
-            return ComponentResources.getInt(DEFAULT_RESOURCE_PREFIX + key);
+            return ComponentResources.lookupInt(DEFAULT_RESOURCE_PREFIX + key);
         }
     }
 

@@ -19,10 +19,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import static io.github.jonestimd.mockito.Matchers.*;
 import static io.github.jonestimd.mockito.Matchers.matches;
+import static io.github.jonestimd.mockito.Matchers.*;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -379,7 +379,7 @@ public class BeanListMultimapTableModelTest {
 
         tableModel.getCursor(event, table, 0, 0);
 
-        verifyZeroInteractions(mockColumnAdapter);
+        verifyNoInteractions(mockColumnAdapter);
     }
 
     @Test
@@ -411,7 +411,7 @@ public class BeanListMultimapTableModelTest {
 
         tableModel.handleClick(event, table, 0, 0);
 
-        verifyZeroInteractions(mockColumnAdapter);
+        verifyNoInteractions(mockColumnAdapter);
     }
 
     @Test

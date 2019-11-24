@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,9 +44,9 @@ public class ValidationSupport<T> {
         this.validator = validator;
     }
 
-    public void setValidator(Validator<T> validator, T value) {
+    public String setValidator(Validator<T> validator, T value) {
         this.validator = validator;
-        validateValue(value);
+        return validateValue(value);
     }
 
     public String validateValue(T value) {

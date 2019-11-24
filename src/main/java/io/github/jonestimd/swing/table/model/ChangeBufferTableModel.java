@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,21 @@ import io.github.jonestimd.swing.ChangeBuffer;
  * A table model that stores changes until committed or reverted.
  */
 public interface ChangeBufferTableModel<T> extends BeanTableModel<T>, ColumnIdentifier, ChangeBuffer {
+    /**
+     * Append an unsaved bean.
+     */
+    void queueAdd(T bean);
+
+    /**
+     * Insert an unsaved bean.
+     */
+    void queueAdd(int index, T bean);
+
+    /**
+     * @return true if the delete was queued, false if the row was an unsaved addition and was deleted immediately.
+     */
+    boolean queueDelete(T bean);
+
     /**
      * @return updated, added and deleted rows.
      */

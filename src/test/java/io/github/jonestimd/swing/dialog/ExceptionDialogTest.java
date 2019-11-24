@@ -48,8 +48,8 @@ public class ExceptionDialogTest {
         assertThat(label.getText()).isEqualTo("Unexpected exception:");
         JScrollPane scrollPane = (JScrollPane) dialog.getContentPane().getComponent(1);
         JTextArea textArea = (JTextArea) scrollPane.getViewport().getView();
-        assertThat(textArea.getRows()).isEqualTo(ComponentResources.getInt("exceptionDialog.exception.rows"));
-        assertThat(textArea.getColumns()).isEqualTo(ComponentResources.getInt("exceptionDialog.exception.columns"));
+        assertThat(textArea.getRows()).isEqualTo(ComponentResources.lookupInt("exceptionDialog.exception.rows"));
+        assertThat(textArea.getColumns()).isEqualTo(ComponentResources.lookupInt("exceptionDialog.exception.columns"));
     }
 
     @Test
@@ -61,8 +61,8 @@ public class ExceptionDialogTest {
         assertThat(label.getText()).isEqualTo("Unexpected exception:");
         JScrollPane scrollPane = (JScrollPane) dialog.getContentPane().getComponent(1);
         JTextArea textArea = (JTextArea) scrollPane.getViewport().getView();
-        assertThat(textArea.getRows()).isEqualTo(ComponentResources.getInt("exceptionDialog.exception.rows"));
-        assertThat(textArea.getColumns()).isEqualTo(ComponentResources.getInt("exceptionDialog.exception.columns"));
+        assertThat(textArea.getRows()).isEqualTo(ComponentResources.lookupInt("exceptionDialog.exception.rows"));
+        assertThat(textArea.getColumns()).isEqualTo(ComponentResources.lookupInt("exceptionDialog.exception.columns"));
     }
 
     @Test
@@ -73,7 +73,6 @@ public class ExceptionDialogTest {
 
         AsyncTest.timeout(SWING_TIMEOUT, dialog::isVisible);
         KeyEvent event = new KeyEvent(dialog.getRootPane(), KEY_PRESSED, System.currentTimeMillis(), 0, VK_ESCAPE, CHAR_UNDEFINED);
-        SwingUtilities.processKeyBindings(event);
         SwingUtilities.invokeAndWait(() -> SwingUtilities.processKeyBindings(event));
         AsyncTest.timeout(SWING_TIMEOUT, () -> ! dialog.isVisible());
     }

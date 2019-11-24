@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,14 +50,13 @@ import javax.swing.JMenuItem;
 import io.github.jonestimd.swing.ClientProperty;
 import io.github.jonestimd.swing.ComponentFactory;
 import io.github.jonestimd.swing.ComponentTreeUtils;
-import io.github.jonestimd.swing.action.MnemonicAction;
+import io.github.jonestimd.swing.action.LocalizedAction;
 
 /**
  * Manages an application's windows. This class creates window and initializes their menu bar with the {@code Windows}
  * and {@code Help} menus.  This class updates the {@code Windows} menu whenever another window is opened or closed.
  * Typically, menu items for opening new windows are created using {@link FrameAction}.  Non-singleton
  * windows can be reused by overriding {@link ApplicationWindowAction#matches(StatusFrame)}.
- *
  * @param <Key> The class defining the window types (typically an {@code enum})
  */
 public class FrameManager<Key extends WindowInfo> {
@@ -133,7 +132,7 @@ public class FrameManager<Key extends WindowInfo> {
             frame.setContentPane(singletonPanels.computeIfAbsent(key, singletonPanelSupplier));
         }
         else if (singletonFrames.get(key) != frame) {
-            throw new IllegalArgumentException("Duplicate JFrame ID: "+key.toString());
+            throw new IllegalArgumentException("Duplicate JFrame ID: " + key.toString());
         }
     }
 
@@ -207,13 +206,12 @@ public class FrameManager<Key extends WindowInfo> {
 
     private JMenu createHelpMenu() {
         JMenu menu = ComponentFactory.newMenu(bundle, "menu.help.mnemonicAndName");
-        menu.add(new MnemonicAction(bundle, "menu.help.about") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Window window = ComponentTreeUtils.findAncestor((Component) e.getSource(), Window.class);
-                aboutDialogSupplier.apply(window).setVisible(true);
-            }
-        });
+        menu.add(LocalizedAction.create(bundle, "menu.help.about",
+                (event) -> {
+                    Window window = ComponentTreeUtils.findAncestor((Component) event.getSource(), Window.class);
+                    aboutDialogSupplier.apply(window).setVisible(true);
+                })
+        );
         return menu;
     }
 
@@ -278,10 +276,10 @@ public class FrameManager<Key extends WindowInfo> {
     }
 
     public int getFrameCount() {
-        return singletonFrames.size()+frames.size();
+        return singletonFrames.size() + frames.size();
     }
 
-    private class WindowAction extends AbstractAction {
+    private static class WindowAction extends AbstractAction {
         private StatusFrame frame;
 
         private WindowAction(StatusFrame frame) {

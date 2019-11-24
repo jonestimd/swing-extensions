@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -39,6 +43,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -47,6 +52,7 @@ import javax.swing.plaf.UIResource;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
 import io.github.jonestimd.swing.ComponentDefaults;
@@ -116,6 +122,14 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         }
     }
 
+    @Override
+    public void setModel(TableModel dataModel) {
+        boolean setSortKeys = getRowSorter() != null && getAutoCreateRowSorter();
+        List<? extends SortKey> sortKeys = setSortKeys ? getRowSorter().getSortKeys() : Collections.emptyList();
+        super.setModel(dataModel);
+        if (setSortKeys) getRowSorter().setSortKeys(sortKeys);
+    }
+
     /**
      * Overridden to set background colors.
      */
@@ -136,6 +150,20 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     }
 
     /**
+     * Get the background color for even rows.
+     */
+    public Color getAlternateBackground() {
+        return evenBackground;
+    }
+
+    /**
+     * Set the background color for even rows.
+     */
+    public void setAlternateBackground(Color background) {
+        this.evenBackground = background;
+    }
+
+    /**
      * Overridden to handle multiline column headers.
      */
     @Override
@@ -145,7 +173,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
             aColumn.setIdentifier(((ColumnIdentifier) getModel()).getColumnIdentifier(aColumn.getModelIndex()));
         }
         int columnHeaderRows = aColumn.getHeaderValue().toString().split("\n").length;
-        if (columnHeaderRows > headerRows) {
+        if (columnHeaderRows > 1) {
             aColumn.setHeaderValue("<html><center>" + aColumn.getHeaderValue().toString().replaceAll("\n", "<br>") + "</center></html>");
         }
         headerRows = Math.max(headerRows, columnHeaderRows);
@@ -168,15 +196,14 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     }
 
     /**
-     * Get the selected rows.
+     * Get the selected beans.
      */
     public List<Bean> getSelectedItems() {
-        List<Bean> items = new ArrayList<>();
-        int[] indexes = getSelectedRows();
-        for (int index : indexes) {
-            items.add(getModel().getBean(convertRowIndexToModel(index)));
-        }
-        return items;
+        return getBeanIndexes(getSelectedRows()).mapToObj(getModel()::getBean).collect(Collectors.toList());
+    }
+
+    protected IntStream getBeanIndexes(int[] viewIndexes) {
+        return Arrays.stream(viewIndexes).map(this::convertRowIndexToModel);
     }
 
     private Component getEditorField() {

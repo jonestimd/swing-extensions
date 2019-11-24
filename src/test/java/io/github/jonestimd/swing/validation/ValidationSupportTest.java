@@ -8,7 +8,7 @@ import javax.swing.JTextField;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static org.assertj.core.api.Assertions.*;
@@ -67,6 +67,6 @@ public class ValidationSupportTest {
         assertThat(validationSupport.validateValue(null)).isEqualTo(MESSAGE);
         assertThat(validationSupport.validateValue("something")).isNull();
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 }

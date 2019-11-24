@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +24,6 @@ package io.github.jonestimd.swing.component;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.Format;
-import java.util.Collections;
 
 import io.github.jonestimd.swing.validation.Validator;
 
@@ -34,14 +35,13 @@ public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>
     private BeanListComboBoxEditor<T> editor;
     private T value;
 
-    @SuppressWarnings("unchecked")
     protected EditableComboBoxCellEditor(Format format, Validator<String> validator, String loadingMessage) {
         this(format, validator, new FormatPrefixSelector(format), loadingMessage);
     }
 
     @SuppressWarnings("unchecked")
     protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector prefixSelector, String loadingMessage) {
-        super(new BeanListComboBox<T>(format, validator, Collections.emptyList(), prefixSelector), loadingMessage);
+        super(BeanListComboBox.builder(format).editable(validator, prefixSelector).get(), loadingMessage);
         editor = (BeanListComboBoxEditor<T>) getComboBox().getEditor();
         editor.getEditorComponent().addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,9 @@ package io.github.jonestimd.swing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.MissingResourceException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,7 +37,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -55,37 +57,19 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.text.JTextComponent;
 
-import com.google.common.base.MoreObjects;
 import io.github.jonestimd.swing.border.OblongBorder;
+import io.github.jonestimd.swing.component.BeanListComboBox;
 import io.github.jonestimd.swing.component.FilterField;
 import io.github.jonestimd.swing.component.IconBorder;
 import io.github.jonestimd.swing.component.IconBorder.Side;
+import io.github.jonestimd.swing.layout.GridBagBuilder;
+import io.github.jonestimd.text.ToStringFormat;
 
 public class ComponentFactory {
     public static final char NO_MNEMONIC = ' ';
-    public static final String ACCELERATOR_DELIMITER = MoreObjects.firstNonNull(UIManager.getString("MenuItem.acceleratorDelimiter"), "+");
+    public static final String ACCELERATOR_DELIMITER = Optional.ofNullable(UIManager.getString("MenuItem.acceleratorDelimiter")).orElse("+");
     public static final String TOOLBAR_BUTTON_ACTION_KEY = "doClick";
     public static final int LABEL_GAP = 5;
-
-    protected final ResourceBundle bundle;
-
-    public ComponentFactory() {
-        this(ComponentResources.BUNDLE);
-    }
-
-    public ComponentFactory(ResourceBundle bundle) {
-        this.bundle = bundle;
-    }
-
-    /**
-     * Get a string value from the resource bundle with fallback to {@link ComponentResources#BUNDLE}.
-     * @param key the resource key
-     * @return the value from the resource bundle if it exists, otherwise the value from {@link ComponentResources#BUNDLE}
-     * @throws MissingResourceException if the key is not defined in either bundle
-     */
-    public String getString(String key) {
-        return ComponentResources.getString(bundle, key);
-    }
 
     public static JRadioButton[] newRadioButtonGroup(ResourceBundle bundle, String ... mnemonicAndNameKeys) {
         ButtonGroup group = new ButtonGroup();
@@ -220,19 +204,38 @@ public class ComponentFactory {
      * @param paddingBottom padding between bottom of border and input field
      */
     public <T> FilterField<T> newFilterField(Function<String, Predicate<T>> predicateFactory, int paddingTop, int paddingBottom) {
-        return initializeFilterField(new FilterField<>(predicateFactory, (Color) bundle.getObject("filter.invalid.background")), paddingTop, paddingBottom);
+        return initializeFilterField(FilterField.builder(predicateFactory).build(), paddingTop, paddingBottom);
     }
 
     private <T extends JTextComponent> T initializeFilterField(T field, int paddingTop, int paddingBottom) {
-        ImageIcon filterIcon = (ImageIcon) bundle.getObject("filter.iconImage");
+        Icon filterIcon = ComponentResources.lookupIcon("filter.iconImage");
         field.setBorder(new CompoundBorder(new OblongBorder(1, Color.GRAY, paddingTop, 4, paddingBottom, 0), new IconBorder(Side.LEFT, filterIcon)));
         return field;
     }
 
+    /**
+     * Create a component for displaying a summary (e.g. total) at the bottom of a table.  The right border will provide an
+     * offset to account for a vertical scroll bar on the table.
+     * @param mnemonicAndName label for the summary
+     * @param summary the summary information
+     * @return a component with the label and summary on the right
+     */
     public static JComponent newTableSummaryPanel(String mnemonicAndName, JComponent summary) {
         JLabel label = new LabelBuilder().mnemonicAndName(mnemonicAndName).bold().get();
-        JComponent summaryPanel = new ButtonBarFactory().alignRight().add(label, summary).get();
+        Box summaryPanel = Box.createHorizontalBox();
+        summaryPanel.add(Box.createHorizontalGlue());
+        summaryPanel.add(label);
+        summaryPanel.add(Box.createHorizontalStrut(GridBagBuilder.RELATED_GAP));
+        summaryPanel.add(summary);
         summaryPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, UIManager.getInt("ScrollBar.width")));
         return summaryPanel;
+    }
+
+    public static <T extends Enum<T>> BeanListComboBox<T> newComboBox(Class<T> enumClass, String requiredMessage) {
+        return newComboBox(Arrays.asList(enumClass.getEnumConstants()), requiredMessage);
+    }
+
+    public static <T extends Enum<T>> BeanListComboBox<T> newComboBox(List<T> items, String requiredMessage) {
+        return BeanListComboBox.builder(new ToStringFormat(), items).required(requiredMessage).get();
     }
 }

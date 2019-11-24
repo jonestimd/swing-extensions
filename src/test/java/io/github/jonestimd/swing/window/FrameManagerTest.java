@@ -16,9 +16,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.ClientProperty;
-import io.github.jonestimd.swing.ComponentFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,17 +24,15 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class FrameManagerTest {
     private enum Type implements WindowInfo {
         SINGLETON1, SINGLETON2, MULTI;
@@ -52,8 +48,6 @@ public class FrameManagerTest {
     private ResourceBundle bundle = ResourceBundle.getBundle(TestResources.class.getName());
     @Mock
     private Function<Type,JPanel> singletonPanelSupplier;
-    @Mock
-    private ComponentFactory componentFactory;
     @Mock
     private Map<Type,PanelFactory<? extends ApplicationWindowAction<Type>>> panelFactories;
     @Mock
@@ -114,7 +108,7 @@ public class FrameManagerTest {
     }
 
     private void checkJMenuBar(StatusFrame frame, String frameTitle, JMenu windowsMenu) {
-        ArgumentCaptor<JMenuBar> captor = ArgumentCaptorFactory.create();
+        ArgumentCaptor<JMenuBar> captor = ArgumentCaptor.forClass(JMenuBar.class);
         verify(frame).setJMenuBar(captor.capture());
         assertThat(windowsMenu.getItemCount()).isEqualTo(1);
         assertThat(windowsMenu.getItem(0).getText()).isEqualTo(frameTitle);
@@ -228,7 +222,7 @@ public class FrameManagerTest {
         assertThat(frameManager.showFrame(action)).isSameAs(frame);
 
         assertThat(frameManager.getFrameCount()).isEqualTo(1);
-        verifyZeroInteractions(frameFactory);
+        verifyNoInteractions(frameFactory);
         verify(panelFactory).createPanel();
         verifyNoMoreInteractions(panelFactory);
     }

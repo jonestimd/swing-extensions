@@ -30,8 +30,11 @@ import javax.swing.SwingUtilities;
 
 import org.assertj.swing.core.BasicRobot;
 import org.assertj.swing.core.Robot;
+import org.assertj.swing.timing.Condition;
 import org.junit.After;
 import org.junit.Before;
+
+import static org.assertj.swing.timing.Pause.*;
 
 public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     protected T window;
@@ -45,6 +48,8 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     @Before
     public void createRobot() throws Exception {
         robot = BasicRobot.robotWithNewAwtHierarchy();
+        robot.settings().delayBetweenEvents(10);
+        robot.settings().eventPostingDelay(10);
     }
 
     @After
@@ -54,14 +59,20 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
     }
 
     protected void showWindow() throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            window = newWindow.get();
-            window.setContentPane(createContentPane());
-            window.pack();
-            window.setLocationRelativeTo(null);
-            window.setVisible(true);
-        });
+        window = newWindow.get();
+        window.setContentPane(createContentPane());
+        robot.showWindow(window);
     }
 
     protected abstract JPanel createContentPane();
+
+    protected void assertCondition(Supplier<Boolean> condition, String description, long timeout) {
+        pause(new Condition(description) {
+            @Override
+            public boolean test() {
+                return condition.get();
+            }
+        }, timeout);
+
+    }
 }

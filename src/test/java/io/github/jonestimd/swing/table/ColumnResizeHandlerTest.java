@@ -38,8 +38,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import io.github.jonestimd.swing.ClientProperty;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,13 +45,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class ColumnResizeHandlerTest {
     private static final int COLUMN_COUNT = 3;
     private static final int FIXED_WIDTH_COLUMN = 1;
@@ -329,16 +327,6 @@ public class ColumnResizeHandlerTest {
     }
 
     private TableColumn columnAt(int index) {
-        return argThat(new BaseMatcher<TableColumn>() {
-            @Override
-            public boolean matches(Object o) {
-                return ((TableColumn) o).getModelIndex() == index;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("TableColumn #").appendValue(index);
-            }
-        });
+        return argThat(o -> o.getModelIndex() == index);
     }
 }

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,6 @@ import java.text.SimpleDateFormat;
  */
 public class DateTableCellRenderer extends FormatTableCellRenderer {
     public DateTableCellRenderer(String pattern) {
-        super(new SimpleDateFormat(pattern), Highlighter.NOOP_HIGHLIGHTER);
+        super(new SimpleDateFormat(pattern));
     }
 }

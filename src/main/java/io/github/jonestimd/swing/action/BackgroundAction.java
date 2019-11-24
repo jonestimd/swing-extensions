@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,17 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.AbstractAction;
-
 import io.github.jonestimd.swing.BackgroundTask;
 
 /**
  * An abstract action for performing a task on a background thread.
  */
-public abstract class BackgroundAction<T> extends AbstractAction {
+public abstract class BackgroundAction<T> extends LocalizedAction {
     private final Component owner;
     private final String statusMessage;
 
     protected BackgroundAction(Component owner, ResourceBundle bundle, String resourcePrefix) {
-        ActionAdapter.initialize(this, bundle, resourcePrefix);
+        super(bundle, resourcePrefix);
         this.owner = owner;
         statusMessage = bundle.containsKey(resourcePrefix + ".status.initialize") ?
                 bundle.getString(resourcePrefix + ".status.initialize") : null;
@@ -45,7 +43,7 @@ public abstract class BackgroundAction<T> extends AbstractAction {
 
     public final void actionPerformed(ActionEvent event) {
         if (confirmAction(event)) {
-            BackgroundTask.task(statusMessage, this::performTask, this::updateUI).run(owner);
+            BackgroundTask.task(statusMessage, this::performTask, this::updateUI, this::handleException).run(owner);
         }
     }
 

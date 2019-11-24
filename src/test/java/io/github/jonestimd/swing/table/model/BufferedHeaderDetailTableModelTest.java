@@ -22,7 +22,7 @@ public class BufferedHeaderDetailTableModelTest {
     private TableModelListener listener = mock(TableModelListener.class);
     private TestSummaryColumnAdapter summaryColumnAdapter = new TestSummaryColumnAdapter();
 
-    private final DetailAdapter<TestSummaryBean> detailAdapter = new SingleTypeDetailAdapter<TestSummaryBean>() {
+    private final DetailAdapter<TestSummaryBean> detailAdapter = new SingleTypeDetailAdapter<>() {
         public List<?> getDetails(TestSummaryBean bean, int subRowTypeIndex) {
             return bean.details;
         }
@@ -156,7 +156,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.isCellEditable(4, 0)).isTrue();
         assertThat(model.isCellEditable(5, 0)).isTrue();
 
-        model.queueDelete(3);
+        model.queueDelete(beans.get(1));
 
         assertThat(model.isCellEditable(3, 0)).isFalse();
         assertThat(model.isCellEditable(4, 0)).isFalse();
@@ -394,7 +394,7 @@ public class BufferedHeaderDetailTableModelTest {
         model.removeBean(new TestSummaryBean());
 
         assertThat(model.getRowCount()).isEqualTo(6);
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -427,8 +427,8 @@ public class BufferedHeaderDetailTableModelTest {
 
         model.queueAdd(new TestSummaryBean(new TestDetailBean()));
 
-        assertThat(model.isPendingAdd(0));
-        assertThat(model.isPendingAdd(1));
+        assertThat(model.isPendingAdd(0)).isTrue();
+        assertThat(model.isPendingAdd(1)).isTrue();
         assertThat(model.isChanged()).isTrue();
         assertThat(model.isChangedAt(0, 0)).isTrue();
         assertThat(model.isChangedAt(1, 0)).isTrue();
@@ -669,6 +669,9 @@ public class BufferedHeaderDetailTableModelTest {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
         model.setBeans(Lists.newArrayList(new TestSummaryBean(new TestDetailBean(), new TestDetailBean())));
         model.queueAdd(new TestSummaryBean(new TestDetailBean()));
+        model.setValueAt(-1, 4, 0);
+        assertThat(model.isNoErrors()).isFalse();
+        model.addTableModelListener(e -> assertThat(model.isNoErrors()).isTrue());
 
         assertThat(model.queueDelete(3)).isFalse();
 

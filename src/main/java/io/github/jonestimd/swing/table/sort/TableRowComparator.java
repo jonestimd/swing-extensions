@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ import io.github.jonestimd.swing.table.model.BeanTableModel;
  * @param <VTM> The class that maps the table row index to the model row index
  */
 public class TableRowComparator<Bean, VTM extends ViewToModel<Bean>> implements Comparator<VTM> {
-    private static final Comparator<ViewToModel<?>> MODEL_INDEX_COMPARATOR = (o1, o2) -> o1.getModelIndex() - o2.getModelIndex();
+    private static final Comparator<ViewToModel<?>> MODEL_INDEX_COMPARATOR = Comparator.comparingInt(ViewToModel::getModelIndex);
     private final Logger logger = Logger.getLogger(TableRowComparator.class.getName());
     private final DecoratedTable<Bean, ? extends BeanTableModel<Bean>> table;
     private final List<SortKey> sortKeys = new ArrayList<>();

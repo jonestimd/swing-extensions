@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -130,8 +130,16 @@ public class FieldChangeTracker extends ContainerTracker {
             changedFields.add(source);
         }
         if (changedFields.size() != oldSize) {
-            changeHandler.fieldsChanged(! changedFields.isEmpty());
+            changeHandler.fieldsChanged(isChanged());
         }
+    }
+
+    public boolean isChanged() {
+        return !changedFields.isEmpty();
+    }
+
+    public void resetChanges() {
+        changedFields.clear();
     }
 
     private class TextFieldHandler implements DocumentListener {

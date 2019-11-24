@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,16 @@ package io.github.jonestimd.swing.window;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.Icon;
-
-import io.github.jonestimd.swing.action.MnemonicAction;
+import io.github.jonestimd.swing.action.LocalizedAction;
 
 /**
  * A UI action that opens a new window.
  * @param <E> the class providing information about the requested window
  * @see FrameManager
  */
-public class FrameAction<E extends WindowInfo> extends MnemonicAction implements ApplicationWindowAction<E> {
+public class FrameAction<E extends WindowInfo> extends LocalizedAction implements ApplicationWindowAction<E> {
     private final E windowInfo;
     private FrameManager<E> frameManager;
-
-    public FrameAction(String mnemonicAndName, Icon icon, FrameManager<E> frameManager, E windowInfo) {
-        super(mnemonicAndName, icon);
-        this.frameManager = frameManager;
-        this.windowInfo = windowInfo;
-    }
 
     public FrameAction(ResourceBundle bundle, String resourcePrefix, FrameManager<E> frameManager, E windowInfo) {
         super(bundle, resourcePrefix);

@@ -21,11 +21,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.util.List;
-import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.function.ToIntFunction;
 
 import javax.swing.JComponent;
 import javax.swing.table.TableColumnModel;
@@ -46,14 +47,14 @@ public class ValueClassColumnWidthCalculatorTest {
             new FunctionColumnAdapter<>(BUNDLE, PREFIX, "first", String.class, TestBean::getFirst, null),
             new FunctionColumnAdapter<>(BUNDLE, PREFIX, "second", Long.class, TestBean::getSecond, null),
             new FunctionColumnAdapter<>(BUNDLE, PREFIX, "third", TestEnum.class, TestBean::getThird, null),
-            new FunctionColumnAdapter<>(BUNDLE, PREFIX, "forth", Boolean.class, TestBean::getFourth, null)
+            new FunctionColumnAdapter<>(BUNDLE, PREFIX, "forth", Boolean.class, TestBean::getFourth, null),
+            new FunctionColumnAdapter<>(BUNDLE, PREFIX, "fifth", Color.class, TestBean::getFifth, null)
     );
     private final BeanListTableModel<TestBean> model = new BeanListTableModel<>(ADAPTERS);
     private final DecoratedTable<?, ?> table = new DecoratedTable<>(model);
     private final ColumnConfiguration configuration = mock(ColumnConfiguration.class);
     private final ValueClassColumnWidthCalculator calculator = new ValueClassColumnWidthCalculator(table, configuration);
     private final TableColumnModel columnModel = table.getColumnModel();
-    private final Random random = new Random();
 
     @Test
     public void isFixedWidth() throws Exception {
@@ -72,12 +73,17 @@ public class ValueClassColumnWidthCalculatorTest {
         assertThat(calculator.preferredWidth(columnModel.getColumn(1))).isEqualTo(getWidth(numberPrototype));
         assertThat(calculator.preferredWidth(columnModel.getColumn(2))).isEqualTo(getWidth(TestEnum.ExtraLong.toString()));
         assertThat(calculator.preferredWidth(columnModel.getColumn(3))).isEqualTo(getWidth(BUNDLE.getString(PREFIX + "forth")));
+        assertThat(calculator.preferredWidth(columnModel.getColumn(4))).isEqualTo(getWidth(" ", renderer -> renderer.getPreferredSize().height));
     }
 
     private int getWidth(String prototype) {
+        return getWidth(prototype, (renderer) -> renderer.getPreferredSize().width);
+    }
+
+    private int getWidth(String prototype, ToIntFunction<Component> getWidth) {
         Component renderer = getHeaderRenderer(prototype);
         Insets insets = ((JComponent) renderer).getInsets();
-        return renderer.getPreferredSize().width + insets.left + insets.right + 2;
+        return getWidth.applyAsInt(renderer) + insets.left + insets.right + 2;
     }
 
     private Component getHeaderRenderer(Object value) {
@@ -113,6 +119,10 @@ public class ValueClassColumnWidthCalculatorTest {
 
         public Boolean getFourth() {
             return fourth;
+        }
+
+        public Color getFifth() {
+            return null;
         }
     }
 }

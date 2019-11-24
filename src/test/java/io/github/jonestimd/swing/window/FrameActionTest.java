@@ -28,7 +28,7 @@ import javax.swing.Action;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -59,11 +59,13 @@ public class FrameActionTest {
 
         assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'N');
         assertThat(action.getValue(Action.NAME)).isEqualTo("New Frame");
+        assertThat(action.getWindowInfo()).isEqualTo(TestWindowInfo.MultiFrame);
     }
 
     @Test
     public void actionPerformedPublishesEvent() throws Exception {
-        FrameAction<TestWindowInfo> action = new FrameAction<>("NNew Window", null, frameManager, TestWindowInfo.MultiFrame);
+        ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
+        FrameAction<TestWindowInfo> action = new FrameAction<>(bundle, "FrameActionTest", frameManager, TestWindowInfo.MultiFrame);
 
         action.actionPerformed(null);
 

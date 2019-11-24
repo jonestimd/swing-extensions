@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
 import static java.util.Collections.*;
@@ -111,7 +111,7 @@ public class BeanListTableModelTest {
     public void dataProviderStateChangeDoesNotFireTableModelEventWhenTableIsEmpty() throws Exception {
         stateListenerCaptor.getValue().propertyChange(new PropertyChangeEvent(dataProvider, "state", null, null));
 
-        verifyZeroInteractions(tableModelListener);
+        verifyNoInteractions(tableModelListener);
     }
 
     @Test

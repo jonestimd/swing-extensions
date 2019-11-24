@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ public interface ValidatedComponent {
     String VALIDATION_MESSAGES = "validationMessages";
 
     /**
-     * Perform validation of the current value.
+     * Perform validation of the current value.  Useful when validation depends on another component.
      */
     void validateValue();
 
@@ -49,4 +49,6 @@ public interface ValidatedComponent {
      * Remove a listener that is receiving notification when the validation changes.
      */
     void removeValidationListener(PropertyChangeListener listener);
+
+    boolean isVisible();
 }

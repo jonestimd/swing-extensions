@@ -29,7 +29,7 @@ import javax.swing.event.ListDataListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.*;
 import static org.assertj.core.api.Assertions.*;

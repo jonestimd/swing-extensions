@@ -38,11 +38,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.awt.GridBagConstraints.*;
 import static org.assertj.core.api.Assertions.*;
@@ -91,6 +92,23 @@ public class GridBagBuilderTest {
     }
 
     @Test
+    public void overlayFields() throws Exception {
+        GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.");
+
+        JTextField field1 = builder.append("field1", new JTextField());
+        JTextField field2 = builder.overlay(new JTextField());
+
+        assertThat(panel.getComponentCount()).isEqualTo(3);
+        JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
+        assertThat(panel.getComponent(1)).isSameAs(field1);
+        assertThat(panel.getComponent(2)).isSameAs(field2);
+        verifyConstraints(getConstraints(label), textFieldLabelConstraints);
+        verifyConstraints(getConstraints(field1), textFieldConstraints);
+        verifyConstraints(getConstraints(field2), textFieldConstraints);
+    }
+
+    @Test
     public void unrelatedVerticalGap() throws Exception {
         GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.");
         builder.append("field1", new JTextField());
@@ -135,6 +153,31 @@ public class GridBagBuilderTest {
         assertThat(((JScrollPane) panel.getComponent(1)).getViewport().getView()).isSameAs(field);
         verifyConstraints(getConstraints(label), textAreaLabelConstraints);
         verifyConstraints(getConstraints(1), new GridBagConstraints(0, 1, 2, 1, 1, 0.3, WEST, BOTH, new Insets(2, 0, 0, 2), 0, 0));
+    }
+
+    @Test
+    public void noUseScrollPane_disablesWrappingWithScrollPane() throws Exception {
+        GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.").noUseScrollPane(JTextArea.class);
+
+        JTextArea field = builder.append("field1", new JTextArea());
+
+        assertThat(panel.getComponentCount()).isEqualTo(2);
+        JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
+        assertThat(panel.getComponent(1)).isSameAs(field);
+    }
+
+    @Test
+    public void useScrollPane_enablesWrappingWithScrollPane() throws Exception {
+        GridBagBuilder builder = new GridBagBuilder(panel, bundle, "gridBagBuilder.").useScrollPane(JTextPane.class);
+
+        JTextPane field = builder.append("field1", new JTextPane());
+
+        assertThat(panel.getComponentCount()).isEqualTo(2);
+        JLabel label = (JLabel) panel.getComponent(0);
+        assertThat(builder.getLastLabel()).isSameAs(label);
+        assertThat(panel.getComponent(1)).isInstanceOf(JScrollPane.class);
+        assertThat(((JScrollPane) panel.getComponent(1)).getViewport().getView()).isSameAs(field);
     }
 
     @Test

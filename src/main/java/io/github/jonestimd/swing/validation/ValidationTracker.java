@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@ package io.github.jonestimd.swing.validation;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.HierarchyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -70,6 +71,7 @@ public class ValidationTracker extends ContainerTracker {
     @Override
     protected void componentAdded(Component component) {
         if (component instanceof ValidatedComponent) {
+            component.addHierarchyListener(this::visibilityChanged);
             ValidatedComponent validatedComponent = (ValidatedComponent) component;
             validatedComponent.addValidationListener(validationHandler);
             String messages = validatedComponent.getValidationMessages();
@@ -90,6 +92,7 @@ public class ValidationTracker extends ContainerTracker {
     @Override
     protected void componentRemoved(Component component) {
         if (component instanceof ValidatedComponent) {
+            component.removeHierarchyListener(this::visibilityChanged);
             ValidatedComponent validatedComponent = (ValidatedComponent) component;
             validatedComponent.removeValidationListener(validationHandler);
             validationMessages.remove(validatedComponent);
@@ -99,6 +102,19 @@ public class ValidationTracker extends ContainerTracker {
         }
         else {
             super.componentRemoved(component);
+        }
+    }
+
+    private void visibilityChanged(HierarchyEvent event) {
+        if (event.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+            ValidatedComponent component = (ValidatedComponent) event.getComponent();
+            if (component.isVisible()) {
+                String messages = component.getValidationMessages();
+                if (messages != null && !validationMessages.containsKey(component)) {
+                    updateValidationMessages(component, messages);
+                }
+            }
+            else if (validationMessages.containsKey(component)) updateValidationMessages(component, null);
         }
     }
 

@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class EmptyColumnAdapterTest {
     private static final String IDENTIFIER = "dummy1";
-    private final EmptyColumnAdapter<?> adapter = new EmptyColumnAdapter<>(IDENTIFIER);
+    private final EmptyColumnAdapter<?, String> adapter = new EmptyColumnAdapter<>(IDENTIFIER, String.class);
 
     @Test
     public void getColumnIdReturnsId() throws Exception {
@@ -35,8 +35,8 @@ public class EmptyColumnAdapterTest {
     }
 
     @Test
-    public void getResourceReturnsNull() throws Exception {
-        assertThat(adapter.getResource(null, "x")).isNull();
+    public void getResourceReturnsDefaultValue() throws Exception {
+        assertThat(adapter.getResource(null, "x")).isEqualTo("x");
     }
 
     @Test

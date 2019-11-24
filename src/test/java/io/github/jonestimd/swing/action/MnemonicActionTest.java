@@ -22,12 +22,10 @@
 package io.github.jonestimd.swing.action;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
 
 import org.junit.Test;
 
@@ -49,18 +47,5 @@ public class MnemonicActionTest {
         assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'T');
         assertThat(action.getValue(Action.NAME)).isEqualTo("Test Action");
         assertThat(action.getValue(Action.SMALL_ICON)).isEqualTo(icon);
-    }
-
-    @Test
-    public void setsMnemonicNameAndAccelerator() throws Exception {
-        MnemonicAction action = new MnemonicAction(bundle, "testAction") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        };
-
-        assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'T');
-        assertThat(action.getValue(Action.NAME)).isEqualTo("Test Action");
-        assertThat(action.getValue(Action.ACCELERATOR_KEY)).isEqualTo(KeyStroke.getKeyStroke('T', KeyEvent.CTRL_DOWN_MASK));
     }
 }

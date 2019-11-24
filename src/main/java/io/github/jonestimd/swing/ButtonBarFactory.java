@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,65 +22,33 @@
 package io.github.jonestimd.swing;
 
 import java.awt.Component;
-import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.border.EmptyBorder;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 
 import io.github.jonestimd.util.Streams;
 
+/**
+ * Helper class for building button bars using {@link ButtonBarLayout}.
+ */
 public class ButtonBarFactory {
     public static final int BUTTON_GAP = 5;
-
-    /**
-     * Make all buttons on the button bar the same size as the preferred size of the largest button.
-     * @param buttonBar the button bar
-     * @return {@code buttonBar}
-     */
-    public static Box setSize(Box buttonBar) {
-        Dimension maxSize = getMaxSize(buttonBar.getComponents());
-        buttonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize.height));
-        for (Component component : buttonBar.getComponents()) {
-            if (component instanceof AbstractButton) {
-                setFixedSize(maxSize, component);
-            }
-        }
-        return buttonBar;
-    }
-
-    private static Dimension getMaxSize(Component... components) {
-        return getMaxSize(Arrays.asList(components));
-    }
-
-    private static Dimension getMaxSize(List<? extends Component> components) {
-        Dimension max = new Dimension();
-        for (Component component : components) {
-            if (component instanceof AbstractButton) {
-                max.height = Math.max(max.height, component.getPreferredSize().height);
-                max.width = Math.max(max.width, component.getPreferredSize().width);
-            }
-        }
-        return max;
-    }
-
-    private static void setFixedSize(Dimension size, Component component) {
-        component.setMinimumSize(size);
-        component.setMaximumSize(size);
-        component.setPreferredSize(size);
-    }
 
     /**
      * Create a vertical button bar.
      * @param buttons the buttons to add to the button bar
      * @return the button bar
      */
-    public static Box createVerticalButtonBar(Component... buttons) {
+    public static JComponent createVerticalButtonBar(Component... buttons) {
         return createVerticalButtonBar(Arrays.asList(buttons));
     }
 
@@ -87,33 +57,26 @@ public class ButtonBarFactory {
      * @param components the components to add to the button bar
      * @return the button bar
      */
-    public static Box createVerticalButtonBar(List<? extends Component> components) {
-        Dimension maxSize = getMaxSize(components);
-        Box box = Box.createVerticalBox();
-        box.setBorder(new EmptyBorder(0, 5, 0, 5));
-        for (Component component : components) {
-            if (component instanceof AbstractButton) {
-                setFixedSize(maxSize, component);
-            }
-            box.add(component);
-            box.add(Box.createVerticalStrut(5));
-        }
-        box.remove(box.getComponentCount() - 1);
-        return box;
+    public static JComponent createVerticalButtonBar(List<? extends Component> components) {
+        return new ButtonBarFactory().vertical().addButtons(components).border(0, 5, 0, 5).get();
     }
 
-    private Box buttonBar;
-
-    public ButtonBarFactory() {
-        buttonBar = Box.createHorizontalBox();
-    }
+    private List<Component> buttons = new ArrayList<>();
+    private int orientation = SwingConstants.HORIZONTAL;
+    private int alignment = SwingConstants.LEADING;
+    private Border border;
 
     /**
      * Make the button bar right aligned.
      * @return this factory
      */
     public ButtonBarFactory alignRight() {
-        buttonBar.add(Box.createHorizontalGlue(), 0);
+        alignment = SwingConstants.TRAILING;
+        return this;
+    }
+
+    public ButtonBarFactory vertical() {
+        orientation = SwingConstants.VERTICAL;
         return this;
     }
 
@@ -129,7 +92,7 @@ public class ButtonBarFactory {
         int left = borders.length > 0 ? borders[0] : top;
         int bottom = borders.length > 1 ? borders[1] : top;
         int right = borders.length > 2 ? borders[2] : left;
-        buttonBar.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
+        border = BorderFactory.createEmptyBorder(top, left, bottom, right);
         return this;
     }
 
@@ -137,7 +100,7 @@ public class ButtonBarFactory {
         return addActions(Arrays.asList(actions));
     }
 
-    public ButtonBarFactory addActions(Iterable<? extends Action> actions) {
+    public ButtonBarFactory addActions(Collection<? extends Action> actions) {
         return addButtons(Streams.map(actions, JButton::new));
     }
 
@@ -145,16 +108,15 @@ public class ButtonBarFactory {
         return addButtons(Arrays.asList(buttons));
     }
 
-    public ButtonBarFactory addButtons(Iterable<? extends Component> buttons) {
-        for (Component component : buttons) {
-            buttonBar.add(component);
-            buttonBar.add(Box.createHorizontalStrut(BUTTON_GAP));
-        }
-        buttonBar.remove(buttonBar.getComponentCount() - 1);
+    public ButtonBarFactory addButtons(Collection<? extends Component> buttons) {
+        this.buttons.addAll(buttons);
         return this;
     }
 
-    public Box get() {
-        return setSize(buttonBar);
+    public JComponent get() {
+        JPanel buttonBar = new JPanel(new ButtonBarLayout(orientation, BUTTON_GAP, alignment));
+        buttons.forEach(buttonBar::add);
+        if (border != null) buttonBar.setBorder(border);
+        return buttonBar;
     }
 }

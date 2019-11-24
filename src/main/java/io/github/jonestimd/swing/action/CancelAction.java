@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,7 @@ import java.awt.event.WindowEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.WindowConstants;
 
@@ -43,7 +39,7 @@ import io.github.jonestimd.swing.ComponentResources;
  * closing the window.
  */
 public class CancelAction extends AbstractAction {
-    private static final String CLOSE = "close";
+    public static final String ACTION_MAP_KEY = "close";
     private final Window window;
     private ConfirmClose confirmClose = null;
     private boolean cancelled = false;
@@ -58,10 +54,7 @@ public class CancelAction extends AbstractAction {
     }
 
     protected static <T extends Window & RootPaneContainer> CancelAction initialize(T window, CancelAction action) {
-        InputMap inputMap = window.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), CLOSE);
-        ActionMap actionMap = window.getRootPane().getActionMap();
-        actionMap.put(CLOSE, action);
+        ActionUtils.install(window.getRootPane(), action, ACTION_MAP_KEY, "ESCAPE");
         return action;
     }
 

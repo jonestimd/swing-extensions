@@ -32,22 +32,17 @@ import io.github.jonestimd.swing.validation.Validator;
 import io.github.jonestimd.text.StringFormat;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SuggestFieldTest {
     @Rule
     public final SwingEdtRule swingEdtRule = new SwingEdtRule();
 
-    @Mock
-    private BasicComboBoxUI comboBoxUI;
-    @Mock
-    private SuggestModel<String> model;
+    private BasicComboBoxUI comboBoxUI = mock(BasicComboBoxUI.class);
+    @SuppressWarnings("unchecked")
+    private SuggestModel<String> model = mock(SuggestModel.class);
 
     private KeyListener getKeyListener(SuggestField<?> field) {
         KeyListener[] listeners = field.getEditorComponent().getKeyListeners();

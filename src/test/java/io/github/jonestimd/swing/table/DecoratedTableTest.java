@@ -61,9 +61,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import static java.awt.event.InputEvent.*;
 import static java.awt.event.KeyEvent.*;
 import static java.util.Collections.*;
 import static javax.swing.JComponent.*;
@@ -173,6 +173,30 @@ public class DecoratedTableTest {
         verify(mockAdapter1, never()).handleClick(event, table, table.getModel().getBean(0));
     }
 
+    @Test
+    public void setModelRestoresSortKeysForAutoCreateSorterTrue() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+        table.setAutoCreateRowSorter(true);
+        SortKey sortKey = new SortKey(0, SortOrder.DESCENDING);
+        table.getRowSorter().setSortKeys(Collections.singletonList(sortKey));
+
+        table.setModel(new BeanListTableModel<>(ImmutableList.of(columnAdapter1, columnAdapter2)));
+
+        assertThat(table.getRowSorter().getSortKeys()).isEqualTo(Collections.singletonList(sortKey));
+    }
+
+    @Test
+    public void setModelDoesNotRestoresSortKeysForAutoCreateSorterFalse() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+        SortKey sortKey = new SortKey(0, SortOrder.DESCENDING);
+        table.setRowSorter(new TableRowSorter<>(table.getModel()));
+        table.getRowSorter().setSortKeys(Collections.singletonList(sortKey));
+
+        table.setModel(new BeanListTableModel<>(ImmutableList.of(columnAdapter1, columnAdapter2)));
+
+        assertThat(table.getRowSorter().getSortKeys()).isEmpty();
+    }
+
     private MouseEvent mockEvent(int x, int y) {
         MouseEvent event = mock(MouseEvent.class);
         when(event.getPoint()).thenReturn(new Point(x, y));
@@ -180,13 +204,30 @@ public class DecoratedTableTest {
     }
 
     @Test
-    public void alternateRowColors() throws Exception {
+    public void alternatesRowColors() throws Exception {
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
 
         assertThat(table.getColumn(columnAdapter1).getModelIndex()).isEqualTo(0);
-        assertThat(table.getRowBackground(0)).isEqualTo(evenBackground);
-        assertThat(table.getRowBackground(1)).isEqualTo(oddBackground);
+        assertThat(table.getRowBackground(0)).isEqualTo(table.getAlternateBackground());
+        assertThat(table.getRowBackground(1)).isEqualTo(table.getBackground());
         assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(19);
+    }
+
+    @Test
+    public void defaultBackgroundColors() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1");
+
+        assertThat(table.getBackground()).isEqualTo(oddBackground);
+        assertThat(table.getAlternateBackground()).isEqualTo(evenBackground);
+    }
+
+    @Test
+    public void overrideAlternateBackground() throws Exception {
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = newTable("bean1", "bean2");
+
+        table.setAlternateBackground(Color.PINK);
+
+        assertThat(table.getRowBackground(0)).isEqualTo(Color.PINK);
     }
 
     @Test
@@ -204,22 +245,25 @@ public class DecoratedTableTest {
     private void checkRendererColors(String description, DecoratedTable<?, ?> table, int row, int column, Color foreground, Color background) {
         Component component = table.prepareRenderer(table.getCellRenderer(row, column), row, column);
 
-        assertThat(component.getForeground()).isEqualTo(foreground).as(description);
+        assertThat(component.getForeground()).as(description).isEqualTo(foreground);
         assertThat(component.getBackground()).isEqualTo(background);
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void multiRowHeader() throws Exception {
+    public void multiRowHeaders() throws Exception {
         BeanTableModel<DecoratedTableTest> model = mock(BeanTableModel.class);
         when(model.getColumnCount()).thenReturn(3);
         when(model.getColumnName(0)).thenReturn("Column 1");
-        when(model.getColumnName(1)).thenReturn("Column 2");
+        when(model.getColumnName(1)).thenReturn("Column 2\nOverflows\n3 lines");
         when(model.getColumnName(2)).thenReturn("Column 3\nLine 2");
 
         DecoratedTable<DecoratedTableTest, BeanTableModel<DecoratedTableTest>> table = new DecoratedTable<>(model);
 
-        assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(34);
+        assertThat(table.getTableHeader().getPreferredSize().height).isEqualTo(49);
+        assertThat(table.getColumnModel().getColumn(0).getHeaderValue()).isEqualTo("Column 1");
+        assertThat(table.getColumnModel().getColumn(1).getHeaderValue()).isEqualTo("<html><center>Column 2<br>Overflows<br>3 lines</center></html>");
+        assertThat(table.getColumnModel().getColumn(2).getHeaderValue()).isEqualTo("<html><center>Column 3<br>Line 2</center></html>");
     }
 
     @Test
@@ -302,7 +346,7 @@ public class DecoratedTableTest {
             table.processKeyBinding(KeyStroke.getKeyStroke(keyChar), event, WHEN_FOCUSED, true);
         });
 
-        assertThat(editor.getEditor().getItem()).isEqualTo(expectedEditorText).as(description);
+        assertThat(editor.getEditor().getItem()).as(description).isEqualTo(expectedEditorText);
     }
 
     @Test
@@ -316,7 +360,7 @@ public class DecoratedTableTest {
             final KeyEvent event = new KeyEvent(table, KEY_RELEASED, 0L, 0, VK_ENTER, CHAR_UNDEFINED);
             table.processKeyBinding(KeyStroke.getKeyStroke("released ENTER"), event, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true);
 
-            verifyZeroInteractions(cellEditor);
+            verifyNoInteractions(cellEditor);
         });
     }
 
@@ -434,10 +478,10 @@ public class DecoratedTableTest {
         verify(renderer1).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
         verifyNoMoreInteractions(renderer1);
         InOrder inOrder = inOrder(renderer2);
-        inOrder.verify((JComponent) renderer2).setBackground(evenBackground);
+        inOrder.verify((JComponent) renderer2).setBackground(table.getAlternateBackground());
         inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
         inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean1", false, false, 0, 0);
-        inOrder.verify((JComponent) renderer2).setBackground(oddBackground);
+        inOrder.verify((JComponent) renderer2).setBackground(table.getBackground());
         inOrder.verify((JComponent) renderer2).setForeground(table.getForeground());
         inOrder.verify(renderer2).getTableCellRendererComponent(table, "bean2", false, false, 1, 0);
     }

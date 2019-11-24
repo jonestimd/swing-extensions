@@ -40,7 +40,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableRowSorter;
 
 import com.google.common.collect.Lists;
-import io.github.jonestimd.mockito.ArgumentCaptorFactory;
 import io.github.jonestimd.swing.table.DecoratedTable;
 import io.github.jonestimd.swing.table.TableSummary;
 import io.github.jonestimd.swing.table.model.ValidatedBeanListTableModel;
@@ -50,7 +49,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.swing.ComponentFactory.*;
 import static org.assertj.core.api.Assertions.*;
@@ -220,7 +219,7 @@ public class ValidatedTablePanelTest {
     public void saveDisabledForNoPendingChanges() throws Exception {
         createPanel();
         when(tableModel.isChanged()).thenReturn(false);
-        ArgumentCaptor<TableModelListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
         verify(tableModel, times(2)).addTableModelListener(listener.capture());
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
@@ -233,7 +232,7 @@ public class ValidatedTablePanelTest {
         createPanel();
         when(tableModel.isChanged()).thenReturn(true);
         when(tableModel.isNoErrors()).thenReturn(true);
-        ArgumentCaptor<TableModelListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
         verify(tableModel, times(2)).addTableModelListener(listener.capture());
         verify(saveAction).setEnabled(false);
 
@@ -247,7 +246,7 @@ public class ValidatedTablePanelTest {
         createPanel();
         when(tableModel.isChanged()).thenReturn(true);
         when(tableModel.isNoErrors()).thenReturn(false);
-        ArgumentCaptor<TableModelListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
         verify(tableModel, times(2)).addTableModelListener(listener.capture());
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
@@ -261,7 +260,7 @@ public class ValidatedTablePanelTest {
         StatusFrame frame = new StatusFrame(BUNDLE, RESOURCE_GROUP);
         frame.setContentPane(testPanel);
         when(tableModel.isChanged()).thenReturn(true);
-        ArgumentCaptor<TableModelListener> listener = ArgumentCaptorFactory.create();
+        ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
         verify(tableModel, times(2)).addTableModelListener(listener.capture());
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));

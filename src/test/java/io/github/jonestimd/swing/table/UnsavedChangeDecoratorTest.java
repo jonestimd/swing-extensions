@@ -25,14 +25,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 
-import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.swing.table.model.ChangeBufferTableModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -43,24 +43,23 @@ public class UnsavedChangeDecoratorTest {
     private DecoratedTable<Object, ChangeBufferTableModel<Object>> table;
     @Mock
     private ChangeBufferTableModel<Object> model;
-    @Mock
-    private JComponent renderer;
+
+    private JLabel renderer = new JLabel();
+    private Font font = renderer.getFont();
     private UnsavedChangeDecorator decorator = new UnsavedChangeDecorator();
 
     @Test
     public void setsStrikeoutFontForPendingDelete() throws Exception {
-        final Font font = Font.decode(Font.MONOSPACED);
-        when(table.getModel()).thenReturn(model);
-        when(model.isPendingDelete(0)).thenReturn(true);
-        when(renderer.getBackground()).thenReturn(Color.lightGray);
-        when(renderer.getFont()).thenReturn(font);
+        SwingUtilities.invokeAndWait(() -> {
+            when(table.getModel()).thenReturn(model);
+            when(model.isPendingDelete(0)).thenReturn(true);
+            renderer.setBackground(Color.lightGray);
 
-        decorator.prepareRenderer(table, renderer, 0, 0);
+            decorator.prepareRenderer(table, renderer, 0, 0);
 
-        verify(renderer).setBackground(new Color(190, 129, 129));
-        ArgumentCaptor<Font> captor = ArgumentCaptor.forClass(Font.class);
-        verify(renderer).setFont(captor.capture());
-        assertThat(captor.getValue().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
+            assertThat(renderer.getBackground()).isEqualTo(new Color(191, 130, 130));
+            assertThat(renderer.getFont().getAttributes().get(TextAttribute.STRIKETHROUGH)).isEqualTo(TextAttribute.STRIKETHROUGH_ON);
+        });
     }
 
     @Test
@@ -68,11 +67,11 @@ public class UnsavedChangeDecoratorTest {
         when(table.getModel()).thenReturn(model);
         when(model.isPendingDelete(0)).thenReturn(false);
         when(model.isChangedAt(0, 0)).thenReturn(true);
-        when(renderer.getBackground()).thenReturn(Color.lightGray);
+        renderer.setBackground(Color.lightGray);
 
         decorator.prepareRenderer(table, renderer, 0, 0);
 
-        verify(renderer).setBackground(new Color(10, 190, 190));
-        verify(renderer, never()).setFont(any(Font.class));
+        assertThat(renderer.getBackground()).isEqualTo(new Color(0, 192, 192));
+        assertThat(renderer.getFont()).isSameAs(font);
     }
 }

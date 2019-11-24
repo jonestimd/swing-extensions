@@ -2,11 +2,10 @@ package io.github.jonestimd.swing.table.model;
 
 import javax.swing.event.TableModelEvent;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
-public class TableModelEventMatcher extends BaseMatcher<TableModelEvent> {
+public class TableModelEventMatcher implements ArgumentMatcher<TableModelEvent> {
     private final int type;
     private final int firstRow;
     private final int lastRow;
@@ -20,13 +19,7 @@ public class TableModelEventMatcher extends BaseMatcher<TableModelEvent> {
     }
 
     @Override
-    public void describeTo(Description description) {
-        description.appendText(String.format("type=%d, firstRow=%d, lastRow=%d, column=%d", type, firstRow, lastRow, column));
-    }
-
-    @Override
-    public boolean matches(Object arg0) {
-        TableModelEvent event = (TableModelEvent) arg0;
+    public boolean matches(TableModelEvent event) {
         return event.getType() == type && event.getFirstRow() == firstRow
             && event.getLastRow() == lastRow && event.getColumn() == column;
     }

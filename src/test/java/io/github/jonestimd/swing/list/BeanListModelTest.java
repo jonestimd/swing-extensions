@@ -31,13 +31,13 @@ import javax.swing.event.ListDataListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static io.github.jonestimd.mockito.Matchers.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class BeanListModelTest {
     @Mock
     private ListDataListener listDataListener;
@@ -99,7 +99,7 @@ public class BeanListModelTest {
         model.addAllElements(Collections.emptyList());
 
         assertThat(model).hasSize(2);
-        verifyZeroInteractions(listDataListener);
+        verifyNoInteractions(listDataListener);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class BeanListModelTest {
 
         assertThat(model).hasSize(2);
         verify(listDataListener).intervalRemoved(listDataEvent(model, ListDataEvent.INTERVAL_REMOVED, 2, 2));
-        verifyZeroInteractions(listDataListener);
+        verifyNoMoreInteractions(listDataListener);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class BeanListModelTest {
         model.removeElement("three");
 
         assertThat(model).hasSize(2);
-        verifyZeroInteractions(listDataListener);
+        verifyNoInteractions(listDataListener);
     }
 
     @Test
@@ -203,7 +203,7 @@ public class BeanListModelTest {
 
         model.removeAll();
 
-        verifyZeroInteractions(listDataListener);
+        verifyNoInteractions(listDataListener);
     }
 
     @Test

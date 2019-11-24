@@ -21,16 +21,21 @@
 // SOFTWARE.
 package io.github.jonestimd.swing;
 
+import java.util.ResourceBundle;
+
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+import io.github.jonestimd.swing.LabelBuilder.Factory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class LabelBuilderTest {
+    private ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
+
     @BeforeClass
     public static void setLookAndFeel() throws Exception {
         UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
@@ -66,5 +71,40 @@ public class LabelBuilderTest {
         JLabel label = new LabelBuilder().name("Field").bold().get();
 
         assertThat(label.getFont().isBold()).isTrue();
+    }
+
+    @Test
+    public void factoryUsesResourceBundle() throws Exception {
+        Factory factory = new Factory(bundle, "labelBuilder.factory.");
+
+        JLabel label1 = factory.newLabel("label1.mnemonicAndName");
+        JLabel label2 = factory.newLabel("label2.mnemonicAndName");
+
+        assertThat(label1.getText()).isEqualTo(bundle.getString("labelBuilder.factory.label1.mnemonicAndName").substring(1));
+        assertThat(label1.getDisplayedMnemonic()).isEqualTo(bundle.getString("labelBuilder.factory.label1.mnemonicAndName").charAt(0));
+        assertThat(label2.getText()).isEqualTo(bundle.getString("labelBuilder.factory.label2.mnemonicAndName").substring(1));
+        assertThat(label2.getDisplayedMnemonic()).isEqualTo(bundle.getString("labelBuilder.factory.label2.mnemonicAndName").charAt(0));
+    }
+
+    @Test
+    public void factorySetsLabelFor() throws Exception {
+        Factory factory = new Factory(bundle, "labelBuilder.factory.");
+        JTextField component = new JTextField();
+
+        JLabel label = factory.newLabel("label1.mnemonicAndName", component);
+
+        assertThat(label.getLabelFor()).isSameAs(component);
+    }
+
+    @Test
+    public void factorySetsBold() throws Exception {
+        Factory factory = new Factory(bundle, "labelBuilder.factory.").bold();
+
+        JLabel label1 = factory.newLabel("label1.mnemonicAndName");
+        JLabel label2 = factory.newLabel("label2.mnemonicAndName");
+
+        assertThat(label1.getFont().isBold()).isEqualTo(true);
+        assertThat(label2.getFont().isBold()).isEqualTo(true);
+
     }
 }

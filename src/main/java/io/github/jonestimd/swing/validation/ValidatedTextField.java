@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import javax.swing.text.Document;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
 /**
- * Extends {@link JTextField} to add validation.  Uses {@link ValidationBorder} to provide visual feedback when
+ * Extends {@link JTextField} to add validation.  Uses {@link ValidationTooltipBorder} to provide visual feedback when
  * there is a validation error.  Validation is disabled when the component is not editable.
  */
 public class ValidatedTextField extends JTextField implements ValidatedComponent {
@@ -40,7 +40,7 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
     public ValidatedTextField(Validator<String> validator) {
-        this.validationSupport = new ValidationSupport<>(this, value -> isEditable() ? validator.validate(value) : null);
+        this.validationSupport = new ValidationSupport<>(this, validator.when(this::isEditable));
         this.validationBorder = new ValidationTooltipBorder(this);
         super.setBorder(new CompoundBorder(super.getBorder(), validationBorder));
         validateValue();
@@ -48,7 +48,7 @@ public class ValidatedTextField extends JTextField implements ValidatedComponent
     }
 
     /**
-     * Overridden to wrap the {@link ValidationBorder} with the input border.
+     * Overridden to wrap the {@link ValidationTooltipBorder} with the input border.
      * @param border the border to add around the {@code ValidationBorder} or null
      *        to use the {@code ValidationBorder} alone
      */

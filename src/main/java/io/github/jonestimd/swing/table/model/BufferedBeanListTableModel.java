@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2019 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -161,7 +161,7 @@ public class BufferedBeanListTableModel<T> extends BeanListTableModel<T> impleme
         Object changeValue = getValue(oldBean, column);
         Object value = getValue(newBean, column);
         if (!Objects.equals(value, changeValue)) {
-            ColumnAdapter.class.cast(beanTableAdapter.getColumnAdapter(column)).setValue(newBean, changeValue);
+            ((ColumnAdapter) beanTableAdapter.getColumnAdapter(column)).setValue(newBean, changeValue);
             changeTracker.setValue(newBean, column, value, changeValue);
         }
     }

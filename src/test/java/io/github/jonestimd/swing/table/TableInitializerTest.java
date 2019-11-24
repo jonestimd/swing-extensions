@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.function.Supplier;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -40,7 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
