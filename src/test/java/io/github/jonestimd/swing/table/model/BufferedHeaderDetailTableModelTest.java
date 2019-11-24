@@ -156,7 +156,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.isCellEditable(4, 0)).isTrue();
         assertThat(model.isCellEditable(5, 0)).isTrue();
 
-        model.queueDelete(3);
+        model.queueDelete(beans.get(1));
 
         assertThat(model.isCellEditable(3, 0)).isFalse();
         assertThat(model.isCellEditable(4, 0)).isFalse();

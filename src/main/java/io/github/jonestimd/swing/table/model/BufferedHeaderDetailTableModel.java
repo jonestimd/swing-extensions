@@ -494,10 +494,6 @@ public class BufferedHeaderDetailTableModel<H> extends HeaderDetailTableModel<H>
             return header;
         }
 
-        public Object getDetail() {
-            return detail;
-        }
-
         @SuppressWarnings("unchecked")
         public boolean equals(Object obj) {
             ChangeRow<H> that = (ChangeRow<H>) obj;

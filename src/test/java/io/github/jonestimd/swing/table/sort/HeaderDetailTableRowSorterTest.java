@@ -20,7 +20,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class HeaderDetailTableRowSorterTest {
-    private static final ColumnAdapter<TestBean, String> headerAdapter = new TestColumnAdapter<TestBean>("Header") {
+    private static final ColumnAdapter<TestBean, String> headerAdapter = new TestColumnAdapter<>("Header") {
         public String getValue(TestBean bean) {
             return bean.header;
         }
@@ -29,7 +29,7 @@ public class HeaderDetailTableRowSorterTest {
             bean.header = value;
         }
     };
-    private static final ColumnAdapter<String, String> detailColumnAdapter = new TestColumnAdapter<String>("Detail") {
+    private static final ColumnAdapter<String, String> detailColumnAdapter = new TestColumnAdapter<>("Detail") {
         public String getValue(String bean) {
             return bean;
         }
@@ -37,7 +37,7 @@ public class HeaderDetailTableRowSorterTest {
         public void setValue(String bean, String value) {
         }
     };
-    private static final ColumnAdapter<TestBean, String> emptyAdapter = new TestColumnAdapter<TestBean>("Empty") {
+    private static final ColumnAdapter<TestBean, String> emptyAdapter = new TestColumnAdapter<>("Empty") {
         public String getValue(TestBean bean) {
             return "";
         }
@@ -648,7 +648,7 @@ public class HeaderDetailTableRowSorterTest {
 
     private static class TestBean {
         public String header;
-        public List<String> details = new ArrayList<>();
+        public List<String> details;
 
         public TestBean(String header, String ... details) {
             this.header = header;
@@ -688,7 +688,7 @@ public class HeaderDetailTableRowSorterTest {
         }
     }
 
-    private class TestDetailAdapter extends SingleTypeDetailAdapter<TestBean> {
+    private static class TestDetailAdapter extends SingleTypeDetailAdapter<TestBean> {
         public List<?> getDetails(TestBean bean, int subRowTypeIndex) {
             return bean.details;
         }
@@ -699,8 +699,7 @@ public class HeaderDetailTableRowSorterTest {
         }
     }
 
-    private class TestTableModel extends BufferedHeaderDetailTableModel<TestBean> {
-        @SuppressWarnings("unchecked")
+    private static class TestTableModel extends BufferedHeaderDetailTableModel<TestBean> {
         public TestTableModel() {
             super(new TestDetailAdapter(),
                 Arrays.asList(headerAdapter, emptyAdapter),

@@ -59,6 +59,7 @@ public class FrameActionTest {
 
         assertThat(action.getValue(Action.MNEMONIC_KEY)).isEqualTo((int) 'N');
         assertThat(action.getValue(Action.NAME)).isEqualTo("New Frame");
+        assertThat(action.getWindowInfo()).isEqualTo(TestWindowInfo.MultiFrame);
     }
 
     @Test

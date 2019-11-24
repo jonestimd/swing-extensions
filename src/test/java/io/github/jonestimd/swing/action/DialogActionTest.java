@@ -29,15 +29,22 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import io.github.jonestimd.AsyncTest;
+import io.github.jonestimd.swing.JFrameRobotTest;
+import io.github.jonestimd.swing.dialog.ExceptionDialog;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class DialogActionTest {
+public class DialogActionTest extends JFrameRobotTest {
     private final ResourceBundle bundle = ResourceBundle.getBundle("test-resources");
     private boolean loaded = false;
     private boolean saved = false;
     private boolean setResultOnUI = false;
+
+    @Override
+    protected JPanel createContentPane() {
+        return new JPanel();
+    }
 
     @Test
     public void actionPerformedNoDialog() throws Exception {
@@ -60,6 +67,40 @@ public class DialogActionTest {
 
         AsyncTest.timeout(5000L, () -> loaded);
         AsyncTest.timeout(5000L, () -> saved && setResultOnUI);
+    }
+
+    @Test
+    public void errorOnLoadDisplaysExceptionDialog() throws Exception {
+        TestAction action = new TestAction(true) {
+            @Override
+            protected void loadDialogData() {
+                super.loadDialogData();
+                throw new RuntimeException("load failed");
+            }
+        };
+
+        SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
+
+        AsyncTest.timeout(5000L, () -> loaded);
+        robot.finder().findByType(ExceptionDialog.class).dispose();
+    }
+
+    @Test
+    public void errorOnSaveDisplaysExceptionDialog() throws Exception {
+        TestAction action = new TestAction(true) {
+            @Override
+            protected void saveDialogData() {
+                super.saveDialogData();
+                throw new RuntimeException("load failed");
+            }
+        };
+
+        SwingUtilities.invokeAndWait(() -> action.actionPerformed(new ActionEvent(new JPanel(), -1, null)));
+
+        AsyncTest.timeout(5000L, () -> loaded);
+        AsyncTest.timeout(5000L, () -> saved);
+        assertThat(setResultOnUI).isFalse();
+        robot.finder().findByType(ExceptionDialog.class).dispose();
     }
 
     private class TestAction extends DialogAction {

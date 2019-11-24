@@ -21,39 +21,42 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.action;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 
-import io.github.jonestimd.swing.BackgroundTask;
+import org.junit.Test;
 
-/**
- * An abstract action for performing a task on a background thread.
- */
-public abstract class BackgroundAction<T> extends LocalizedAction {
-    private final Component owner;
-    private final String statusMessage;
+import static org.assertj.core.api.Assertions.*;
 
-    protected BackgroundAction(Component owner, ResourceBundle bundle, String resourcePrefix) {
-        super(bundle, resourcePrefix);
-        this.owner = owner;
-        statusMessage = bundle.containsKey(resourcePrefix + ".status.initialize") ?
-                bundle.getString(resourcePrefix + ".status.initialize") : null;
+public class BackgroundActionTest {
+    private ResourceBundle bundle = ResourceBundle.getBundle(TestResources.class.getName());
+
+    @Test
+    public void handleExceptionReturnsFalse() throws Exception {
+        BackgroundAction<String> action = new BackgroundAction<>(null, bundle, "action") {
+            @Override
+            protected boolean confirmAction(ActionEvent event) {
+                return false;
+            }
+
+            @Override
+            protected String performTask() {
+                return null;
+            }
+
+            @Override
+            protected void updateUI(String result) {
+            }
+        };
+
+        assertThat(action.handleException(null)).isFalse();
     }
 
-    public final void actionPerformed(ActionEvent event) {
-        if (confirmAction(event)) {
-            BackgroundTask.task(statusMessage, this::performTask, this::updateUI, this::handleException).run(owner);
+    public static class TestResources extends ListResourceBundle {
+        @Override
+        protected Object[][] getContents() {
+            return new Object[][] {{ "action.status.initialize", "Loading" }};
         }
-    }
-
-    protected abstract boolean confirmAction(ActionEvent event);
-
-    protected abstract T performTask();
-
-    protected abstract void updateUI(T result);
-
-    protected boolean handleException(Throwable th) {
-        return false;
     }
 }

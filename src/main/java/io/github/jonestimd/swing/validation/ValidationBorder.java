@@ -42,6 +42,7 @@ import io.github.jonestimd.swing.ComponentTreeUtils;
  * A border that indicates a validation error by displaying a red X to the right of the contained component.
  */
 public class ValidationBorder implements Border {
+    private static final float STROKE_WIDTH = 2.2f;
     private final Color background;
     private boolean valid = true;
 
@@ -100,7 +101,7 @@ public class ValidationBorder implements Border {
         Graphics2D g2d = (Graphics2D) g.create(x + width - size, y + (height - size)/2, size, size--);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setColor(Color.RED);
-        g2d.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
         g2d.drawLine(2, 2, size-2, size-2);
         g2d.drawLine(2, size-2, size-2, 2);
         g2d.dispose();

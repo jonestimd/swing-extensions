@@ -48,7 +48,7 @@ public class ComponentResources extends ListResourceBundle {
     public interface Provider extends Supplier<ResourceBundle> {}
 
     public static final ResourceBundle BUNDLE = ResourceBundle.getBundle(ComponentResources.class.getName());
-    private static final List<ResourceBundle> PROVIDERS = getProviders();
+    private static List<ResourceBundle> PROVIDERS = getProviders();
 
     private static List<ResourceBundle> getProviders() {
         ServiceLoader<Provider> providers = ServiceLoader.load(Provider.class);
