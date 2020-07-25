@@ -21,40 +21,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.util.Collection;
+public interface FilterComboBoxModel<T> extends LazyLoadComboBoxModel<T> {
+    void applyFilter(String search);
 
-import javax.swing.ComboBoxModel;
-
-/**
- * A combo box model that supports loading the list items lazily.
- * @param <T> the class of the combo box items
- */
-public interface LazyLoadComboBoxModel<T> extends ComboBoxModel<T>, Iterable<T> {
-    /**
-     * Replace the items in the list.
-     * @param items the new items
-     * @param keepSelection if true then the selected item is not changed, if false then the selected item is cleared
-     *        if it is not in {@code items}
-     */
-    void setElements(Collection<? extends T> items, boolean keepSelection);
-
-    /**
-     * Append an item to the list.
-     * @param item the item to append
-     */
-    void addElement(T item);
-
-    /**
-     * Add items to the list, skipping items that are already in the list.
-     * @param items the items to add
-     */
-    void addMissingElements(Collection<? extends T> items);
-
-    /**
-     * Get the index of an item in the list.
-     * @return the index of the item or -1 if it is not in the list
-     */
-    int indexOf(Object item);
-
-    T getSelectedItem();
+    String formatItem(T item);
 }

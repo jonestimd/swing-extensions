@@ -21,40 +21,28 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
-import javax.swing.ComboBoxModel;
+import io.github.jonestimd.util.Streams;
 
-/**
- * A combo box model that supports loading the list items lazily.
- * @param <T> the class of the combo box items
- */
-public interface LazyLoadComboBoxModel<T> extends ComboBoxModel<T>, Iterable<T> {
-    /**
-     * Replace the items in the list.
-     * @param items the new items
-     * @param keepSelection if true then the selected item is not changed, if false then the selected item is cleared
-     *        if it is not in {@code items}
-     */
-    void setElements(Collection<? extends T> items, boolean keepSelection);
+public class ContainsFilterComboBoxModel<T> extends BeanListComboBoxModel<T> implements FilterComboBoxModel<T> {
+    private List<T> unfilteredItems;
+    private final Function<T, String> format;
 
-    /**
-     * Append an item to the list.
-     * @param item the item to append
-     */
-    void addElement(T item);
+    public ContainsFilterComboBoxModel(List<T> unfilteredItems, Function<T, String> format) {
+        super(unfilteredItems);
+        this.unfilteredItems = unfilteredItems;
+        this.format = format;
+    }
 
-    /**
-     * Add items to the list, skipping items that are already in the list.
-     * @param items the items to add
-     */
-    void addMissingElements(Collection<? extends T> items);
+    @Override
+    public void applyFilter(String search) {
+        final String filter = search.toLowerCase();
+        setElements(Streams.filter(unfilteredItems, item -> format.apply(item).toLowerCase().contains(filter)), false);
+    }
 
-    /**
-     * Get the index of an item in the list.
-     * @return the index of the item or -1 if it is not in the list
-     */
-    int indexOf(Object item);
-
-    T getSelectedItem();
+    public String formatItem(T item) {
+        return format.apply((item));
+    }
 }
