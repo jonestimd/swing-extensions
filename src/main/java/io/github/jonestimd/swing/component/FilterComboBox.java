@@ -21,47 +21,35 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.HierarchyBoundsAdapter;
-import java.awt.event.HierarchyBoundsListener;
-import java.awt.event.HierarchyEvent;
 import java.awt.event.KeyEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JList;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 
 public class FilterComboBox<T> extends JTextField {
+    public static final String AUTO_SELECT_TEXT = "autoSelectText";
+    public static final String AUTO_SELECT_ITEM = "autoSelectItem";
+
     private final FilterComboBoxModel<T> model;
     private final JList<T> popupList;
-    private final Window popupWindow;
+    private final JPopupMenu popupWindow;
     private boolean autoSelectText = true;
     private boolean autoSelectItem = true;
-    private HierarchyBoundsListener movementListener = new HierarchyBoundsAdapter() {
-        public void ancestorMoved(HierarchyEvent e) {
-            popupWindow.setLocation(getPopupLocation());
-            popupWindow.toFront();
-        }
-    };
-    private ComponentListener componentListener = new ComponentAdapter() {
-        public void componentMoved(ComponentEvent e) {
-            popupWindow.setLocation(getPopupLocation());
-            popupWindow.toFront();
-        }
-    };
 
     public FilterComboBox(FilterComboBoxModel<T> model) {
         this(model, 5);
@@ -75,9 +63,16 @@ public class FilterComboBox<T> extends JTextField {
         popupList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) model.setSelectedItem(popupList.getSelectedValue());
         });
-        popupWindow = new Window(null);
-        popupWindow.setLayout(new BorderLayout());
-        popupWindow.add(new JScrollPane(popupList), BorderLayout.CENTER);
+        popupList.setBackground(ComponentDefaults.getColor("ComboBox.background"));
+        popupList.setSelectionForeground( ComponentDefaults.getColor( "ComboBox.selectionForeground" ) );
+        popupList.setSelectionBackground( ComponentDefaults.getColor( "ComboBox.selectionBackground" ) );
+        popupWindow = new JPopupMenu();
+        popupWindow.setLayout(new BoxLayout(popupWindow, BoxLayout.Y_AXIS));
+        JScrollPane scrollPane = new JScrollPane(popupList);
+        scrollPane.setBorder(null);
+        popupWindow.add(scrollPane);
+        popupWindow.setFocusable(false);
+        popupWindow.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -97,6 +92,18 @@ public class FilterComboBox<T> extends JTextField {
         getDocument().addDocumentListener(new DocumentChangeHandler(this::filterList));
     }
 
+    public T getSelectedItem() {
+        return model.getSelectedItem();
+    }
+
+    public FilterComboBoxModel<T> getModel() {
+        return model;
+    }
+
+    public JList<T> getPopupList() {
+        return popupList;
+    }
+
     public boolean isAutoSelectText() {
         return autoSelectText;
     }
@@ -104,7 +111,7 @@ public class FilterComboBox<T> extends JTextField {
     public void setAutoSelectText(boolean autoSelectText) {
         boolean oldValue = this.autoSelectText;
         this.autoSelectText = autoSelectText;
-        firePropertyChange("autoSelectText", oldValue, autoSelectText);
+        firePropertyChange(AUTO_SELECT_TEXT, oldValue, autoSelectText);
     }
 
     /**
@@ -117,7 +124,7 @@ public class FilterComboBox<T> extends JTextField {
     public void setAutoSelectItem(boolean autoSelectItem) {
         boolean oldValue = this.autoSelectItem;
         this.autoSelectItem = autoSelectItem;
-        firePropertyChange("autoSelectItem", oldValue, autoSelectItem);
+        firePropertyChange(AUTO_SELECT_ITEM, oldValue, autoSelectItem);
     }
 
     @Override
@@ -138,7 +145,7 @@ public class FilterComboBox<T> extends JTextField {
             else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
                 if (popupWindow.isVisible() && popupList.getSelectedIndex() >= 0) {
                     hidePopup();
-                    setText(model.getSelectedItem() == null ? "" : model.formatItem(model.getSelectedItem()));
+                    setText(model.formatItem(model.getSelectedItem()));
                 }
             }
             else {
@@ -149,10 +156,12 @@ public class FilterComboBox<T> extends JTextField {
                     if (event.getKeyCode() == KeyEvent.VK_DOWN) {
                         if (++selectedIndex >= size) selectedIndex = 0;
                         popupList.setSelectedIndex(selectedIndex);
+                        popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
                     }
                     else if (event.getKeyCode() == KeyEvent.VK_UP) {
                         if (--selectedIndex < 0) selectedIndex = size - 1;
                         popupList.setSelectedIndex(selectedIndex);
+                        popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
                     }
                 }
             }
@@ -173,31 +182,29 @@ public class FilterComboBox<T> extends JTextField {
     protected void showPopup() {
         popupWindow.setPreferredSize(new Dimension(getWidth(), popupWindow.getPreferredSize().height));
         popupWindow.pack();
-        popupWindow.setLocation(getPopupLocation());
-        popupWindow.setVisible(true);
-        popupWindow.toFront();
-        addHierarchyBoundsListener(movementListener);
-        addComponentListener(componentListener);
+        Point location = getPopupLocation();
+        popupWindow.show(getTopLevelAncestor(), location.x, location.y);
     }
 
     protected void hidePopup() {
-        removeHierarchyBoundsListener(movementListener);
-        removeComponentListener(componentListener);
-        popupWindow.dispose();
+        popupWindow.setVisible(false);
     }
 
     protected Point getPopupLocation() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-        screenSize.width -= insets.left + insets.right;
-        screenSize.height -= insets.top + insets.bottom;
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
+        screenSize.width -= screenInsets.left + screenInsets.right;
+        screenSize.height -= screenInsets.top + screenInsets.bottom;
         Dimension popupSize = popupWindow.getSize();
         return getPopupLocation(screenSize, popupSize);
     }
 
     protected Point getPopupLocation(Dimension screenSize, Dimension popupSize) {
-        Point location = getLocationOnScreen();
-        if (location.y + getHeight() + popupSize.height > screenSize.height) location.y -= popupSize.height;
+        Point location = getLocation();
+        Insets windowInsets = getTopLevelAncestor().getInsets();
+        location.x += windowInsets.left;
+        location.y += windowInsets.top;
+        if (getLocationOnScreen().y + getHeight() + popupSize.height > screenSize.height) location.y -= popupSize.height;
         else location.y += getHeight();
         return location;
     }

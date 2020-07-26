@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ package io.github.jonestimd.swing;
 import java.awt.Window;
 import java.util.function.Supplier;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 
@@ -64,7 +64,7 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
         robot.showWindow(window);
     }
 
-    protected abstract JPanel createContentPane();
+    protected abstract JComponent createContentPane();
 
     protected void assertCondition(Supplier<Boolean> condition, String description, long timeout) {
         pause(new Condition(description) {
