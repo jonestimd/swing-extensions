@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -170,7 +170,7 @@ public class PredicateSuggestModel<T> extends AbstractListModel<T> implements Su
     }
 
     @Override
-    public Object getSelectedItem() {
+    public T getSelectedItem() {
         return selectedItem;
     }
 
