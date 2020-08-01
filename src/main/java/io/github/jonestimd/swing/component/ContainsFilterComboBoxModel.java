@@ -21,6 +21,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.text.Format;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -29,6 +31,14 @@ import io.github.jonestimd.util.Streams;
 public class ContainsFilterComboBoxModel<T> extends BeanListComboBoxModel<T> implements FilterComboBoxModel<T> {
     private List<T> unfilteredItems;
     private final Function<T, String> format;
+
+    public ContainsFilterComboBoxModel(Format format) {
+        this(new ArrayList<>(), format);
+    }
+
+    public ContainsFilterComboBoxModel(List<T> unfilteredItems, Format format) {
+        this(unfilteredItems, format::format);
+    }
 
     public ContainsFilterComboBoxModel(List<T> unfilteredItems, Function<T, String> format) {
         super(unfilteredItems);

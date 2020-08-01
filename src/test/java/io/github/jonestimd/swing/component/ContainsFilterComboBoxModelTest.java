@@ -21,6 +21,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.text.FieldPosition;
+import java.text.Format;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -40,6 +42,19 @@ public class ContainsFilterComboBoxModelTest {
     private Function<String, String> format = mock(Function.class, new ReturnsArgumentAt(0));
 
     private ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, format);
+
+    @Test
+    public void usesFormat() throws Exception {
+        Format format = mock(Format.class);
+        StringBuffer formatted = new StringBuffer("formatted");
+        when(format.format(anyString(), any(StringBuffer.class), any(FieldPosition.class))).thenReturn(formatted);
+
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(format);
+
+        String unformatted = "unformatted";
+        assertThat(model.formatItem(unformatted)).isEqualTo(formatted.toString());
+        verify(format).format(same(unformatted), any(StringBuffer.class), any(FieldPosition.class));
+    }
 
     @Test
     public void applyFilterIgnoresCase() throws Exception {
