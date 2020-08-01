@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,15 +61,6 @@ public class BeanListModel<T> extends AbstractListModel<T> implements LazyLoadLi
         int index = elements.size();
         elements.add(item);
         fireIntervalAdded(this, index, index);
-    }
-
-    @Override
-    public void addAllElements(Collection<? extends T> items) {
-        if (items.size() > 0) {
-            int size = this.elements.size();
-            this.elements.addAll(items);
-            fireIntervalAdded(this, size, size+items.size()-1);
-        }
     }
 
     @Override

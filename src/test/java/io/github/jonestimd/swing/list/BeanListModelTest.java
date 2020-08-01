@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -75,31 +75,6 @@ public class BeanListModelTest {
         verify(listDataListener).intervalAdded(listDataEvent(model, ListDataEvent.INTERVAL_ADDED, 0, 0));
         verify(listDataListener).intervalAdded(listDataEvent(model, ListDataEvent.INTERVAL_ADDED, 1, 1));
         verifyNoMoreInteractions(listDataListener);
-    }
-
-    @Test
-    public void addAllElementAppendsElements() throws Exception {
-        BeanListModel<String> model = new BeanListModel<>(Arrays.asList("one", "two"));
-        model.addListDataListener(listDataListener);
-
-        model.addAllElements(Arrays.asList("three", "four"));
-
-        assertThat(model).hasSize(4);
-        assertThat(model.getElementAt(2)).isEqualTo("three");
-        assertThat(model.getElementAt(3)).isEqualTo("four");
-        verify(listDataListener).intervalAdded(listDataEvent(model, ListDataEvent.INTERVAL_ADDED, 2, 3));
-        verifyNoMoreInteractions(listDataListener);
-    }
-
-    @Test
-    public void addAllElementAllowsEmptyList() throws Exception {
-        BeanListModel<String> model = new BeanListModel<>(Arrays.asList("one", "two"));
-        model.addListDataListener(listDataListener);
-
-        model.addAllElements(Collections.emptyList());
-
-        assertThat(model).hasSize(2);
-        verifyNoInteractions(listDataListener);
     }
 
     @Test
