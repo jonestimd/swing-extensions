@@ -21,7 +21,9 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-public interface FilterComboBoxModel<T> extends LazyLoadComboBoxModel<T> {
+import javax.swing.MutableComboBoxModel;
+
+public interface FilterComboBoxModel<T> extends LazyLoadComboBoxModel<T>, MutableComboBoxModel<T> {
     void applyFilter(String search);
 
     String formatItem(T item);
