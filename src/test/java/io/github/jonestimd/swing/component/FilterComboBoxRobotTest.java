@@ -41,14 +41,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class FilterComboBoxRobotTest extends JFrameRobotTest {
     private static final String[] items = {
-        "apple",
-        "banana",
-        "blueberry",
-        "cherry",
-        "grape",
-        "peach",
-        "pineapple",
-        "raspberry"
+        "Apple", "Banana", "Blueberry", "Cherry", "Grape", "Peach", "Pineapple", "Raspberry"
     };
     private FilterComboBox<String> field;
 
@@ -151,7 +144,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         showWindow();
 
         robot.focus(field);
-        field.getPopupList().setSelectedIndex(items.length-1);
+        field.getPopupList().setSelectedIndex(items.length - 1);
         robot.pressAndReleaseKey(KeyEvent.VK_DOWN);
         robot.waitForIdle();
 
@@ -166,7 +159,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         robot.pressAndReleaseKey(KeyEvent.VK_UP);
         robot.waitForIdle();
 
-        assertThat(field.getSelectedItem()).isEqualTo(items[items.length-1]);
+        assertThat(field.getSelectedItem()).isEqualTo(items[items.length - 1]);
     }
 
     @Test
@@ -178,7 +171,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         robot.pressAndReleaseKey(KeyEvent.VK_UP);
         robot.waitForIdle();
 
-        assertThat(field.getSelectedItem()).isEqualTo(items[items.length-1]);
+        assertThat(field.getSelectedItem()).isEqualTo(items[items.length - 1]);
     }
 
     @Test
