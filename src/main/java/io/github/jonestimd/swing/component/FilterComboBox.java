@@ -23,8 +23,10 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -35,13 +37,14 @@ import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
 import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.DocumentChangeHandler;
+import io.github.jonestimd.swing.validation.ValidatedTextField;
+import io.github.jonestimd.swing.validation.Validator;
 
-public class FilterComboBox<T> extends JTextField {
+public class FilterComboBox<T> extends ValidatedTextField {
     public static final String AUTO_SELECT_TEXT = "autoSelectText";
     public static final String AUTO_SELECT_ITEM = "autoSelectItem";
 
@@ -49,6 +52,7 @@ public class FilterComboBox<T> extends JTextField {
     private final JList<T> popupList;
     private final JPopupMenu popupWindow;
     private boolean autoSelectText = true;
+    // TODO allow new item (editable combo box)
     private boolean autoSelectItem = true;
 
     public FilterComboBox(FilterComboBoxModel<T> model) {
@@ -56,6 +60,11 @@ public class FilterComboBox<T> extends JTextField {
     }
 
     public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows) {
+        this(model, visibleRows, Validator.empty());
+    }
+
+    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows, Validator<String> validator) {
+        super(validator);
         this.model = model;
         popupList = new JList<>(model);
         popupList.setVisibleRowCount(visibleRows);
@@ -183,7 +192,7 @@ public class FilterComboBox<T> extends JTextField {
         popupWindow.setPreferredSize(new Dimension(getWidth(), popupWindow.getPreferredSize().height));
         popupWindow.pack();
         Point location = getPopupLocation();
-        popupWindow.show(getTopLevelAncestor(), location.x, location.y);
+        popupWindow.show(this, location.x, location.y);
     }
 
     protected void hidePopup() {
@@ -191,20 +200,28 @@ public class FilterComboBox<T> extends JTextField {
     }
 
     protected Point getPopupLocation() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-        screenSize.width -= screenInsets.left + screenInsets.right;
-        screenSize.height -= screenInsets.top + screenInsets.bottom;
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Rectangle screenBounds;
+        // Calculate the desktop dimensions relative to the combo box.
+        GraphicsConfiguration gc = getGraphicsConfiguration();
+        if (gc != null) {
+            Insets screenInsets = toolkit.getScreenInsets(gc);
+            screenBounds = gc.getBounds();
+            screenBounds.width -= screenInsets.right;
+            screenBounds.height -= screenInsets.bottom;
+            screenBounds.x += screenInsets.left;
+            screenBounds.y += screenInsets.top;
+        }
+        else {
+            screenBounds = new Rectangle(new Point(), toolkit.getScreenSize());
+        }
         Dimension popupSize = popupWindow.getSize();
-        return getPopupLocation(screenSize, popupSize);
+        return getPopupLocation(screenBounds, popupSize);
     }
 
-    protected Point getPopupLocation(Dimension screenSize, Dimension popupSize) {
-        Point location = getLocation();
-        Insets windowInsets = getTopLevelAncestor().getInsets();
-        location.x += windowInsets.left;
-        location.y += windowInsets.top;
-        if (getLocationOnScreen().y + getHeight() + popupSize.height > screenSize.height) location.y -= popupSize.height;
+    protected Point getPopupLocation(Rectangle screenBounds, Dimension popupSize) {
+        Point location = new Point();
+        if (getLocationOnScreen().y + getHeight() + popupSize.height > screenBounds.height) location.y -= popupSize.height;
         else location.y += getHeight();
         return location;
     }
