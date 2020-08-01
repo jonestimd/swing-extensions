@@ -94,7 +94,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
             public void focusLost(FocusEvent e) {
                 if (popupWindow.isVisible()) {
                     hidePopup();
-                    setText(model.getSelectedItem() == null ? "" : model.formatItem(model.getSelectedItem()));
+                    setText(model.getSelectedItem() == null ? "" : model.getSelectedItemText());
                 }
             }
         });
@@ -143,7 +143,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
             if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 if (popupWindow.isVisible()) {
                     hidePopup();
-                    if (model.getSelectedItem() != null && !model.formatItem(model.getSelectedItem()).equals(getText())) {
+                    if (model.getSelectedItem() != null && !model.getSelectedItemText().equals(getText())) {
                         setText("");
                         model.setSelectedItem(null);
                         popupList.clearSelection();
@@ -154,7 +154,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
             else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
                 if (popupWindow.isVisible() && popupList.getSelectedIndex() >= 0) {
                     hidePopup();
-                    setText(model.formatItem(model.getSelectedItem()));
+                    setText(model.getSelectedItemText());
                 }
             }
             else {
@@ -178,7 +178,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     protected void filterList() {
-        model.applyFilter(getText());
+        model.setFilter(getText());
         if (autoSelectItem && model.getSize() == 1) model.setSelectedItem(model.getElementAt(0));
         selectListItem();
     }

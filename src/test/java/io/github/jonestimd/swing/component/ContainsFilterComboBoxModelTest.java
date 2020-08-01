@@ -45,31 +45,25 @@ public class ContainsFilterComboBoxModelTest {
 
     @Test
     public void usesFormat() throws Exception {
+        String unformatted = "unformatted";
         Format format = mock(Format.class);
         StringBuffer formatted = new StringBuffer("formatted");
         when(format.format(anyString(), any(StringBuffer.class), any(FieldPosition.class))).thenReturn(formatted);
 
         ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(format);
+        model.setSelectedItem(unformatted);
 
-        String unformatted = "unformatted";
-        assertThat(model.formatItem(unformatted)).isEqualTo(formatted.toString());
+        assertThat(model.getSelectedItemText()).isEqualTo(formatted.toString());
         verify(format).format(same(unformatted), any(StringBuffer.class), any(FieldPosition.class));
     }
 
     @Test
     public void applyFilterIgnoresCase() throws Exception {
-        model.applyFilter("berry");
+        model.setFilter("berry");
 
         items.forEach(item -> verify(format).apply(item));
         assertThat(model.getSize()).isEqualTo(2);
         assertThat(model.getElementAt(0)).isEqualTo("Blueberry");
         assertThat(model.getElementAt(1)).isEqualTo("Raspberry");
-    }
-
-    @Test
-    public void formatItemUsesFormat() throws Exception {
-        model.formatItem("Xyz");
-
-        verify(format).apply("Xyz");
     }
 }

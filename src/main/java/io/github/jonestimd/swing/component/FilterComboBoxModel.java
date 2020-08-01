@@ -21,10 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import javax.swing.MutableComboBoxModel;
+import java.util.Collection;
 
-public interface FilterComboBoxModel<T> extends LazyLoadComboBoxModel<T>, MutableComboBoxModel<T> {
-    void applyFilter(String search);
+public interface FilterComboBoxModel<T> extends LazyLoadListModel<T> {
+    /**
+     * Replace the items in the list.
+     * @param items the new items
+     * @param keepSelection if true then the selected item is not changed, if false then the selected item is cleared
+     *        if it is not in {@code items}
+     */
+    void setElements(Collection<? extends T> items, boolean keepSelection);
 
-    String formatItem(T item);
+    void setFilter(String search);
+
+    T getSelectedItem();
+
+    void setSelectedItem(T item);
+
+    String getSelectedItemText();
 }
