@@ -40,11 +40,14 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import io.github.jonestimd.swing.ComponentDefaults;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.Validator;
 
 public class FilterComboBox<T> extends ValidatedTextField {
+    /** {@link ComponentResources} key for default visible rows */
+    public static final String VISIBLE_ROWS_KEY = "FilterComboBox.visibleRows";
     public static final String AUTO_SELECT_TEXT = "autoSelectText";
     public static final String AUTO_SELECT_ITEM = "autoSelectItem";
 
@@ -56,7 +59,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     private boolean autoSelectItem = true;
 
     public FilterComboBox(FilterComboBoxModel<T> model) {
-        this(model, 5);
+        this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY));
     }
 
     public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows) {

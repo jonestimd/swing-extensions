@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,12 +36,16 @@ import java.util.stream.Collectors;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import io.github.jonestimd.swing.component.FilterComboBox;
+import io.github.jonestimd.swing.table.SectionTable;
 import io.github.jonestimd.util.Streams;
 
 import static io.github.jonestimd.swing.SwingResource.*;
 
 /**
- * This resource bundle provides default values for custom components in this library.
+ * This resource bundle provides default values for custom components in this library.  Values can be overridden
+ * by including a {@link Provider} service that returns a {@link ResourceBundle} containing the overrides.
+ * @see ServiceLoader
  */
 @SuppressWarnings({"MagicCharacter", "MagicNumber"})
 public class ComponentResources extends ListResourceBundle {
@@ -190,6 +194,9 @@ public class ComponentResources extends ListResourceBundle {
             { "calendarPanel.month.adjacent.background", new Color(223,223,192) },
             { "calendarPanel.month.adjacent.foreground", Color.darkGray },
 
+            { "Table.alternateRowColor", new Color(0.9f, 0.95f, 1f) },
+            { SectionTable.SECTION_ROW_BACKGROUND_KEY, new Color(1.0f, 0.95f, 0.7f) },
+
             { "multiSelectItem.background", new Color(215, 241, 255) },
             { "multiSelectItem.selectedBackground", new Color(184, 207, 229) },
             { "multiSelectItem.outline.color", new Color(0, 173, 255) },
@@ -204,6 +211,8 @@ public class ComponentResources extends ListResourceBundle {
             { "popupListField.focusCursor", "\u23f5" },
             { "listField.commitKey", "ctrl pressed ENTER" },
             { "listField.cancelKey", "pressed ESCAPE" },
+
+            { FilterComboBox.VISIBLE_ROWS_KEY, 10 },
         };
     }
 }

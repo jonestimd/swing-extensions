@@ -34,6 +34,6 @@ public class ComponentDefaults {
     }
 
     private static ResourceBundle bundle() {
-        return ResourceBundle.getBundle(UIDefaultsBundle.class.getName());
+        return ResourceBundle.getBundle(ComponentResources.class.getName());
     }
 }

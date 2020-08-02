@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,15 @@ import javax.swing.plaf.TableUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-import io.github.jonestimd.swing.ComponentDefaults;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.table.model.SectionTableModel;
 
 /**
  * A table with rows grouped into sections with a header row displayed at the beginning of each section.
  */
 public class SectionTable<Bean, Model extends SectionTableModel<Bean>> extends DecoratedTable<Bean, Model> {
+    /** {@link ComponentResources} key for default section row background */
+    public static final String SECTION_ROW_BACKGROUND_KEY = "SectionTable.sectionRowBackground";
     private static final String uiClassID = "SectionTableUI";
     private Color sectionRowBackground;
     private TableCellRenderer sectionRowRenderer = new DefaultSectionRowRenderer();
@@ -49,7 +51,7 @@ public class SectionTable<Bean, Model extends SectionTableModel<Bean>> extends D
      */
     @Override
     public void setUI(TableUI ui) {
-        sectionRowBackground = ComponentDefaults.getColor("SectionTable.sectionRowBackground");
+        sectionRowBackground = ComponentResources.lookupColor(SECTION_ROW_BACKGROUND_KEY);
         super.setUI(ui);
     }
 

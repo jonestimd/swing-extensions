@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ import java.util.Collections;
 
 import javax.swing.table.TableCellRenderer;
 
-import io.github.jonestimd.swing.ComponentDefaults;
+import io.github.jonestimd.swing.ComponentResources;
 import io.github.jonestimd.swing.table.model.BeanListMultimapTableModel;
 import io.github.jonestimd.swing.table.model.ColumnAdapter;
 import io.github.jonestimd.swing.table.model.TestColumnAdapter;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SectionTableTest {
-    private static final Color sectionRowBackground = ComponentDefaults.getColor("SectionTable.sectionRowBackground");
+    private static final Color sectionRowBackground = ComponentResources.lookupColor(SectionTable.SECTION_ROW_BACKGROUND_KEY);
     private static final ColumnAdapter<TestBean, String> BEAN_NAME_ADAPTER = new TestColumnAdapter<>("Name", String.class, TestBean::getName);
     private static final ColumnAdapter<TestBean, String> BEAN_VALUE_ADAPTER = new TestColumnAdapter<>("Value", String.class, TestBean::getValue, TestBean::setValue);
     private final BeanListMultimapTableModel<TestGroup, TestBean> model = new BeanListMultimapTableModel<>(
