@@ -21,15 +21,27 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.text.Format;
+import java.awt.Component;
+import java.util.Optional;
+import java.util.function.Function;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 /**
- * A {@link ListCellRenderer} that uses a {@link Format} to convert the cell value to a string.
+ * A {@link ListCellRenderer} that uses a {@link Function} to convert the cell value to a string.
  */
-public class FormatListCellRenderer extends FunctionListCellRenderer<Object> {
-    public FormatListCellRenderer(Format format) {
-        super(format::format);
+public class FunctionListCellRenderer<T> extends DefaultListCellRenderer {
+    private final Function<? super T, String> format;
+
+    public FunctionListCellRenderer(Function<? super T, String> format) {
+        this.format = format;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        String text = value == null ? null : format.apply((T) value);
+        return super.getListCellRendererComponent(list, Optional.ofNullable(text).orElse(" "), index, isSelected, cellHasFocus);
     }
 }
