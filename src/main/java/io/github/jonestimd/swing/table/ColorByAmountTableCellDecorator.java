@@ -21,16 +21,32 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.util.Collections;
+import java.awt.Color;
+import java.math.BigDecimal;
+import java.util.function.Function;
 
-import io.github.jonestimd.swing.HighlightText;
+import javax.swing.JTable;
 
 /**
- * A table cell renderer that highlights substrings within the cell value.  An ancestor component that implements
- * {@link HighlightText} is used to provide the substrings to be highlighted.
+ * A table cell decorator that sets the foreground color based on the cell value.
  */
-public class HighlightTableCellRenderer extends CompositeTableCellRenderer {
-    public HighlightTableCellRenderer(Highlighter highlighter) {
-        super(Collections.singletonList(new HighlightTableCellDecorator(highlighter)));
+public class ColorByAmountTableCellDecorator implements TableCellDecorator {
+    private final Function<BigDecimal, Color> selectColor;
+
+    /**
+     * Create a decorator that uses different colors for positive and negative numbers.
+     */
+    public ColorByAmountTableCellDecorator(Color negativeColor, Color positiveColor) {
+        this(value -> value != null && value.signum() < 0 ? negativeColor : positiveColor);
+    }
+
+    public ColorByAmountTableCellDecorator(Function<BigDecimal, Color> selectColor) {
+        this.selectColor = selectColor;
+    }
+
+    @Override
+    public Object configure(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, CompositeTableCellRenderer renderer) {
+        renderer.setForeground(selectColor.apply((BigDecimal) value));
+        return value;
     }
 }

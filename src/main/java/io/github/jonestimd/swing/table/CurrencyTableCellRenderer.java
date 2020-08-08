@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,39 +22,29 @@
 package io.github.jonestimd.swing.table;
 
 import java.awt.Color;
-import java.math.BigDecimal;
 import java.text.Format;
+
+import com.google.common.collect.Lists;
 
 /**
  * A table cell renderer that uses different colors for positive and negative numbers.
  */
-public class CurrencyTableCellRenderer extends FormatTableCellRenderer {
-    private final Color positiveColor;
-    private final Color negativeColor;
-
+public class CurrencyTableCellRenderer extends CompositeTableCellRenderer {
     public CurrencyTableCellRenderer(Format format) {
-        this(format, Highlighter.NOOP_HIGHLIGHTER);
+        super(Lists.newArrayList(
+                new ColorByAmountTableCellDecorator(Color.red, Color.black),
+                new FormatTableCellDecorator(format)
+        ));
     }
 
     public CurrencyTableCellRenderer(Format format, Highlighter highlighter) {
         this(format, highlighter, Color.red, Color.black);
-        setHorizontalAlignment(RIGHT);
     }
 
     public CurrencyTableCellRenderer(Format format, Highlighter highlighter, Color negativeColor, Color positiveColor) {
-        super(format, highlighter);
-        this.negativeColor = negativeColor;
-        this.positiveColor = positiveColor;
-        setHorizontalAlignment(RIGHT);
-    }
-
-    protected void setValue(Object value) {
-        super.setValue(value);
-        if (value != null && ((BigDecimal) value).signum() < 0) {
-            setForeground(negativeColor);
-        }
-        else {
-            setForeground(positiveColor);
-        }
+        super(Lists.newArrayList(
+                new ColorByAmountTableCellDecorator(negativeColor, positiveColor),
+                new FormatTableCellDecorator(format),
+                new HighlightTableCellDecorator(highlighter)));
     }
 }

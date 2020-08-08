@@ -22,48 +22,45 @@
 package io.github.jonestimd.swing.table;
 
 import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
+import java.text.NumberFormat;
 
-import com.google.common.collect.Lists;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+
 import io.github.jonestimd.swing.component.IconSource;
 
 /**
- * A table cell renderer that uses a {@link Format} to convert the value to a string.  If an {@link IconSource} is
+ * A table cell decorator that uses a {@link Format} to convert the value to a string.  If an {@link IconSource} is
  * provided then an icon will also be displayed in the cell.
  */
-public class FormatTableCellRenderer extends CompositeTableCellRenderer {
-    /**
-     * Create a renderer using {@link SimpleDateFormat}.
-     */
-    public static FormatTableCellRenderer dateRenderer(String pattern) {
-        return new FormatTableCellRenderer(new SimpleDateFormat(pattern));
-    }
+public class FormatTableCellDecorator implements TableCellDecorator {
+    private final Format format;
+    private final IconSource iconSource;
+    private final Integer horizontalAlignment;
 
     /**
      * Create a table cell renderer without highlighting. Will display an icon if the format implements {@link IconSource}.
      * @param format the value format
      */
-    public FormatTableCellRenderer(Format format) {
-        super(Collections.singletonList(new FormatTableCellDecorator(format)));
-    }
-
-    /**
-     * Create a table cell renderer. Will display an icon if the format implements {@link IconSource}.
-     * @param format the value format
-     * @param highlighter the value highlighter
-     */
-    public FormatTableCellRenderer(Format format, Highlighter highlighter) {
-        this(format, null, highlighter);
+    public FormatTableCellDecorator(Format format) {
+        this(format, format instanceof IconSource ? (IconSource) format : null);
     }
 
     /**
      * Create a table cell renderer.
      * @param format the value format
      * @param iconSource provides an icon to display in the cell
-     * @param highlighter the value highlighter
      */
-    public FormatTableCellRenderer(Format format, IconSource iconSource, Highlighter highlighter) {
-        super(Lists.newArrayList(new FormatTableCellDecorator(format, iconSource), new HighlightTableCellDecorator(highlighter)));
+    public FormatTableCellDecorator(Format format, IconSource iconSource) {
+        this.format = format;
+        this.iconSource = iconSource;
+        horizontalAlignment = format instanceof NumberFormat ? SwingConstants.RIGHT : null;
+    }
+
+    @Override
+    public Object configure(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, CompositeTableCellRenderer renderer) {
+        if (iconSource != null) renderer.setIcon(iconSource.getIcon(value));
+        if (horizontalAlignment != null) renderer.setHorizontalAlignment(horizontalAlignment);
+        return value == null ? null : format.format(value);
     }
 }

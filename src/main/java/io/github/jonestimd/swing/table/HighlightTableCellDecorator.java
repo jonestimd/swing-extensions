@@ -21,16 +21,29 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
+import java.util.Collection;
 import java.util.Collections;
 
+import javax.swing.JTable;
+
+import io.github.jonestimd.swing.ComponentTreeUtils;
 import io.github.jonestimd.swing.HighlightText;
 
 /**
- * A table cell renderer that highlights substrings within the cell value.  An ancestor component that implements
+ * A table cell decorator that highlights substrings within the cell value.  An ancestor of the table that implements
  * {@link HighlightText} is used to provide the substrings to be highlighted.
  */
-public class HighlightTableCellRenderer extends CompositeTableCellRenderer {
-    public HighlightTableCellRenderer(Highlighter highlighter) {
-        super(Collections.singletonList(new HighlightTableCellDecorator(highlighter)));
+public class HighlightTableCellDecorator implements TableCellDecorator {
+    private final Highlighter highlighter;
+
+    public HighlightTableCellDecorator(Highlighter highlighter) {
+        this.highlighter = highlighter;
+    }
+
+    @Override
+    public Object configure(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, CompositeTableCellRenderer renderer) {
+        HighlightText highlightSource = ComponentTreeUtils.findAncestor(table, HighlightText.class);
+        Collection<String> highlightText = highlightSource != null ? highlightSource.getHighlightText() : Collections.emptyList();
+        return value == null ? null : highlighter.highlight(value.toString(), highlightText);
     }
 }

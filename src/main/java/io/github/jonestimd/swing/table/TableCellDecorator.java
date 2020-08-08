@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,12 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.text.SimpleDateFormat;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
 /**
- * A table cell renderer that uses {@link SimpleDateFormat} to convert the value to a string.
+ * An interface for classes that configure a {@link TableCellRenderer}.  Used by {@link CompositeTableCellRenderer}.
  */
-public class DateTableCellRenderer extends FormatTableCellRenderer {
-    public DateTableCellRenderer(String pattern) {
-        super(new SimpleDateFormat(pattern));
-    }
+public interface TableCellDecorator {
+    Object configure(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, CompositeTableCellRenderer renderer);
 }

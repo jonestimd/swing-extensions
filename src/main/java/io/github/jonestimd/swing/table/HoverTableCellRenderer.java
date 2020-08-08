@@ -21,16 +21,17 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.table;
 
-import java.util.Collections;
+import java.awt.Point;
 
-import io.github.jonestimd.swing.HighlightText;
+import javax.swing.JTable;
 
 /**
- * A table cell renderer that highlights substrings within the cell value.  An ancestor component that implements
- * {@link HighlightText} is used to provide the substrings to be highlighted.
+ * An interface implemented by TableCellRenderers that display a hover effect.
+ * @see DecoratedTable
  */
-public class HighlightTableCellRenderer extends CompositeTableCellRenderer {
-    public HighlightTableCellRenderer(Highlighter highlighter) {
-        super(Collections.singletonList(new HighlightTableCellDecorator(highlighter)));
-    }
+public interface HoverTableCellRenderer {
+    /**
+     * @return true if the cell is under the mouse pointer and needs to be re-rendered.
+     */
+    boolean hoverEffect(JTable table, int row, int column, Point mousePosition);
 }

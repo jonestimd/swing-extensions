@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ public class FormatTableCellRendererTest {
 
     @Test
     public void testDateTableCellRenderer() throws Exception {
-        DateTableCellRenderer renderer = new DateTableCellRenderer("MM/dd/yyyy");
+        FormatTableCellRenderer renderer = FormatTableCellRenderer.dateRenderer("MM/dd/yyyy");
         Date value = new Date();
 
         renderer.getTableCellRendererComponent(new JTable(), value, false, false, 0, 0);
