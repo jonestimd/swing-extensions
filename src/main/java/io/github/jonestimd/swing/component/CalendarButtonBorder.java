@@ -40,9 +40,16 @@ import io.github.jonestimd.swing.ComponentResources;
  * date in a {@link CalendarPanel} when the "button" is clicked.
  */
 public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextField, CalendarPanel> {
+    public static final String TOOLTIP_KEY = "calendar.button.tooltip";
+    public static final String BUTTON_BACKGROUND_KEY = "calendar.button.background";
+    public static final String BUTTON_SHADOW_KEY = "calendar.button.shadow";
+    public static final String BUTTON_OUTLINE_KEY = "calendar.button.outline";
     private static final float STROKE_WIDTH = 1.8f;
     private static final float CURL1 = 0.8f;
     private static final float CURL2 = 0.6f;
+    private static final Color BACKGROUND_COLOR = ComponentResources.lookupColor(BUTTON_BACKGROUND_KEY);
+    private static final Color SHADOW_COLOR = ComponentResources.lookupColor(BUTTON_SHADOW_KEY);
+    private static final Color OUTLINE_COLOR = ComponentResources.lookupColor(BUTTON_OUTLINE_KEY);
 
     public CalendarButtonBorder(JFormattedTextField textField) {
         this(textField, ComponentResources.BUNDLE);
@@ -58,7 +65,7 @@ public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextFie
             textField.setValue(event.getNewValue());
             hidePopup();
         });
-        setTooltip(bundle.getString("calendar.button.tooltip"));
+        setTooltip(bundle.getString(TOOLTIP_KEY));
     }
 
     @Override
@@ -68,14 +75,14 @@ public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextFie
 
     @Override
     protected void paintBorder(Component c, Graphics2D g2d, int size) {
-        g2d.setColor(Color.YELLOW);
+        g2d.setColor(BACKGROUND_COLOR);
         g2d.fillRect(1, 1, size-2, size-1);
         // draw shadow
-        g2d.setColor(Color.GRAY);
+        g2d.setColor(SHADOW_COLOR);
         g2d.drawLine(1, size, size, size);
         g2d.drawLine(size, 1, size, size-1);
         // draw page
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(OUTLINE_COLOR);
         g2d.drawLine(0, 0, 0, size-1);
         g2d.drawLine(0, 0, size-1, 0);
         int c1 = Math.round(size * CURL1);

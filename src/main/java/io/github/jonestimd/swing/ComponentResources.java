@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import io.github.jonestimd.swing.component.CalendarButtonBorder;
 import io.github.jonestimd.swing.component.FilterComboBox;
 import io.github.jonestimd.swing.table.SectionTable;
 import io.github.jonestimd.util.Streams;
@@ -181,7 +182,10 @@ public class ComponentResources extends ListResourceBundle {
 
             { VALIDATION_MESSAGE_BACKGROUND.key, new Color(255,255,200) },
 
-            { "calendar.button.tooltip", "Select a date from the calendar" },
+            { CalendarButtonBorder.TOOLTIP_KEY, "Select a date from the calendar" },
+            { CalendarButtonBorder.BUTTON_BACKGROUND_KEY, Color.YELLOW },
+            { CalendarButtonBorder.BUTTON_OUTLINE_KEY, Color.BLACK },
+            { CalendarButtonBorder.BUTTON_SHADOW_KEY, Color.GRAY },
             { "calendar.tooltip", "Select a date" },
             { "calendar.tooltip.month.next", "Next month" },
             { "calendar.tooltip.month.previous", "Previous month" },
