@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -96,9 +96,18 @@ public class AbstractButtonBorderTest {
 
     @Test
     public void paintBorder() throws Exception {
-        TestButtonBorder border = new TestButtonBorder(field, popupPanel, Side.LEFT);
+        TestButtonBorder border = new TestButtonBorder(field, popupPanel, Side.RIGHT);
+        Graphics2D graphics = mock(Graphics2D.class);
+        Graphics2D graphics2 = mock(Graphics2D.class);
+        when(graphics.create(anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(graphics2);
+        int size = fieldSize.height - fieldInsets.top - fieldInsets.bottom;
+        int x = 1;
+        int y = 2;
 
-        border.paintBorder(field, null, 0, 0, 0, 0);
+        border.paintBorder(field, graphics, x, y, fieldSize.width, fieldSize.height);
+
+        verify(graphics).create(fieldSize.width - size + x, y + (fieldSize.height - size)/2, size, size);
+        verify(graphics2).dispose();
     }
 
     @Test
@@ -185,8 +194,8 @@ public class AbstractButtonBorderTest {
         }
 
         @Override
-        protected void paintBorder(Component c, Graphics g, int x, int y, int width, int height, int inset) {
-            assertThat(inset).isEqualTo(fieldSize.height - fieldInsets.top - fieldInsets.bottom);
+        protected void paintBorder(Component c, Graphics2D g2d, int inset) {
+            assertThat(inset).isEqualTo(fieldSize.height - fieldInsets.top - fieldInsets.bottom - 1);
         }
 
         @Override

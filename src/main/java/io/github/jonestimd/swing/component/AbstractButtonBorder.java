@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -55,14 +56,17 @@ import io.github.jonestimd.swing.action.ActionAdapter;
 /**
  * Abstract class for a border that displays a popup window on mouse click events.  The target area for the mouse
  * clicks can be placed on the left or right side of the contained component and subclasses should implement
- * {@link #paintBorder(Component, Graphics, int, int, int, int, int)} to draw the "button" in the target area.
+ * {@link #paintBorder(Component, Graphics2D, int)} to draw the "button" in the target area.
  * The default "button" area is a square having the same height as the contained component.
  * @param <C> the class of the contained component
  * @param <P> the class of the panel used for the content of the popup window
  */
 public abstract class AbstractButtonBorder<C extends JComponent, P extends JComponent> implements Border {
-    /** Available sides for displaying the button. */
-    public enum Side { LEFT, RIGHT }
+    /**
+     * Available sides for displaying the border button.
+     */
+    public enum Side {LEFT, RIGHT}
+
     private static final String SHOW_POPUP = "showPopup";
 
     private int iconSize;
@@ -151,25 +155,25 @@ public abstract class AbstractButtonBorder<C extends JComponent, P extends JComp
      */
     @Override
     public Insets getBorderInsets(Component c) {
-        return side == Side.LEFT ? new Insets(0, iconSize+2, 0, 0) : new Insets(0, 0, 0, iconSize+2);
+        return side == Side.LEFT ? new Insets(0, iconSize + 2, 0, 0) : new Insets(0, 0, 0, iconSize + 2);
     }
 
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        paintBorder(c, g, x, y, width, height, iconSize);
+        int size = Math.min(iconSize, height);
+        int left = side == Side.LEFT ? 0 : width - size;
+        Graphics2D g2d = (Graphics2D) g.create(x + left, y + (height - size)/2, size, size);
+        paintBorder(c, g2d, size - 1);
+        g2d.dispose();
     }
 
     /**
      * Paint the border, including the "button".
      * @param c the component for which this border is being painted
-     * @param g the paint graphics
-     * @param x the x position of the painted border
-     * @param y the y position of the painted border
-     * @param width the width of the painted border
-     * @param height the height of the painted border
-     * @param inset the width of the "button"
+     * @param g2d the paint graphics for the icon
+     * @param iconSize the size of the "button"
      */
-    protected abstract void paintBorder(Component c, Graphics g, int x, int y, int width, int height, int inset);
+    protected abstract void paintBorder(Component c, Graphics2D g2d, int iconSize);
 
     @Override
     public boolean isBorderOpaque() {
@@ -241,7 +245,7 @@ public abstract class AbstractButtonBorder<C extends JComponent, P extends JComp
 
     private class MouseHandler extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
-            if (isOverButton(e.getPoint()) && ! popupWindow.isShowing() && ! ignoreClick) {
+            if (isOverButton(e.getPoint()) && !popupWindow.isShowing() && !ignoreClick) {
                 showPopup();
             }
             ignoreClick = false;

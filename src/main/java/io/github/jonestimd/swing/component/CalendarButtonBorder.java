@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -41,6 +40,10 @@ import io.github.jonestimd.swing.ComponentResources;
  * date in a {@link CalendarPanel} when the "button" is clicked.
  */
 public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextField, CalendarPanel> {
+    private static final float STROKE_WIDTH = 1.8f;
+    private static final float CURL1 = 0.8f;
+    private static final float CURL2 = 0.6f;
+
     public CalendarButtonBorder(JFormattedTextField textField) {
         this(textField, ComponentResources.BUNDLE);
     }
@@ -64,30 +67,30 @@ public class CalendarButtonBorder extends AbstractButtonBorder<JFormattedTextFie
     }
 
     @Override
-    protected void paintBorder(Component c, Graphics g, int x, int y, int width, int height, int inset) {
-        int size = Math.min(inset, height);
-        Graphics2D g2d = (Graphics2D) g.create(x + width - size, y + (height - size)/2, size, size--);
+    protected void paintBorder(Component c, Graphics2D g2d, int size) {
         g2d.setColor(Color.YELLOW);
         g2d.fillRect(1, 1, size-2, size-1);
+        // draw shadow
         g2d.setColor(Color.GRAY);
         g2d.drawLine(1, size, size, size);
         g2d.drawLine(size, 1, size, size-1);
+        // draw page
         g2d.setColor(Color.BLACK);
         g2d.drawLine(0, 0, 0, size-1);
         g2d.drawLine(0, 0, size-1, 0);
-        int c1 = Math.round(size * 0.8f);
-        int c2 = Math.round(size * 0.6f);
+        int c1 = Math.round(size * CURL1);
+        int c2 = Math.round(size * CURL2);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.drawLine(size-1, 1, size-1, c1);
         g2d.drawLine(size-1, c1, size/2, size-1);
         g2d.drawLine(1, size-1, size/2, size-1);
         g2d.drawLine(size/2, size-1, c1, c2);
         g2d.drawLine(c1, c2, size-1, c1);
-        g2d.setStroke(new BasicStroke(1.8f));
+        // draw "1"
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
         c2 = size - c1;
         g2d.drawLine(size/2, c2, size/2, c1-1);
         g2d.drawLine(size/2 - 2, c2 + 2, size / 2, c2);
-        g2d.dispose();
     }
 
     @Override
