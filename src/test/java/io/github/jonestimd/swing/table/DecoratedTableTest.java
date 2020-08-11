@@ -65,6 +65,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.awt.event.InputEvent.*;
 import static java.awt.event.KeyEvent.*;
+import static java.awt.event.MouseEvent.*;
 import static java.util.Collections.*;
 import static javax.swing.JComponent.*;
 import static org.assertj.core.api.Assertions.*;
@@ -79,20 +80,42 @@ public class DecoratedTableTest {
     private TestColumnAdapter<TestBean, Boolean> columnAdapter2 = new TestColumnAdapter<>("Column 2", Boolean.class, TestBean::isFlag, TestBean::setFlag);
     @Mock
     private TestColumnAdapter<TestBean, Boolean> mockAdapter1;
+    @Mock
+    private TableHoverDecorator mockHoverDecorator;
     private Color evenBackground = ComponentDefaults.getColor("Table.alternateRowColor");
     private Color oddBackground = ComponentDefaults.getColor("Table.background");
 
     @Test
-    public void mouseMovedSetsCursor() throws Exception {
+    public void mouseMovedSetsCursorAndHoverEffect() throws Exception {
         MouseEvent event = mockEvent(0, 0);
         when(mockAdapter1.getName()).thenReturn("name");
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.setDecorators(ImmutableList.of(mockHoverDecorator));
+        when(mockHoverDecorator.hoverEffect(any(), anyInt(), anyInt())).thenReturn(true);
         table.getModel().setBeans(createBeans("one", "two"));
         MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
 
         listeners[listeners.length-1].mouseMoved(event);
 
         verify(mockAdapter1).getCursor(event, table, table.getModel().getBean(0));
+        assertThat(table.getHoverRow()).isEqualTo(0);
+        assertThat(table.getHoverColumn()).isEqualTo(0);
+    }
+
+    @Test
+    public void mouseMovedResetsHoverEffect() throws Exception {
+        when(mockAdapter1.getName()).thenReturn("name");
+        DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.setDecorators(ImmutableList.of(mockHoverDecorator));
+        when(mockHoverDecorator.hoverEffect(any(), anyInt(), anyInt())).thenReturn(true);
+        table.getModel().setBeans(createBeans("one", "two"));
+        MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
+
+        listeners[listeners.length-1].mouseMoved(mockEvent(0, 0));
+        listeners[listeners.length-1].mouseMoved(mockEvent(-10, 0));
+
+        assertThat(table.getHoverRow()).isEqualTo(-1);
+        assertThat(table.getHoverColumn()).isEqualTo(-1);
     }
 
     @Test
@@ -100,12 +123,16 @@ public class DecoratedTableTest {
         MouseEvent event = mockEvent(-10, 0);
         when(mockAdapter1.getName()).thenReturn("name");
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.setDecorators(ImmutableList.of(mockHoverDecorator));
         table.getModel().setBeans(createBeans("one", "two"));
         MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
 
         listeners[listeners.length-1].mouseMoved(event);
 
         verify(mockAdapter1, never()).getCursor(event, table, table.getModel().getBean(0));
+        verify(mockHoverDecorator, never()).hoverEffect(same(table), anyInt(), anyInt());
+        assertThat(table.getHoverRow()).isEqualTo(-1);
+        assertThat(table.getHoverColumn()).isEqualTo(-1);
     }
 
     @Test
@@ -113,12 +140,14 @@ public class DecoratedTableTest {
         MouseEvent event = mockEvent(0, -50);
         when(mockAdapter1.getName()).thenReturn("name");
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.setDecorators(ImmutableList.of(mockHoverDecorator));
         table.getModel().setBeans(createBeans("one", "two"));
         MouseMotionListener[] listeners = table.getListeners(MouseMotionListener.class);
 
         listeners[listeners.length-1].mouseMoved(event);
 
         verify(mockAdapter1, never()).getCursor(event, table, table.getModel().getBean(0));
+        verify(mockHoverDecorator, never()).hoverEffect(same(table), anyInt(), anyInt());
     }
 
     @Test
@@ -135,16 +164,19 @@ public class DecoratedTableTest {
     }
 
     @Test
-    public void mouseClickCallsColumnHandler() throws Exception {
+    public void mouseClickCallsColumnHandlerAndMouseDecorator() throws Exception {
         MouseEvent event = mockEvent(0, 0);
+        TableMouseDecorator decorator = mock(TableMouseDecorator.class);
         when(mockAdapter1.getName()).thenReturn("name");
         DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = createTable(ImmutableList.of(mockAdapter1));
+        table.setDecorators(ImmutableList.of(decorator));
         table.getModel().setBeans(createBeans("one", "two"));
         MouseListener[] listeners = table.getListeners(MouseListener.class);
 
         listeners[listeners.length-1].mouseClicked(event);
 
         verify(mockAdapter1).handleClick(event, table, table.getModel().getBean(0));
+        verify(decorator).onClick(event, table, 0, 0);
     }
 
     @Test
@@ -397,6 +429,21 @@ public class DecoratedTableTest {
                 singletonList(new TestColumnAdapter<>("column1", String.class, TestBean::getValue))));
         table.getModel().setBeans(createBeans("bean1", "bean2"));
         final KeyEvent event = new KeyEvent(table, KEY_PRESSED, 0L, 0, VK_DELETE, CHAR_UNDEFINED);
+
+        SwingUtilities.invokeAndWait(() -> {
+            assertThat(table.editCellAt(0, 0, event)).isFalse();
+        });
+    }
+
+    @Test
+    public void editCellAtIgnoresClickOnHoverEffect() throws Exception {
+        final DecoratedTable<TestBean, BeanListTableModel<TestBean>> table = new DecoratedTable<>(new BeanListTableModel<>(
+                singletonList(new TestColumnAdapter<>("column1", String.class, TestBean::getValue))));
+        TableMouseDecorator decorator = mock(TableMouseDecorator.class);
+        table.setDecorators(ImmutableList.of(decorator));
+        table.getModel().setBeans(createBeans("bean1", "bean2"));
+        final MouseEvent event = new MouseEvent(table, MOUSE_CLICKED, 0L, 0, 0, 0, 1, false, BUTTON1);
+        when(decorator.startEdit(same(event), same(table), anyInt(), anyInt())).thenReturn(false);
 
         SwingUtilities.invokeAndWait(() -> {
             assertThat(table.editCellAt(0, 0, event)).isFalse();

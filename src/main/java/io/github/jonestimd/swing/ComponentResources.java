@@ -37,6 +37,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import io.github.jonestimd.swing.component.CalendarButtonBorder;
+import io.github.jonestimd.swing.component.ClearButtonBorder;
 import io.github.jonestimd.swing.component.FilterComboBox;
 import io.github.jonestimd.swing.table.SectionTable;
 import io.github.jonestimd.util.Streams;
@@ -217,6 +218,9 @@ public class ComponentResources extends ListResourceBundle {
             { "listField.cancelKey", "pressed ESCAPE" },
 
             { FilterComboBox.VISIBLE_ROWS_KEY, 10 },
+            { ClearButtonBorder.BUTTON_COLOR_KEY, Color.GRAY },
+            { ClearButtonBorder.HIGHLIGHT_COLOR_KEY, new Color(0, 136, 200) },
+            { ClearButtonBorder.CROSS_COLOR_KEY, Color.WHITE },
         };
     }
 }

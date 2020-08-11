@@ -65,6 +65,7 @@ import io.github.jonestimd.swing.table.model.ColumnIdentifier;
  * Extends {@link JTable} to provide the following:
  * <ul>
  *     <li>apply a list of {@link TableDecorator}s to cell renderers</li>
+ *     <li>display hover effects provided by {@link HoverTableCellRenderer}</li>
  *     <li>handle multiline column headers</li>
  *     <li>ensure uniform row background color when an alternate row color is defined (fixes boolean cells)</li>
  *     <li>improve keyboard handling for cell editing</li>
@@ -81,21 +82,26 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
     private Color evenBackground;
     private Color oddBackground;
     private int headerRows;
+    private int hoverRow = -1;
+    private int hoverColumn = -1;
 
     public DecoratedTable(Model dm) {
         super(dm);
         setSurrendersFocusOnKeystroke(true);
-        // putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
         // putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent event) {
-                setCursor(event);
+                setCursor(event, rowAtPoint(event.getPoint()), columnAtPoint(event.getPoint()));
             }
 
             @Override
             public void mouseMoved(MouseEvent event) {
-                setCursor(event);
+                int row = rowAtPoint(event.getPoint());
+                int column = columnAtPoint(event.getPoint());
+                setCursor(event, row, column);
+                clearHoverEffect(row, column);
+                setHoverEffect(row, column);
             }
         });
         addMouseListener(new MouseAdapter() {
@@ -106,20 +112,53 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         });
     }
 
-    private void setCursor(MouseEvent event) {
-        int hitColumnIndex = columnAtPoint(event.getPoint());
-        int hitRowIndex = rowAtPoint(event.getPoint());
-        if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
-            setCursor(getModel().getCursor(event, this, convertRowIndexToModel(hitRowIndex), convertColumnIndexToModel(hitColumnIndex)));
+    private void setCursor(MouseEvent event, int row, int column) {
+        if ((row != -1) && (column != -1)) {
+            setCursor(getModel().getCursor(event, this, convertRowIndexToModel(row), convertColumnIndexToModel(column)));
         }
+    }
+
+    private void clearHoverEffect(int row, int column) {
+        if (hoverRow >= 0 && (row != hoverRow || column != hoverColumn)) {
+            paintImmediately(getCellRect(hoverRow, hoverColumn, false));
+            hoverRow = hoverColumn = -1;
+        }
+    }
+
+    private void setHoverEffect(int row, int column) {
+        if (row >= 0 && column >= 0 && hoverEffect(convertRowIndexToModel(row), convertColumnIndexToModel(column))) {
+            hoverRow = row;
+            hoverColumn = column;
+            paintImmediately(getCellRect(row, column, false));
+        }
+    }
+
+    protected boolean hoverEffect(int modelRow, int modelColumn) {
+        return decorators.stream().anyMatch(decorator -> decorator instanceof TableHoverDecorator
+                && ((TableHoverDecorator) decorator).hoverEffect(this, modelRow, modelColumn));
     }
 
     private void handleClick(MouseEvent event) {
         int hitColumnIndex = columnAtPoint(event.getPoint());
         int hitRowIndex = rowAtPoint(event.getPoint());
         if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
-            getModel().handleClick(event, this, convertRowIndexToModel(hitRowIndex), convertColumnIndexToModel(hitColumnIndex));
+            int modelRow = convertRowIndexToModel(hitRowIndex);
+            int modelColumn = convertColumnIndexToModel(hitColumnIndex);
+            getModel().handleClick(event, this, modelRow, modelColumn);
+            for (TableDecorator decorator : decorators) {
+                if (decorator instanceof TableMouseDecorator) {
+                    ((TableMouseDecorator) decorator).onClick(event, this, modelRow, modelColumn);
+                }
+            }
         }
+    }
+
+    public int getHoverRow() {
+        return hoverRow;
+    }
+
+    public int getHoverColumn() {
+        return hoverColumn;
     }
 
     @Override
@@ -256,7 +295,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
      */
     @Override
     public boolean editCellAt(int row, int column, EventObject e) {
-        boolean startEdit = super.editCellAt(row, column, e);
+        boolean startEdit = startEdit(e, row, column) && super.editCellAt(row, column, e);
         if (startEdit && e instanceof KeyEvent && getEditorField() instanceof JTextComponent) {
             if (((KeyEvent) e).getKeyCode() == KeyEvent.VK_DELETE) {
                 ((JTextComponent) getEditorField()).setCaretPosition(0);
@@ -268,8 +307,19 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         return startEdit;
     }
 
+    private boolean startEdit(EventObject e, int row, int column) {
+        if (e instanceof MouseEvent) {
+            MouseEvent event = (MouseEvent) e;
+            int modelRow = convertRowIndexToModel(row);
+            int modelColumn = convertColumnIndexToModel(column);
+            return decorators.stream().filter(decorator -> decorator instanceof TableMouseDecorator)
+                .allMatch(decorator -> ((TableMouseDecorator) decorator).startEdit(event, this, modelRow, modelColumn));
+        }
+        return true;
+    }
+
     private boolean isAutoStartEdit(KeyEvent e) {
-        return ! e.isControlDown() && ! e.isAltDown() || isCtrlBackspace(e);
+        return !e.isControlDown() && !e.isAltDown() || isCtrlBackspace(e);
     }
 
     private boolean isCtrlBackspace(KeyEvent e) {
@@ -284,10 +334,10 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         if (ch == KeyEvent.VK_BACK_SPACE) {
             String text = editor.getText();
             if (text.length() > 0) {
-                editor.setText(text.substring(0, text.length()-1));
+                editor.setText(text.substring(0, text.length() - 1));
             }
         }
-        else if (! Character.isISOControl(ch)) {
+        else if (!Character.isISOControl(ch)) {
             editor.setText(Character.toString(ch));
         }
     }
