@@ -24,7 +24,12 @@ package io.github.jonestimd.swing.component;
 import java.util.Collection;
 import java.util.function.Function;
 
-public interface FilterComboBoxModel<T> extends LazyLoadListModel<T> {
+import io.github.jonestimd.beans.ObservableBean;
+
+public interface FilterComboBoxModel<T> extends LazyLoadListModel<T>, ObservableBean {
+    String FILTER = "filter";
+    String SELECTED_ITEM = "selectedItem";
+
     /**
      * Replace the items in the list.
      * @param items the new items
@@ -42,6 +47,11 @@ public interface FilterComboBoxModel<T> extends LazyLoadListModel<T> {
     T getSelectedItem();
 
     void setSelectedItem(T item);
+
+    /**
+     * @return the index of the selected item in the filtered list or -1 if it is not in the list
+     */
+    int getSelectedItemIndex();
 
     /**
      * @return the display value for the selected item

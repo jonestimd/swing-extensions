@@ -133,7 +133,17 @@ public class ContainsFilterComboBoxModelTest {
 
         assertThat(model.getSelectedItem()).isEqualTo(unformatted);
         assertThat(model.getSelectedItemText()).isEqualTo(unformatted.toUpperCase());
+        assertThat(model.getSelectedItemIndex()).isEqualTo(-1);
         verify(listener).propertyChange(Matchers.matches(new PropertyChangeEvent(model, SELECTED_ITEM, null, unformatted)));
+    }
+
+    @Test
+    public void getSelectedItemIndex() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, Function.identity());
+        model.setFilter("berry");
+        model.setSelectedItem("Blueberry");
+
+        assertThat(model.getSelectedItemIndex()).isEqualTo(0);
     }
 
     @Test
@@ -211,8 +221,7 @@ public class ContainsFilterComboBoxModelTest {
     @Test
     public void setFilterIgnoresCase() throws Exception {
         PropertyChangeListener listener = mock(PropertyChangeListener.class);
-        model.addPropertyChangeListener(listener);
-        model.addPropertyChangeListener(SELECTED_ITEM, listener);
+        model.addPropertyChangeListener(FILTER, listener);
 
         model.setFilter("berry");
 

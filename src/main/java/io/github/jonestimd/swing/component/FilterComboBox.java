@@ -86,6 +86,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
         popupWindow.add(scrollPane);
         popupWindow.setFocusable(false);
         popupWindow.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        model.addPropertyChangeListener(FilterComboBoxModel.SELECTED_ITEM, (event) -> selectListItem());
         addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -188,8 +189,8 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     private void selectListItem() {
-        if (model.getSelectedItem() == null) popupList.clearSelection();
-        else popupList.setSelectedIndex(model.indexOf(model.getSelectedItem()));
+        if (model.getSelectedItem() == null || model.getSelectedItemIndex() < 0) popupList.clearSelection();
+        else popupList.setSelectedIndex(model.getSelectedItemIndex());
     }
 
     protected void showPopup() {

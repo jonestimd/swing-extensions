@@ -33,8 +33,6 @@ import java.util.function.Function;
 import javax.swing.AbstractListModel;
 
 public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> implements FilterComboBoxModel<T> {
-    public static final String FILTER = "filter";
-    public static final String SELECTED_ITEM = "selectedItem";
     private final List<T> unfilteredItems = new ArrayList<>();
     private final List<T> filteredItems = new ArrayList<>();
     private String filter = "";
@@ -111,11 +109,6 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     }
 
     @Override
-    public String getSelectedItemText() {
-        return selectedItem == null ? "" : format.apply(selectedItem);
-    }
-
-    @Override
     public void addElement(T item) {
         unfilteredItems.add(item);
         if (isMatch(item)) {
@@ -157,6 +150,16 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         changeSupport.firePropertyChange(SELECTED_ITEM, oldValue, selectedItem);
     }
 
+    @Override
+    public int getSelectedItemIndex() {
+        return filteredItems.indexOf(selectedItem);
+    }
+
+    @Override
+    public String getSelectedItemText() {
+        return selectedItem == null ? "" : format.apply(selectedItem);
+    }
+
     /**
      * @return an {@link Iterator} for the filtered list.
      */
@@ -180,14 +183,6 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     @Override
     public T getElementAt(int index) {
         return filteredItems.get(index);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {

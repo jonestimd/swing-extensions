@@ -24,8 +24,10 @@ package io.github.jonestimd.swing.component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
@@ -34,6 +36,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class FilterComboBoxTest {
+    private static final List<String> items = Lists.newArrayList(
+        "Apple", "Banana", "Blueberry", "Cherry", "Grape", "Peach", "Pineapple", "Raspberry"
+    );
     private PropertyChangeListener listener = mock(PropertyChangeListener.class);
 
     @Test
@@ -56,5 +61,34 @@ public class FilterComboBoxTest {
 
         verify(listener).propertyChange(matches(new PropertyChangeEvent(comboBox, AUTO_SELECT_ITEM, true, false)));
         assertThat(comboBox.isAutoSelectItem()).isFalse();
+    }
+
+    @Test
+    public void autoSelectSingleMatch() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+
+        comboBox.setText("bl");
+
+        assertThat(comboBox.getSelectedItem()).isEqualTo("Blueberry");
+        assertThat(comboBox.getPopupList().getSelectedIndex()).isEqualTo(0);
+    }
+
+    @Test
+    public void updatesListSelectedIndexOnModelChange() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+
+        comboBox.getModel().setSelectedItem("Blueberry");
+
+        assertThat(comboBox.getPopupList().getSelectedIndex()).isEqualTo(items.indexOf("Blueberry"));
+    }
+
+    @Test
+    public void updatesListSelectedIndexOnFilterChange() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        comboBox.getModel().setSelectedItem("Blueberry");
+
+        comboBox.setText("b");
+
+        assertThat(comboBox.getPopupList().getSelectedIndex()).isEqualTo(1);
     }
 }
