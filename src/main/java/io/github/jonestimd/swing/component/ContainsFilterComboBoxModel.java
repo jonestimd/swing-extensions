@@ -21,7 +21,8 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.text.Format;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,26 +32,29 @@ import java.util.function.Function;
 
 import javax.swing.AbstractListModel;
 
-import io.github.jonestimd.util.Streams;
-
 public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> implements FilterComboBoxModel<T> {
-    private List<T> unfilteredItems;
-    private List<T> filteredItems;
+    public static final String FILTER = "filter";
+    public static final String SELECTED_ITEM = "selectedItem";
+    private final List<T> unfilteredItems = new ArrayList<>();
+    private final List<T> filteredItems = new ArrayList<>();
     private String filter = "";
     private T selectedItem = null;
     private final Function<T, String> format;
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    public ContainsFilterComboBoxModel(Format format) {
+    public ContainsFilterComboBoxModel(Function<T, String> format) {
         this(new ArrayList<>(), format);
     }
 
-    public ContainsFilterComboBoxModel(List<T> unfilteredItems, Format format) {
-        this(unfilteredItems, format::format);
+    public ContainsFilterComboBoxModel(List<T> unfilteredItems, Function<T, String> format) {
+        this.unfilteredItems.addAll(unfilteredItems);
+        this.filteredItems.addAll(unfilteredItems);
+        this.format = format;
     }
 
-    public ContainsFilterComboBoxModel(List<T> unfilteredItems, Function<T, String> format) {
-        this.unfilteredItems = unfilteredItems;
-        this.format = format;
+    @Override
+    public Function<T, String> getFormat() {
+        return format;
     }
 
     public List<T> getMatches() {
@@ -72,28 +76,33 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         setElements(items, false);
     }
 
-    /**
-     * Set unfiltered list.
-     */
     @Override
     public void setElements(Collection<? extends T> elements, boolean keepSelection) {
-        unfilteredItems = new ArrayList<>(elements);
+        unfilteredItems.clear();
+        unfilteredItems.addAll(elements);
+        if (!keepSelection && !unfilteredItems.contains(selectedItem)) setSelectedItem(null);
         applyFilter();
     }
 
+    /**
+     * @return {@code true} if the unfiltered list contains the item
+     */
     @Override
     public boolean contains(T item) {
-        return false;
+        return unfilteredItems.contains(item);
     }
 
     @Override
     public void setFilter(String search) {
+        String oldValue = this.filter;
         this.filter = search.toLowerCase();
         applyFilter();
+        changeSupport.firePropertyChange(FILTER, oldValue, filter);
     }
 
     protected void applyFilter() {
-        this.filteredItems = Streams.filter(unfilteredItems, this::isMatch);
+        filteredItems.clear();
+        unfilteredItems.stream().filter(this::isMatch).forEach(filteredItems::add);
         fireContentsChanged(this, 0, Integer.MAX_VALUE);
     }
 
@@ -118,7 +127,7 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
 
     @Override
     public void addMissingElements(Collection<? extends T> items) {
-        int index = getSize() > 0 && getElementAt(0) == null ? 1 : 0;
+        int index = 0;
         for (T element : items) {
             if (unfilteredItems.indexOf(element) < 0) {
                 unfilteredItems.add(index, element);
@@ -129,11 +138,11 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     }
 
     /**
-     * Get the index of an item in the filtered list.
+     * Get the index of an item in the unfiltered list.
      */
     @Override
     public int indexOf(Object item) {
-        return filteredItems.indexOf(item);
+        return unfilteredItems.indexOf(item);
     }
 
     @Override
@@ -143,7 +152,9 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
 
     @Override
     public void setSelectedItem(T anItem) {
+        T oldValue = this.selectedItem;
         this.selectedItem = anItem;
+        changeSupport.firePropertyChange(SELECTED_ITEM, oldValue, selectedItem);
     }
 
     /**
@@ -169,5 +180,21 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     @Override
     public T getElementAt(int index) {
         return filteredItems.get(index);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(propertyName, listener);
     }
 }

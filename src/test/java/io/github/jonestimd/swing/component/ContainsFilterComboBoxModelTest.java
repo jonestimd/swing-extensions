@@ -21,21 +21,28 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
-import java.text.FieldPosition;
-import java.text.Format;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
+import io.github.jonestimd.mockito.Matchers;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 
+import static com.google.common.collect.Lists.*;
+import static io.github.jonestimd.swing.component.ContainsFilterComboBoxModel.*;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ContainsFilterComboBoxModelTest {
     private static final List<String> items = Arrays.asList(
-        "Apple","Banana","Blueberry","cherry","Grape","Peach","Pineapple","Raspberry"
+        "Apple","Banana","Blueberry","Cherry","Grape","Peach","Pineapple","Raspberry"
     );
 
     @SuppressWarnings("unchecked")
@@ -44,26 +51,177 @@ public class ContainsFilterComboBoxModelTest {
     private ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, format);
 
     @Test
-    public void usesFormat() throws Exception {
-        String unformatted = "unformatted";
-        Format format = mock(Format.class);
-        StringBuffer formatted = new StringBuffer("formatted");
-        when(format.format(anyString(), any(StringBuffer.class), any(FieldPosition.class))).thenReturn(formatted);
+    public void getFormat() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, Function.identity());
 
-        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(format);
-        model.setSelectedItem(unformatted);
-
-        assertThat(model.getSelectedItemText()).isEqualTo(formatted.toString());
-        verify(format).format(same(unformatted), any(StringBuffer.class), any(FieldPosition.class));
+        assertThat(model.getFormat()).isSameAs(Function.identity());
     }
 
     @Test
-    public void applyFilterIgnoresCase() throws Exception {
+    public void getElementsReturnsUnmodifiableUnfilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, Function.identity());
+        model.setFilter("xyz");
+
+        assertThat(model.getElements()).isEqualTo(items);
+        assertThat(model.getElements().getClass().getSimpleName()).startsWith("Unmodifiable");
+    }
+
+    @Test
+    public void setElementsUpdatesFilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(singletonList("xyz"), Function.identity());
+        model.setFilter("berry");
+
+        model.setElements(items);
+
+        assertThat(model.getElements()).isEqualTo(items);
+        assertThat(model.getMatches()).isEqualTo(newArrayList("Blueberry", "Raspberry"));
+    }
+
+    @Test
+    public void setElementsKeepsSelection() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(singletonList("xyz"), Function.identity());
+        model.setSelectedItem("not a fruit");
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        model.addPropertyChangeListener(SELECTED_ITEM, listener);
+
+        model.setElements(items, true);
+
+        assertThat(model.getSelectedItem()).isEqualTo("not a fruit");
+        verifyNoInteractions(listener);
+    }
+
+    @Test
+    public void setElementsKeepsSelectedItemIfInList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(singletonList("xyz"), Function.identity());
+        model.setSelectedItem("Cherry");
+
+        model.setElements(items, false);
+
+        assertThat(model.getSelectedItem()).isEqualTo("Cherry");
+    }
+
+    @Test
+    public void setElementsClearsSelectedItemIfNotInList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(singletonList("xyz"), Function.identity());
+        model.setSelectedItem("not a fruit");
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        model.addPropertyChangeListener(SELECTED_ITEM, listener);
+
+        model.setElements(items, false);
+
+        assertThat(model.getSelectedItem()).isNull();
+        verify(listener).propertyChange(Matchers.matches(new PropertyChangeEvent(model, SELECTED_ITEM, "not a fruit", null)));
+    }
+
+    @Test
+    public void containsReturnsTrueForItemInUnfilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, Function.identity());
+        model.setFilter("berry");
+
+        assertThat(model.contains("Blueberry")).isTrue();
+        assertThat(model.contains("Apple")).isTrue();
+    }
+
+    @Test
+    public void setSelectedItem() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(String::toUpperCase);
+        String unformatted = "unformatted";
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        model.addPropertyChangeListener(SELECTED_ITEM, listener);
+
+        model.setSelectedItem(unformatted);
+
+        assertThat(model.getSelectedItem()).isEqualTo(unformatted);
+        assertThat(model.getSelectedItemText()).isEqualTo(unformatted.toUpperCase());
+        verify(listener).propertyChange(Matchers.matches(new PropertyChangeEvent(model, SELECTED_ITEM, null, unformatted)));
+    }
+
+    @Test
+    public void getSelectedItemTextReturnsEmptyStringForNull() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, Function.identity());
+
+        assertThat(model.getSelectedItemText()).isEqualTo("");
+    }
+
+    @Test
+    public void getSelectedItemTextReturnsFormattedItem() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setSelectedItem("Pawpaw");
+
+        assertThat(model.getSelectedItemText()).isEqualTo("PAWPAW");
+    }
+
+    @Test
+    public void addElementAddsToUnfilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setFilter("apple");
+
+        model.addElement("Blackberry");
+
+        assertThat(model.getElements()).endsWith("Blackberry");
+        assertThat(model.getMatches().contains("Blackberry")).isFalse();
+    }
+
+    @Test
+    public void addElementAddsMatchToFilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setFilter("berry");
+
+        model.addElement("Blackberry");
+
+        assertThat(model.getElements()).endsWith("Blackberry");
+        assertThat(model.getMatches()).endsWith("Blackberry");
+    }
+
+    @Test
+    public void addMissingElementAddsToUnfilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setFilter("apple");
+
+        List<String> newList = new ArrayList<>(items);
+        newList.addAll(Arrays.asList("Blackberry", "Crab apple"));
+        Collections.sort(newList);
+        model.addMissingElements(newList);
+
+        assertThat(model.getElements()).isEqualTo(newList);
+        assertThat(model.getMatches().contains("Crab apple")).isTrue();
+        assertThat(model.getMatches().contains("Blackberry")).isFalse();
+    }
+
+    @Test
+    public void indexOfReturnsIndexInUnfilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setFilter("apple");
+
+        assertThat(model.indexOf("Cherry")).isEqualTo(3);
+    }
+
+    @Test
+    public void iteratorUsesFilteredList() throws Exception {
+        ContainsFilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(items, String::toUpperCase);
+        model.setFilter("apple");
+
+        Iterator<String> iterator = model.iterator();
+
+        assertThat(iterator.next()).isEqualTo("Apple");
+        assertThat(iterator.next()).isEqualTo("Pineapple");
+        assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
+    public void setFilterIgnoresCase() throws Exception {
+        PropertyChangeListener listener = mock(PropertyChangeListener.class);
+        model.addPropertyChangeListener(listener);
+        model.addPropertyChangeListener(SELECTED_ITEM, listener);
+
         model.setFilter("berry");
 
         items.forEach(item -> verify(format).apply(item));
         assertThat(model.getSize()).isEqualTo(2);
         assertThat(model.getElementAt(0)).isEqualTo("Blueberry");
         assertThat(model.getElementAt(1)).isEqualTo("Raspberry");
+        assertThat(model.getMatches()).isEqualTo(newArrayList("Blueberry", "Raspberry"));
+        verify(listener).propertyChange(Matchers.matches(new PropertyChangeEvent(model, FILTER, "", "berry")));
+        verifyNoMoreInteractions(listener);
     }
 }
