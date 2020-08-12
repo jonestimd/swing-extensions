@@ -57,9 +57,4 @@ public class FilterComboBoxTest {
         verify(listener).propertyChange(matches(new PropertyChangeEvent(comboBox, AUTO_SELECT_ITEM, true, false)));
         assertThat(comboBox.isAutoSelectItem()).isFalse();
     }
-
-    @Test
-    public void processKeyEvent() throws Exception {
-
-    }
 }

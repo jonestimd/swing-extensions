@@ -70,6 +70,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
         super(validator);
         this.model = model;
         popupList = new JList<>(model);
+        popupList.setCellRenderer(new FunctionListCellRenderer<>(model.getFormat()));
         popupList.setVisibleRowCount(visibleRows);
         popupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         popupList.addListSelectionListener(event -> {

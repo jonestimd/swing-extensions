@@ -22,6 +22,7 @@
 package io.github.jonestimd.swing.component;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 public interface FilterComboBoxModel<T> extends LazyLoadListModel<T> {
     /**
@@ -32,11 +33,23 @@ public interface FilterComboBoxModel<T> extends LazyLoadListModel<T> {
      */
     void setElements(Collection<? extends T> items, boolean keepSelection);
 
+    /**
+     * Update the filtered items.
+     * @param search the text to match
+     */
     void setFilter(String search);
 
     T getSelectedItem();
 
     void setSelectedItem(T item);
 
+    /**
+     * @return the display value for the selected item
+     */
     String getSelectedItemText();
+
+    /**
+     * @return the function used to convert an item to its display value
+     */
+    Function<T, String> getFormat();
 }
