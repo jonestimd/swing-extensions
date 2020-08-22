@@ -322,6 +322,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         return !e.isControlDown() && !e.isAltDown() || isCtrlBackspace(e);
     }
 
+    @SuppressWarnings("deprecation")
     private boolean isCtrlBackspace(KeyEvent e) {
         return e.getKeyCode() == KeyEvent.VK_BACK_SPACE && e.getModifiers() == KeyEvent.CTRL_MASK;
     }
