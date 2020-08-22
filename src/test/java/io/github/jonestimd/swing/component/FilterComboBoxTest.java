@@ -74,6 +74,16 @@ public class FilterComboBoxTest {
     }
 
     @Test
+    public void unselectsAutoSelectedItem() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        comboBox.setText("bl");
+
+        comboBox.setText("b");
+
+        assertThat(comboBox.getSelectedItem()).isNull();
+    }
+
+    @Test
     public void updatesListSelectedIndexOnModelChange() throws Exception {
         FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
 

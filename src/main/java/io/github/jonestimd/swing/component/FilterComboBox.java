@@ -57,6 +57,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     private boolean autoSelectText = true;
     // TODO allow new item (editable combo box)
     private boolean autoSelectItem = true;
+    private boolean autoSelected = false;
 
     public FilterComboBox(FilterComboBoxModel<T> model) {
         this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY));
@@ -92,7 +93,8 @@ public class FilterComboBox<T> extends ValidatedTextField {
             public void focusGained(FocusEvent e) {
                 showPopup();
                 selectListItem();
-                if (autoSelectText) selectAll();
+                if (getText().equals(model.getSelectedItemText()) && autoSelectText) selectAll();
+                autoSelected = false;
             }
 
             @Override
@@ -118,10 +120,18 @@ public class FilterComboBox<T> extends ValidatedTextField {
         return popupList;
     }
 
+    /**
+     * Get the behavior for text selection on receiving focus.
+     * @return  true if the input text is selected when focus is gained and the text matches the list selection.
+     */
     public boolean isAutoSelectText() {
         return autoSelectText;
     }
 
+    /**
+     * Set the behavior for text selection on receiving focus.
+     * @param autoSelectText true to select the input text when focus is gained and the text matches the list selection.
+     */
     public void setAutoSelectText(boolean autoSelectText) {
         boolean oldValue = this.autoSelectText;
         this.autoSelectText = autoSelectText;
@@ -129,7 +139,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     /**
-     * Auto select an item when it is the only match.
+     * @return true if a single match is automatically selected
      */
     public boolean isAutoSelectItem() {
         return autoSelectItem;
@@ -171,11 +181,13 @@ public class FilterComboBox<T> extends ValidatedTextField {
                         if (++selectedIndex >= size) selectedIndex = 0;
                         popupList.setSelectedIndex(selectedIndex);
                         popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
+                        autoSelected = false;
                     }
                     else if (event.getKeyCode() == KeyEvent.VK_UP) {
                         if (--selectedIndex < 0) selectedIndex = size - 1;
                         popupList.setSelectedIndex(selectedIndex);
                         popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
+                        autoSelected = false;
                     }
                 }
             }
@@ -184,7 +196,16 @@ public class FilterComboBox<T> extends ValidatedTextField {
 
     protected void filterList() {
         model.setFilter(getText());
-        if (autoSelectItem && model.getSize() == 1) model.setSelectedItem(model.getElementAt(0));
+        if (autoSelectItem) {
+            if (model.getSize() == 1) {
+                model.setSelectedItem(model.getElementAt(0));
+                autoSelected = true;
+            }
+            else if (autoSelected) {
+                model.setSelectedItem(null);
+                autoSelected = false;
+            }
+        }
         selectListItem();
     }
 
@@ -194,10 +215,12 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     protected void showPopup() {
-        popupWindow.setPreferredSize(new Dimension(getWidth(), popupWindow.getPreferredSize().height));
-        popupWindow.pack();
-        Point location = getPopupLocation();
-        popupWindow.show(this, location.x, location.y);
+        if (isShowing()) {
+            popupWindow.setPreferredSize(new Dimension(getWidth(), popupWindow.getPreferredSize().height));
+            popupWindow.pack();
+            Point location = getPopupLocation();
+            popupWindow.show(this, location.x, location.y);
+        }
     }
 
     protected void hidePopup() {
