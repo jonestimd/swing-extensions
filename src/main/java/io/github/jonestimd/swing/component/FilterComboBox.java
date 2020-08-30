@@ -28,20 +28,22 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 
 import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.ComponentResources;
-import io.github.jonestimd.swing.DocumentChangeHandler;
 import io.github.jonestimd.swing.validation.ValidatedTextField;
 import io.github.jonestimd.swing.validation.Validator;
 
@@ -50,6 +52,9 @@ public class FilterComboBox<T> extends ValidatedTextField {
     public static final String VISIBLE_ROWS_KEY = "FilterComboBox.visibleRows";
     public static final String AUTO_SELECT_TEXT = "autoSelectText";
     public static final String AUTO_SELECT_ITEM = "autoSelectItem";
+    public static final String SELECT_NEXT_KEY = "select next";
+    public static final String SELECT_PREVIOUS_KEY = "select previous";
+    public static final String CLEAR_SELECTION_KEY = "clear selection";
 
     private final FilterComboBoxModel<T> model;
     private final JList<T> popupList;
@@ -58,6 +63,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     // TODO allow new item (editable combo box)
     private boolean autoSelectItem = true;
     private boolean autoSelected = false;
+    private T initialSelection;
 
     public FilterComboBox(FilterComboBoxModel<T> model) {
         this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY));
@@ -105,7 +111,18 @@ public class FilterComboBox<T> extends ValidatedTextField {
                 }
             }
         });
-        getDocument().addDocumentListener(new DocumentChangeHandler(this::filterList));
+        getActionMap().put(SELECT_NEXT_KEY, new SelectNextAction());
+        getActionMap().put(SELECT_PREVIOUS_KEY, new SelectPreviousAction());
+        getActionMap().put(CLEAR_SELECTION_KEY, new ClearSelectionAction());
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed DOWN"), SELECT_NEXT_KEY);
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed UP"), SELECT_PREVIOUS_KEY);
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ctrl pressed BACK_SPACE"), CLEAR_SELECTION_KEY);
+    }
+
+    @Override
+    public void setText(String t) {
+        super.setText(t);
+        filterList();
     }
 
     public T getSelectedItem() {
@@ -153,45 +170,26 @@ public class FilterComboBox<T> extends ValidatedTextField {
 
     @Override
     protected void processKeyEvent(KeyEvent event) {
-        super.processKeyEvent(event);
         if (event.getID() == KeyEvent.KEY_PRESSED && event.getModifiersEx() == 0) {
             if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 if (popupWindow.isVisible()) {
                     hidePopup();
-                    if (model.getSelectedItem() != null && !model.getSelectedItemText().equals(getText())) {
-                        setText("");
-                        model.setSelectedItem(null);
-                        popupList.clearSelection();
-                    }
+                    model.setSelectedItem(initialSelection);
+                    autoSelected = false;
+                    setText(model.getSelectedItemText());
                 }
                 else showPopup();
             }
             else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                if (popupWindow.isVisible() && popupList.getSelectedIndex() >= 0) {
+                if (popupWindow.isVisible()) {
                     hidePopup();
-                    setText(model.getSelectedItemText());
+                    if (model.getSelectedItem() != null) setText(model.getSelectedItemText());
                 }
             }
-            else {
-                if (!popupWindow.isVisible()) showPopup();
-                int selectedIndex = popupList.getSelectedIndex();
-                int size = popupList.getModel().getSize();
-                if (size > 0) {
-                    if (event.getKeyCode() == KeyEvent.VK_DOWN) {
-                        if (++selectedIndex >= size) selectedIndex = 0;
-                        popupList.setSelectedIndex(selectedIndex);
-                        popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
-                        autoSelected = false;
-                    }
-                    else if (event.getKeyCode() == KeyEvent.VK_UP) {
-                        if (--selectedIndex < 0) selectedIndex = size - 1;
-                        popupList.setSelectedIndex(selectedIndex);
-                        popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
-                        autoSelected = false;
-                    }
-                }
-            }
+            else if (!popupWindow.isVisible()) showPopup();
         }
+        super.processKeyEvent(event);
+        filterList();
     }
 
     protected void filterList() {
@@ -210,7 +208,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     private void selectListItem() {
-        if (model.getSelectedItem() == null || model.getSelectedItemIndex() < 0) popupList.clearSelection();
+        if (model.getSelectedItem() == null) popupList.clearSelection();
         else popupList.setSelectedIndex(model.getSelectedItemIndex());
     }
 
@@ -220,6 +218,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
             popupWindow.pack();
             Point location = getPopupLocation();
             popupWindow.show(this, location.x, location.y);
+            initialSelection = model.getSelectedItem();
         }
     }
 
@@ -252,5 +251,38 @@ public class FilterComboBox<T> extends ValidatedTextField {
         if (getLocationOnScreen().y + getHeight() + popupSize.height > screenBounds.height) location.y -= popupSize.height;
         else location.y += getHeight();
         return location;
+    }
+
+    private void setSelectedIndex(int selectedIndex) {
+        popupList.setSelectedIndex(selectedIndex);
+        popupList.scrollRectToVisible(popupList.getCellBounds(selectedIndex, selectedIndex));
+        autoSelected = false;
+    }
+
+    protected class SelectNextAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int size = popupList.getModel().getSize();
+            if (size > 0) setSelectedIndex((popupList.getSelectedIndex() + 1) % size);
+        }
+    }
+
+    protected class SelectPreviousAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int size = popupList.getModel().getSize();
+            if (size > 0) {
+                int selectedIndex = popupList.getSelectedIndex();
+                setSelectedIndex(selectedIndex <= 0 ? size - 1 : selectedIndex - 1);
+            }
+        }
+    }
+
+    protected class ClearSelectionAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setText("");
+            model.setSelectedItem(null);
+        }
     }
 }

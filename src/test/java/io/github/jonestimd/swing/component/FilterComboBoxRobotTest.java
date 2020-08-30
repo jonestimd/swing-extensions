@@ -60,7 +60,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void focusGainedShowsPopup() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.waitForIdle();
 
         assertThat(field.getPopupList().isShowing()).isTrue();
@@ -70,7 +70,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void focusLostHidesPopup() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_TAB);
         robot.waitForIdle();
 
@@ -81,7 +81,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void escapeHidesPopup() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
         robot.waitForIdle();
 
@@ -92,7 +92,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void escapeReShowsPopup() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
         robot.waitForIdle();
@@ -101,26 +101,13 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     }
 
     @Test
-    public void escapeClearsSelectionForTextMismatch() throws Exception {
+    public void escapeRestoresInitialSelection() throws Exception {
         showWindow();
         field.getPopupList().setSelectedIndex(0);
 
-        robot.focus(field);
-        field.setText(items[0].substring(0, 3));
-        robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
+        robot.focusAndWaitForFocusGain(field);
         robot.waitForIdle();
-
-        assertThat(field.getText()).isEmpty();
-        assertThat(field.getSelectedItem()).isNull();
-    }
-
-    @Test
-    public void escapeRetainsSelectionForTextMatch() throws Exception {
-        showWindow();
-        field.getPopupList().setSelectedIndex(0);
-
-        robot.focus(field);
-        field.setText(items[0]);
+        robot.enterText(items[1].substring(0, 3));
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
         robot.waitForIdle();
 
@@ -132,7 +119,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void downSelectsFirstItem() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_DOWN);
         robot.waitForIdle();
 
@@ -143,7 +130,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void downOnLastItemSelectsFirstItem() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         field.getPopupList().setSelectedIndex(items.length - 1);
         robot.pressAndReleaseKey(KeyEvent.VK_DOWN);
         robot.waitForIdle();
@@ -155,7 +142,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void upSelectsLastItem() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_UP);
         robot.waitForIdle();
 
@@ -166,7 +153,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public void upOnFirstItemSelectsLastItem() throws Exception {
         showWindow();
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         field.getPopupList().setSelectedIndex(0);
         robot.pressAndReleaseKey(KeyEvent.VK_UP);
         robot.waitForIdle();
@@ -180,7 +167,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         field.getPopupList().setSelectedIndex(2);
         field.getModel().setSelectedItem(null);
 
-        robot.focus(field);
+        robot.focusAndWaitForFocusGain(field);
         robot.pressAndReleaseKey(KeyEvent.VK_DOWN);
         robot.pressAndReleaseKey(KeyEvent.VK_ENTER);
         robot.waitForIdle();
