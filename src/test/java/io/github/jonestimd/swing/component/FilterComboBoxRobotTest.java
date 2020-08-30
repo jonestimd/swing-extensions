@@ -106,7 +106,6 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         field.getPopupList().setSelectedIndex(0);
 
         robot.focusAndWaitForFocusGain(field);
-        robot.waitForIdle();
         robot.enterText(items[1].substring(0, 3));
         robot.pressAndReleaseKey(KeyEvent.VK_ESCAPE);
         robot.waitForIdle();

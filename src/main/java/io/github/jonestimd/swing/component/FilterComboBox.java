@@ -189,15 +189,21 @@ public class FilterComboBox<T> extends ValidatedTextField {
             else if (!popupWindow.isVisible()) showPopup();
         }
         super.processKeyEvent(event);
-        filterList();
+        if (event.getID() == KeyEvent.KEY_TYPED) filterList();
     }
 
     protected void filterList() {
         model.setFilter(getText());
-        if (autoSelectItem) {
+        if (model.getSelectedItemIndex() < 0) {
+            model.setSelectedItem(null);
+            autoSelected = false;
+        }
+        if (autoSelectItem && !getText().isEmpty()) {
             if (model.getSize() == 1) {
-                model.setSelectedItem(model.getElementAt(0));
-                autoSelected = true;
+                if (model.getSelectedItem() == null) {
+                    model.setSelectedItem(model.getElementAt(0));
+                    autoSelected = true;
+                }
             }
             else if (autoSelected) {
                 model.setSelectedItem(null);

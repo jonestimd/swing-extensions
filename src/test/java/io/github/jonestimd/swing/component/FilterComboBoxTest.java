@@ -82,6 +82,26 @@ public class FilterComboBoxTest {
 
         assertThat(comboBox.getSelectedItem()).isNull();
     }
+    @Test
+    public void clearsManualSelectionWhenFilteredFromList() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        comboBox.getModel().setSelectedItem(items.get(0));
+
+        comboBox.setText("b");
+
+        assertThat(comboBox.getSelectedItem()).isNull();
+    }
+
+    @Test
+    public void retainsManualSelectionAfterSingleMatch() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        comboBox.getModel().setSelectedItem(items.get(2));
+
+        comboBox.setText("bl");
+        comboBox.setText("b");
+
+        assertThat(comboBox.getSelectedItem()).isEqualTo(items.get(2));
+    }
 
     @Test
     public void updatesListSelectedIndexOnModelChange() throws Exception {
