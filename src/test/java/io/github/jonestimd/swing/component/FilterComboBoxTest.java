@@ -21,13 +21,22 @@
 // SOFTWARE.
 package io.github.jonestimd.swing.component;
 
+import java.awt.Cursor;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+
 import com.google.common.collect.Lists;
+import io.github.jonestimd.swing.validation.RequiredValidator;
+import io.github.jonestimd.swing.validation.ValidationBorder;
 import org.junit.Test;
 
 import static io.github.jonestimd.mockito.Matchers.matches;
@@ -39,11 +48,12 @@ public class FilterComboBoxTest {
     private static final List<String> items = Lists.newArrayList(
         "Apple", "Banana", "Blueberry", "Cherry", "Grape", "Peach", "Pineapple", "Raspberry"
     );
-    private PropertyChangeListener listener = mock(PropertyChangeListener.class);
+    private final PropertyChangeListener listener = mock(PropertyChangeListener.class);
+    private final String message = "selection is required";
 
     @Test
     public void setAutoSelectTextFiresPropertyChange() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(Collections.emptyList(), Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(Collections.emptyList()));
         comboBox.addPropertyChangeListener(AUTO_SELECT_TEXT, listener);
 
         comboBox.setAutoSelectText(false);
@@ -54,7 +64,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void setAutoSelectItemFiresPropertyChange() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(Collections.emptyList(), Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(Collections.emptyList()));
         comboBox.addPropertyChangeListener(AUTO_SELECT_ITEM, listener);
 
         comboBox.setAutoSelectItem(false);
@@ -64,8 +74,19 @@ public class FilterComboBoxTest {
     }
 
     @Test
+    public void setSetTextOnFocusLostFiresPropertyChange() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(Collections.emptyList()));
+        comboBox.addPropertyChangeListener(SET_TEXT_ON_FOCUS_LOST, listener);
+
+        comboBox.setSetTextOnFocusLost(false);
+
+        verify(listener).propertyChange(matches(new PropertyChangeEvent(comboBox, SET_TEXT_ON_FOCUS_LOST, true, false)));
+        assertThat(comboBox.isSetTextOnFocusLost()).isFalse();
+    }
+
+    @Test
     public void autoSelectSingleMatch() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
 
         comboBox.setText("bl");
 
@@ -75,7 +96,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void unselectsAutoSelectedItem() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
         comboBox.setText("bl");
 
         comboBox.setText("b");
@@ -84,7 +105,7 @@ public class FilterComboBoxTest {
     }
     @Test
     public void clearsManualSelectionWhenFilteredFromList() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
         comboBox.getModel().setSelectedItem(items.get(0));
 
         comboBox.setText("b");
@@ -94,7 +115,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void retainsManualSelectionAfterSingleMatch() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
         comboBox.getModel().setSelectedItem(items.get(2));
 
         comboBox.setText("bl");
@@ -105,7 +126,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void updatesListSelectedIndexOnModelChange() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
 
         comboBox.getModel().setSelectedItem("Blueberry");
 
@@ -114,11 +135,74 @@ public class FilterComboBoxTest {
 
     @Test
     public void updatesListSelectedIndexOnFilterChange() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(items, Function.identity()));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
         comboBox.getModel().setSelectedItem("Blueberry");
 
         comboBox.setText("b");
 
         assertThat(comboBox.getPopupList().getSelectedIndex()).isEqualTo(1);
+    }
+
+    @Test
+    public void validatesSelectedValue() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        comboBox.addValidationListener(listener);
+
+        assertThat(comboBox.getValidationMessages()).isEqualTo(message);
+        comboBox.getModel().setSelectedItem(items.get(0));
+
+        assertThat(comboBox.getValidationMessages()).isNull();
+        verify(listener).propertyChange(matches(new PropertyChangeEvent(comboBox, VALIDATION_MESSAGES, message, null)));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void setNonNullBorderWrappsValidationBorder() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
+        Border border = BorderFactory.createEmptyBorder();
+
+        comboBox.setBorder(border);
+
+        assertThat(comboBox.getBorder()).isInstanceOf(CompoundBorder.class);
+        CompoundBorder compoundBorder = (CompoundBorder) comboBox.getBorder();
+        assertThat(compoundBorder.getInsideBorder()).isInstanceOf(ValidationBorder.class);
+        assertThat(compoundBorder.getOutsideBorder()).isSameAs(border);
+    }
+
+    @Test
+    public void setNullBorderWrapsValidationBorder() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items));
+
+        comboBox.setBorder(null);
+
+        assertThat(comboBox.getBorder()).isInstanceOf(ValidationBorder.class);
+    }
+
+    @Test
+    public void getCursor() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        comboBox.validateValue();
+        assertThat(comboBox.getCursor()).isNotEqualTo(Cursor.getDefaultCursor());
+        for (MouseMotionListener listener : comboBox.getMouseMotionListeners()) {
+            listener.mouseMoved(new MouseEvent(comboBox, MouseEvent.MOUSE_MOVED, 0L, 0, comboBox.getWidth(), 0, 0, false));
+        }
+
+        assertThat(comboBox.getCursor()).isEqualTo(Cursor.getDefaultCursor());
+    }
+
+    @Test
+    public void getTooltip() throws Exception {
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        comboBox.validateValue();
+        assertThat(comboBox.getToolTipText()).isNull();
+        for (MouseMotionListener listener : comboBox.getMouseMotionListeners()) {
+            listener.mouseMoved(new MouseEvent(comboBox, MouseEvent.MOUSE_MOVED, 0L, 0, comboBox.getWidth(), 0, 0, false));
+        }
+
+        assertThat(comboBox.getToolTipText()).isEqualTo(message);
+    }
+
+    private ContainsFilterComboBoxModel<String> newModel(List<String> items) {
+        return new ContainsFilterComboBoxModel<>(items, Function.identity());
     }
 }

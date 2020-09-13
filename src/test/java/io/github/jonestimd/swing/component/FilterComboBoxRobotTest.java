@@ -67,14 +67,31 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     }
 
     @Test
-    public void focusLostHidesPopup() throws Exception {
+    public void focusLostHidesPopupAndSetsText() throws Exception {
         showWindow();
+        field.setSetTextOnFocusLost(true);
 
         robot.focusAndWaitForFocusGain(field);
+        robot.enterText("ap");
         robot.pressAndReleaseKey(KeyEvent.VK_TAB);
         robot.waitForIdle();
 
         assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEqualTo("");
+    }
+
+    @Test
+    public void focusLostHidesPopupAndKeepsText() throws Exception {
+        showWindow();
+        field.setSetTextOnFocusLost(false);
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText("ap");
+        robot.pressAndReleaseKey(KeyEvent.VK_TAB);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEqualTo("ap");
     }
 
     @Test
@@ -179,7 +196,7 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     public static void main(String... args) {
         System.setProperty("swing.defaultlaf", "com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
         FilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(Arrays.asList(items), Function.identity());
-        FilterComboBox<String> field = new FilterComboBox<>(model, items.length);
+        FilterComboBox<String> field = new FilterComboBox<>(model);
         // field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
         JFrame frame = new JFrame("test");
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));

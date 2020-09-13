@@ -22,6 +22,7 @@
 package io.github.jonestimd.swing.component;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.Insets;
@@ -32,26 +33,44 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 
 import io.github.jonestimd.swing.ComponentDefaults;
 import io.github.jonestimd.swing.ComponentResources;
-import io.github.jonestimd.swing.validation.ValidatedTextField;
+import io.github.jonestimd.swing.validation.ValidatedComponent;
+import io.github.jonestimd.swing.validation.ValidationSupport;
+import io.github.jonestimd.swing.validation.ValidationTooltipBorder;
 import io.github.jonestimd.swing.validation.Validator;
 
-public class FilterComboBox<T> extends ValidatedTextField {
+/**
+ * A combo box that filters the list items based on the input text.
+ * Keyboard selection:
+ * <ul>
+ *     <li><strong>up</strong> - select previous item in the list</li>
+ *     <li><strong>down</strong> - select next item in the list</li>
+ *     <li><strong>ctrl-backspace</strong> - clears selection and text when cursor is at end of text</li>
+ * </ul>
+ * @param <T> list item class
+ */
+public class FilterComboBox<T> extends JTextField implements ValidatedComponent {
     /** {@link ComponentResources} key for default visible rows */
     public static final String VISIBLE_ROWS_KEY = "FilterComboBox.visibleRows";
     public static final String AUTO_SELECT_TEXT = "autoSelectText";
     public static final String AUTO_SELECT_ITEM = "autoSelectItem";
+    public static final String SET_TEXT_ON_FOCUS_LOST = "setTextOnFocusLost";
     public static final String SELECT_NEXT_KEY = "select next";
     public static final String SELECT_PREVIOUS_KEY = "select previous";
     public static final String CLEAR_SELECTION_KEY = "clear selection";
@@ -63,19 +82,35 @@ public class FilterComboBox<T> extends ValidatedTextField {
     // TODO allow new item (editable combo box)
     private boolean autoSelectItem = true;
     private boolean autoSelected = false;
+    private boolean setTextOnFocusLost = true;
     private T initialSelection;
+    private final ValidationSupport<T> validationSupport;
+    private final ValidationTooltipBorder validationBorder;
 
+    /**
+     * Create a {@code FilterComboBox} with the default visible rows and no validation.
+     */
     public FilterComboBox(FilterComboBoxModel<T> model) {
-        this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY));
+        this(model, Validator.empty());
     }
 
-    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows) {
-        this(model, visibleRows, Validator.empty());
+    /**
+     * Create a {@code FilterComboBox} with no validation.
+     */
+    public FilterComboBox(FilterComboBoxModel<T> model, Validator<T> validator) {
+        this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY), validator);
     }
 
-    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows, Validator<String> validator) {
-        super(validator);
+    /**
+     * @param model the model for the list
+     * @param visibleRows the number of visible rows for the popup list
+     * @param validator selection validator
+     */
+    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows, Validator<T> validator) {
         this.model = model;
+        this.validationSupport = new ValidationSupport<>(this, validator);
+        this.validationBorder = new ValidationTooltipBorder(this);
+        validateValue();
         popupList = new JList<>(model);
         popupList.setCellRenderer(new FunctionListCellRenderer<>(model.getFormat()));
         popupList.setVisibleRowCount(visibleRows);
@@ -93,7 +128,10 @@ public class FilterComboBox<T> extends ValidatedTextField {
         popupWindow.add(scrollPane);
         popupWindow.setFocusable(false);
         popupWindow.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        model.addPropertyChangeListener(FilterComboBoxModel.SELECTED_ITEM, (event) -> selectListItem());
+        model.addPropertyChangeListener(FilterComboBoxModel.SELECTED_ITEM, (event) -> {
+            selectListItem();
+            validateValue();
+        });
         addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -107,7 +145,7 @@ public class FilterComboBox<T> extends ValidatedTextField {
             public void focusLost(FocusEvent e) {
                 if (popupWindow.isVisible()) {
                     hidePopup();
-                    setText(model.getSelectedItem() == null ? "" : model.getSelectedItemText());
+                    if (setTextOnFocusLost) setText(model.getSelectedItem() == null ? "" : model.getSelectedItemText());
                 }
             }
         });
@@ -117,6 +155,41 @@ public class FilterComboBox<T> extends ValidatedTextField {
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed DOWN"), SELECT_NEXT_KEY);
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed UP"), SELECT_PREVIOUS_KEY);
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ctrl pressed BACK_SPACE"), CLEAR_SELECTION_KEY);
+    }
+
+    /**
+     * Overridden to wrap the {@link ValidationTooltipBorder} with the input border.
+     * @param border the border to add around the {@code ValidationBorder} or null
+     *        to use the {@code ValidationBorder} alone
+     */
+    @Override
+    public void setBorder(Border border) {
+        if (border == null) {
+            super.setBorder(validationBorder);
+        }
+        else {
+            super.setBorder(new CompoundBorder(border, validationBorder));
+        }
+    }
+
+    @Override
+    public void validateValue() {
+        validationBorder.setValid(validationSupport.validateValue(getSelectedItem()) == null);
+    }
+
+    @Override
+    public String getValidationMessages() {
+        return validationSupport.getMessages();
+    }
+
+    @Override
+    public void addValidationListener(PropertyChangeListener listener) {
+        validationSupport.addValidationListener(listener);
+    }
+
+    @Override
+    public void removeValidationListener(PropertyChangeListener listener) {
+        validationSupport.removeValidationListener(listener);
     }
 
     @Override
@@ -166,6 +239,19 @@ public class FilterComboBox<T> extends ValidatedTextField {
         boolean oldValue = this.autoSelectItem;
         this.autoSelectItem = autoSelectItem;
         firePropertyChange(AUTO_SELECT_ITEM, oldValue, autoSelectItem);
+    }
+
+    /**
+     * @return true if the text will be set to the selected item when focus is lost
+     */
+    public boolean isSetTextOnFocusLost() {
+        return setTextOnFocusLost;
+    }
+
+    public void setSetTextOnFocusLost(boolean setTextOnFocusLost) {
+        boolean oldValue = this.setTextOnFocusLost;
+        this.setTextOnFocusLost = setTextOnFocusLost;
+        firePropertyChange(SET_TEXT_ON_FOCUS_LOST, oldValue, setTextOnFocusLost);
     }
 
     @Override
@@ -265,6 +351,16 @@ public class FilterComboBox<T> extends ValidatedTextField {
         autoSelected = false;
     }
 
+    @Override
+    public Cursor getCursor() {
+        return validationBorder.isMouseOverIndicator() ? Cursor.getDefaultCursor() : super.getCursor();
+    }
+
+    @Override
+    public String getToolTipText() {
+        return validationBorder.isMouseOverIndicator() ? validationSupport.getMessages() : super.getToolTipText();
+    }
+
     protected class SelectNextAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -285,10 +381,19 @@ public class FilterComboBox<T> extends ValidatedTextField {
     }
 
     protected class ClearSelectionAction extends AbstractAction {
+        private final Action defaultAction;
+
+        public ClearSelectionAction() {
+            this.defaultAction = getActionMap().get(getInputMap(WHEN_FOCUSED).get(KeyStroke.getKeyStroke("ctrl pressed BACK_SPACE")));
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
-            setText("");
-            model.setSelectedItem(null);
+            if (getCaret().getDot() == getDocument().getLength()) {
+                setText("");
+                model.setSelectedItem(null);
+            }
+            else if (defaultAction != null) defaultAction.actionPerformed(e);
         }
     }
 }
