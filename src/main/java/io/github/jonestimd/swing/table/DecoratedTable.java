@@ -263,7 +263,7 @@ public class DecoratedTable<Bean, Model extends BeanTableModel<Bean>> extends JT
         boolean result = super.processKeyBinding(ks, e, condition, pressed);
         // pass key that started the edit to editor
         if (condition == WHEN_FOCUSED && getEditorField() instanceof JComboBox) {
-            JComboBox editorComponent = (JComboBox) getEditorField();
+            JComboBox<?> editorComponent = (JComboBox<?>) getEditorField();
             if (editorComponent.isEditable()) {
                 JTextComponent textEditor = (JTextComponent) editorComponent.getEditor().getEditorComponent();
                 setEditorText(textEditor, e.getKeyChar());
