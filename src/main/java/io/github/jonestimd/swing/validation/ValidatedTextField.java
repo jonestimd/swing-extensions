@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,9 @@ import io.github.jonestimd.swing.DocumentChangeHandler;
  * there is a validation error.  Validation is disabled when the component is not editable.
  */
 public class ValidatedTextField extends JTextField implements ValidatedComponent {
-    private ValidationTooltipBorder validationBorder;
+    private final ValidationTooltipBorder validationBorder;
     private final ValidationSupport<String> validationSupport;
-    private DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
+    private final DocumentListener validationHandler = new DocumentChangeHandler(this::validateValue);
 
     public ValidatedTextField(Validator<String> validator) {
         this.validationSupport = new ValidationSupport<>(this, validator.when(this::isEditable));

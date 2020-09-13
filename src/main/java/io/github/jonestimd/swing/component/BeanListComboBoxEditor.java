@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,11 +43,11 @@ import io.github.jonestimd.swing.validation.Validator;
  * @param <T> {@link BeanListComboBox} list item class
  */
 public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
-    private ComboBoxModel<T> model;
-    private Format format;
-    private PrefixSelector<T> prefixSelector;
+    private final ComboBoxModel<T> model;
+    private final Format format;
+    private final PrefixSelector<T> prefixSelector;
     private boolean autoSelecting = false;
-    private DocumentListener documentHandler = new DocumentListener() {
+    private final DocumentListener documentHandler = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
             documentChange();
         }
@@ -176,7 +176,7 @@ public class BeanListComboBoxEditor<T> extends BasicComboBoxEditor {
         }
     }
 
-    private class BorderlessTextField extends ValidatedTextField {
+    private static class BorderlessTextField extends ValidatedTextField {
         public BorderlessTextField(String value, int columns, Validator<String> validator) {
             super(validator);
             setText(value == null ? "" : value);
