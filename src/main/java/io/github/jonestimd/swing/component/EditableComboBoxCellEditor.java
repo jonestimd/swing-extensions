@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,16 @@ import io.github.jonestimd.swing.validation.Validator;
  * @param <T> the list item class
  */
 public abstract class EditableComboBoxCellEditor<T extends Comparable<? super T>> extends BeanListComboBoxCellEditor<T> {
-    private BeanListComboBoxEditor<T> editor;
+    private final BeanListComboBoxEditor<T> editor;
     private T value;
 
     protected EditableComboBoxCellEditor(Format format, Validator<String> validator, String loadingMessage) {
-        this(format, validator, new FormatPrefixSelector(format), loadingMessage);
+        this(format, validator, new FormatPrefixSelector<>(format), loadingMessage);
     }
 
     @SuppressWarnings("unchecked")
-    protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector prefixSelector, String loadingMessage) {
-        super(BeanListComboBox.builder(format).editable(validator, prefixSelector).get(), loadingMessage);
+    protected EditableComboBoxCellEditor(Format format, Validator<String> validator, PrefixSelector<T> prefixSelector, String loadingMessage) {
+        super(BeanListComboBox.<T>builder(format).editable(validator, prefixSelector).get(), loadingMessage);
         editor = (BeanListComboBoxEditor<T>) getComboBox().getEditor();
         editor.getEditorComponent().addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
