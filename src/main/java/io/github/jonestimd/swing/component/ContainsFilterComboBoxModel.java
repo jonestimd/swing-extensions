@@ -26,18 +26,26 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import javax.swing.AbstractListModel;
 
+/**
+ * A {@link FilterComboBoxModel} that displays items containing the search string.  Uses a {@link Function} to convert
+ * the list items to a string for display and filtering.
+ * @param <T> the class of the list items
+ */
 public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> implements FilterComboBoxModel<T> {
     private final List<T> unfilteredItems = new ArrayList<>();
     private final List<T> filteredItems = new ArrayList<>();
     private String filter = "";
     private T selectedItem = null;
     private final Function<T, String> format;
+    private final Comparator<T> ordering;
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     public ContainsFilterComboBoxModel(Function<T, String> format) {
@@ -48,6 +56,7 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         this.unfilteredItems.addAll(unfilteredItems);
         this.filteredItems.addAll(unfilteredItems);
         this.format = format;
+        this.ordering = Comparator.comparing(format.andThen(String::toUpperCase));
     }
 
     @Override
@@ -59,9 +68,6 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         return Collections.unmodifiableList(filteredItems);
     }
 
-    /**
-     * Get the unfiltered list.
-     */
     public List<T> getElements() {
         return Collections.unmodifiableList(unfilteredItems);
     }
@@ -80,6 +86,10 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         unfilteredItems.addAll(elements);
         if (!keepSelection && !unfilteredItems.contains(selectedItem)) setSelectedItem(null);
         applyFilter();
+    }
+
+    public Optional<T> findElement(String text) {
+        return filteredItems.stream().filter((item) -> format.apply(item).equalsIgnoreCase(text)).findFirst();
     }
 
     /**
@@ -101,6 +111,8 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     protected void applyFilter() {
         filteredItems.clear();
         unfilteredItems.stream().filter(this::isMatch).forEach(filteredItems::add);
+        if (selectedItem != null && indexOf(selectedItem) < 0) filteredItems.add(selectedItem);
+        filteredItems.sort(ordering);
         fireContentsChanged(this, 0, Integer.MAX_VALUE);
     }
 
@@ -110,11 +122,16 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
 
     @Override
     public void addElement(T item) {
-        unfilteredItems.add(item);
+        insertElementAt(item, unfilteredItems.size());
+    }
+
+    @Override
+    public void insertElementAt(T item, int index) {
+        unfilteredItems.add(index, item);
         if (isMatch(item)) {
-            int index = filteredItems.size();
+            int filteredIndex = filteredItems.size();
             filteredItems.add(item);
-            fireIntervalAdded(this, index, index);
+            fireIntervalAdded(this, filteredIndex, filteredIndex);
         }
     }
 
@@ -122,12 +139,21 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     public void addMissingElements(Collection<? extends T> items) {
         int index = 0;
         for (T element : items) {
-            if (unfilteredItems.indexOf(element) < 0) {
+            if (!unfilteredItems.contains(element)) {
                 unfilteredItems.add(index, element);
             }
             index++;
         }
         applyFilter();
+    }
+
+    @Override
+    public void removeElementAt(int index) {
+        int filteredIndex = filteredItems.indexOf(unfilteredItems.remove(index));
+        if (filteredIndex >= 0) {
+            filteredItems.remove(filteredIndex);
+            fireIntervalRemoved(this, filteredIndex, filteredIndex);
+        }
     }
 
     /**
@@ -161,11 +187,11 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
     }
 
     /**
-     * @return an {@link Iterator} for the filtered list.
+     * @return an {@link Iterator} for the unfiltered list.
      */
     @Override
     public Iterator<T> iterator() {
-        return getMatches().iterator();
+        return getElements().iterator();
     }
 
     /**
@@ -176,10 +202,6 @@ public class ContainsFilterComboBoxModel<T> extends AbstractListModel<T> impleme
         return filteredItems.size();
     }
 
-    /**
-     * @param index the index of the item in the filtered list.
-     * @return an item from the filtered list.
-     */
     @Override
     public T getElementAt(int index) {
         return filteredItems.get(index);

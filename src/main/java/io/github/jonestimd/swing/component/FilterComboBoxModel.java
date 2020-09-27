@@ -22,10 +22,21 @@
 package io.github.jonestimd.swing.component;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+
+import javax.swing.JList;
+import javax.swing.ListModel;
 
 import io.github.jonestimd.beans.ObservableBean;
 
+/**
+ * Interface for the model used by {@link FilterComboBox}. The {@link #getSize()} and {@link #getElementAt(int)}
+ * methods support displaying the filtered list in a {@link JList} and, therefore, operate on the filtered list.
+ * All other methods inherited from {@link LazyLoadListModel} operate on the unfiltered list.
+ * @param <T> class of the list items
+ */
 public interface FilterComboBoxModel<T> extends LazyLoadListModel<T>, ObservableBean {
     String FILTER = "filter";
     String SELECTED_ITEM = "selectedItem";
@@ -39,10 +50,50 @@ public interface FilterComboBoxModel<T> extends LazyLoadListModel<T>, Observable
     void setElements(Collection<? extends T> items, boolean keepSelection);
 
     /**
+     * Add an item to the unfiltered list.
+     */
+    void insertElementAt(T item, int index);
+
+    /**
+     * Remove an item from the unfiltered list.
+     */
+    void removeElementAt(int index);
+
+    /**
      * Update the filtered items.
      * @param search the text to match
      */
     void setFilter(String search);
+
+    /**
+     * @return the item that matches {@code text} (ignoring case)
+     */
+    Optional<T> findElement(String text);
+
+    /**
+     * @return the items that match the filter
+     */
+    List<T> getMatches();
+
+    /**
+     * @return the unfiltered list
+     */
+    List<T> getElements();
+
+    /**
+     * Implementation of {@link ListModel} for displaying the items in a {@link JList}.
+     * @return the size of the filtered list.
+     */
+    @Override
+    int getSize();
+
+    /**
+     * Implementation of {@link ListModel} for displaying the items in a {@link JList}.
+     * @param index the index of the item in the filtered list.
+     * @return an item from the filtered list.
+     */
+    @Override
+    T getElementAt(int index);
 
     T getSelectedItem();
 

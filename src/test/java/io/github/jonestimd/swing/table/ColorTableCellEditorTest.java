@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,6 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
     private JTable table = new JTable(tableModel);
     private ColorTableCellEditor cellEditor;
 
-
-    @Override
     protected JPanel createContentPane() {
         table.getColumnModel().getColumn(0).setCellRenderer(new ColorTableCellRenderer());
         table.getColumnModel().getColumn(0).setCellEditor(cellEditor);
@@ -56,6 +54,10 @@ public class ColorTableCellEditorTest extends JFrameRobotTest {
         panel.add(table, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         return panel;
+    }
+
+    private void showWindow() throws Exception {
+        showWindow(this::createContentPane);
     }
 
     @Test

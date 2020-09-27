@@ -58,13 +58,11 @@ public abstract class WindowRobotTest<T extends Window & RootPaneContainer> {
         if (window != null && window.isVisible()) SwingUtilities.invokeAndWait(window::dispose);
     }
 
-    protected void showWindow() throws Exception {
+    protected void showWindow(Supplier<JComponent> createContentPane) throws Exception {
         window = newWindow.get();
-        window.setContentPane(createContentPane());
+        window.setContentPane(createContentPane.get());
         robot.showWindow(window);
     }
-
-    protected abstract JComponent createContentPane();
 
     protected void assertCondition(Supplier<Boolean> condition, String description, long timeout) {
         pause(new Condition(description) {

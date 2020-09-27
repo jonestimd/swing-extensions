@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,13 +57,16 @@ public class MultiSelectFieldTest extends JFrameRobotTest {
     private MultiSelectField multiSelectField;
     private PropertyChangeListener listener = mock(PropertyChangeListener.class);
 
-    @Override
     protected JPanel createContentPane() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(multiSelectField, BorderLayout.CENTER);
         panel.add(new JTextField(), BorderLayout.SOUTH);
         panel.setPreferredSize(new Dimension(400, 50));
         return panel;
+    }
+
+    private void showWindow() throws Exception {
+        showWindow(this::createContentPane);
     }
 
     @Test

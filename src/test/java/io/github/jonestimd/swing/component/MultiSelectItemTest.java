@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,16 +42,19 @@ import static org.mockito.Mockito.*;
 
 public class MultiSelectItemTest extends JFrameRobotTest {
     @SuppressWarnings("unchecked")
-    private Consumer<MultiSelectItem> deleteListener = mock(Consumer.class);
+    private final Consumer<MultiSelectItem> deleteListener = mock(Consumer.class);
 
     private MultiSelectItem multiSelectItem = new MultiSelectItem("item text", true, false);
 
-    @Override
     protected JPanel createContentPane() {
         JPanel panel = new JPanel(new FlowLayout());
         panel.add(multiSelectItem);
         panel.setPreferredSize(new Dimension(400, 50));
         return panel;
+    }
+
+    private void showWindow() throws Exception {
+        showWindow(this::createContentPane);
     }
 
     @Test

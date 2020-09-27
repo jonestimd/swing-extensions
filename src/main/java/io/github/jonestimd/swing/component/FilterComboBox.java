@@ -34,6 +34,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -61,6 +63,9 @@ import io.github.jonestimd.swing.validation.Validator;
  * <ul>
  *     <li><strong>up</strong> - select previous item in the list</li>
  *     <li><strong>down</strong> - select next item in the list</li>
+ *     <li><strong>ctrl-enter</strong> - if a parser exists and no item matches the filter text then create a new item
+ *          (the new item is not added to the unfiltered list)
+ *     </li>
  *     <li><strong>ctrl-backspace</strong> - clears selection and text when cursor is at end of text</li>
  * </ul>
  * @param <T> list item class
@@ -73,13 +78,14 @@ public class FilterComboBox<T> extends JTextField implements ValidatedComponent 
     public static final String SET_TEXT_ON_FOCUS_LOST = "setTextOnFocusLost";
     public static final String SELECT_NEXT_KEY = "select next";
     public static final String SELECT_PREVIOUS_KEY = "select previous";
+    public static final String ADD_ITEM_KEY = "add item";
     public static final String CLEAR_SELECTION_KEY = "clear selection";
 
     private final FilterComboBoxModel<T> model;
+    private final BiFunction<FilterComboBox<T>, String, T> parser;
     private final JList<T> popupList;
     private final JPopupMenu popupWindow;
     private boolean autoSelectText = true;
-    // TODO allow new item (editable combo box)
     private boolean autoSelectItem = true;
     private boolean autoSelected = false;
     private boolean setTextOnFocusLost = true;
@@ -91,23 +97,32 @@ public class FilterComboBox<T> extends JTextField implements ValidatedComponent 
      * Create a {@code FilterComboBox} with the default visible rows and no validation.
      */
     public FilterComboBox(FilterComboBoxModel<T> model) {
-        this(model, Validator.empty());
+        this(model, Validator.empty(), null);
+    }
+
+    /**
+     * Create a {@code FilterComboBox} with the default visible rows and no validation.
+     */
+    public FilterComboBox(FilterComboBoxModel<T> model, BiFunction<FilterComboBox<T>, String, T> parser) {
+        this(model, Validator.empty(), parser);
     }
 
     /**
      * Create a {@code FilterComboBox} with no validation.
      */
-    public FilterComboBox(FilterComboBoxModel<T> model, Validator<T> validator) {
-        this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY), validator);
+    public FilterComboBox(FilterComboBoxModel<T> model, Validator<T> validator, BiFunction<FilterComboBox<T>, String, T> parser) {
+        this(model, ComponentResources.lookupInt(VISIBLE_ROWS_KEY), validator, parser);
     }
 
     /**
      * @param model the model for the list
      * @param visibleRows the number of visible rows for the popup list
      * @param validator selection validator
+     * @param parser a function for creating a new item from the input text
      */
-    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows, Validator<T> validator) {
+    public FilterComboBox(FilterComboBoxModel<T> model, int visibleRows, Validator<T> validator, BiFunction<FilterComboBox<T>, String, T> parser) {
         this.model = model;
+        this.parser = parser;
         this.validationSupport = new ValidationSupport<>(this, validator);
         this.validationBorder = new ValidationTooltipBorder(this);
         validateValue();
@@ -151,9 +166,11 @@ public class FilterComboBox<T> extends JTextField implements ValidatedComponent 
         });
         getActionMap().put(SELECT_NEXT_KEY, new SelectNextAction());
         getActionMap().put(SELECT_PREVIOUS_KEY, new SelectPreviousAction());
+        getActionMap().put(ADD_ITEM_KEY, new NewItemAction());
         getActionMap().put(CLEAR_SELECTION_KEY, new ClearSelectionAction());
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed DOWN"), SELECT_NEXT_KEY);
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("pressed UP"), SELECT_PREVIOUS_KEY);
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ctrl pressed ENTER"), ADD_ITEM_KEY);
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ctrl pressed BACK_SPACE"), CLEAR_SELECTION_KEY);
     }
 
@@ -361,6 +378,20 @@ public class FilterComboBox<T> extends JTextField implements ValidatedComponent 
         return validationBorder.isMouseOverIndicator() ? validationSupport.getMessages() : super.getToolTipText();
     }
 
+    /**
+     * Select the item that exactly matches the input text.  If a parser exists and no item matches tnen
+     * a new item is created and selected.
+     */
+    protected void selectMatch() {
+        Optional<T> match = model.findElement(getText());
+        if (match.isPresent()) model.setSelectedItem(match.get());
+        else {
+            T item = parser.apply(this, getText());
+            if (item != null) model.setSelectedItem(item);
+        }
+        setText(model.getSelectedItemText());
+    }
+
     protected class SelectNextAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -377,6 +408,15 @@ public class FilterComboBox<T> extends JTextField implements ValidatedComponent 
                 int selectedIndex = popupList.getSelectedIndex();
                 setSelectedIndex(selectedIndex <= 0 ? size - 1 : selectedIndex - 1);
             }
+        }
+    }
+
+    protected class NewItemAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (popupWindow.isVisible()) hidePopup();
+            if (parser != null && !getText().isEmpty()) selectMatch();
+            else setText(model.getSelectedItemText());
         }
     }
 

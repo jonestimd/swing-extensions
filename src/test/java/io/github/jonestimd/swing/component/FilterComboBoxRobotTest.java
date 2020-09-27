@@ -24,6 +24,7 @@ package io.github.jonestimd.swing.component;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.swing.Box;
@@ -45,15 +46,22 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
     };
     private FilterComboBox<String> field;
 
-    @Override
-    protected JComponent createContentPane() {
-        field = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(Arrays.asList(items), Function.identity()));
+    protected JComponent createContentPane(BiFunction<FilterComboBox<String>, String, String> parser) {
+        field = new FilterComboBox<>(new ContainsFilterComboBoxModel<>(Arrays.asList(items), Function.identity()), parser);
         Box panel = Box.createVerticalBox();
         panel.add(new JTextField("just to take up space"));
         panel.add(Box.createVerticalGlue());
         panel.add(field);
         panel.setPreferredSize(new Dimension(400, panel.getPreferredSize().height));
         return panel;
+    }
+
+    private void showWindow(BiFunction<FilterComboBox<String>, String, String> parser) throws Exception {
+        showWindow(() -> createContentPane(parser));
+    }
+
+    private void showWindow() throws Exception {
+        showWindow((c, t) -> t);
     }
 
     @Test
@@ -193,10 +201,90 @@ public class FilterComboBoxRobotTest extends JFrameRobotTest {
         assertThat(field.getSelectedItem()).isEqualTo(items[0]);
     }
 
+    @Test
+    public void ctrlEnterAddsNewItemToFilteredList() throws Exception {
+        final String newItem = "Pear";
+        showWindow();
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText(newItem);
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEqualTo(newItem);
+        assertThat(field.getSelectedItem()).isEqualTo(newItem);
+        assertThat(field.getModel().getMatches()).contains(newItem);
+    }
+
+    @Test
+    public void ctrlEnterSelectsExistingItemInFilteredList() throws Exception {
+        showWindow();
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText("apple");
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEqualTo(items[0]);
+        assertThat(field.getSelectedItem()).isEqualTo(items[0]);
+    }
+
+    @Test
+    public void ctrlEnterClearsSelectionIfParserReturnsNull() throws Exception {
+        final String newItem = "Pear";
+        showWindow((c, t) -> null);
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText(newItem);
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEmpty();
+        assertThat(field.getSelectedItem()).isNull();
+        assertThat(field.getModel().getMatches()).doesNotContain(newItem);
+    }
+
+    @Test
+    public void ctrlEnterClearsSelectionIfParserIsNull() throws Exception {
+        final String newItem = "Pear";
+        showWindow((BiFunction<FilterComboBox<String>, String, String>) null);
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText(newItem);
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEmpty();
+        assertThat(field.getSelectedItem()).isNull();
+        assertThat(field.getModel().getMatches()).doesNotContain(newItem);
+    }
+
+    @Test
+    public void ctrlEnterDoesNotAddDuplicateItem() throws Exception {
+        String newItem = "Pear";
+        showWindow();
+
+        robot.focusAndWaitForFocusGain(field);
+        robot.enterText(newItem);
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.pressAndReleaseKey(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        robot.waitForIdle();
+
+        assertThat(field.getPopupList().isShowing()).isFalse();
+        assertThat(field.getText()).isEqualTo(newItem);
+        assertThat(field.getSelectedItem()).isEqualTo(newItem);
+        long count = field.getModel().getMatches().stream().filter((t) -> t.equals(newItem)).count();
+        assertThat(count).isEqualTo(1);
+    }
+
     public static void main(String... args) {
         System.setProperty("swing.defaultlaf", "com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
         FilterComboBoxModel<String> model = new ContainsFilterComboBoxModel<>(Arrays.asList(items), Function.identity());
-        FilterComboBox<String> field = new FilterComboBox<>(model);
+        FilterComboBox<String> field = new FilterComboBox<>(model, (c, text) -> text);
         // field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
         JFrame frame = new JFrame("test");
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));

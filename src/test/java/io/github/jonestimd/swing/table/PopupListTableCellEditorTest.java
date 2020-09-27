@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,12 +47,10 @@ import static org.assertj.core.api.Assertions.*;
 public class PopupListTableCellEditorTest extends JFrameRobotTest {
     public static final int WINDOW_WIDTH = 400;
     public static final int WINDOW_HEIGHT = 300;
-    private DefaultTableModel tableModel = new DefaultTableModel(new String[]{"List"}, 20);
-    private JTable table = new JTable(tableModel);
+    private final DefaultTableModel tableModel = new DefaultTableModel(new String[]{"List"}, 20);
+    private final JTable table = new JTable(tableModel);
     private PopupListTableCellEditor<String> cellEditor;
 
-
-    @Override
     protected JPanel createContentPane() {
         table.getColumnModel().getColumn(0).setCellRenderer(new MultiSelectTableCellRenderer<String>(true));
         table.getColumnModel().getColumn(0).setCellEditor(cellEditor);
@@ -60,6 +58,10 @@ public class PopupListTableCellEditorTest extends JFrameRobotTest {
         panel.add(table, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         return panel;
+    }
+
+    private void showWindow() throws Exception {
+        showWindow(this::createContentPane);
     }
 
     @Test

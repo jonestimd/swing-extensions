@@ -145,7 +145,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void validatesSelectedValue() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message), null);
         comboBox.addValidationListener(listener);
 
         assertThat(comboBox.getValidationMessages()).isEqualTo(message);
@@ -180,7 +180,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void getCursor() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message), null);
         comboBox.validateValue();
         assertThat(comboBox.getCursor()).isNotEqualTo(Cursor.getDefaultCursor());
         for (MouseMotionListener listener : comboBox.getMouseMotionListeners()) {
@@ -192,7 +192,7 @@ public class FilterComboBoxTest {
 
     @Test
     public void getTooltip() throws Exception {
-        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message));
+        FilterComboBox<String> comboBox = new FilterComboBox<>(newModel(items), new RequiredValidator(message), null);
         comboBox.validateValue();
         assertThat(comboBox.getToolTipText()).isNull();
         for (MouseMotionListener listener : comboBox.getMouseMotionListeners()) {

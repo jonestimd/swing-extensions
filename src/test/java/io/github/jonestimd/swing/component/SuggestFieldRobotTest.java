@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2020 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,10 @@ public class SuggestFieldRobotTest extends JFrameRobotTest {
     private SuggestField<String> suggestField;
     private List<String> items = Arrays.asList("Apple", "Banana", "Cherry", "Mango", "Peach");
     private Model model = new Model();
+
+    private void showWindow() throws Exception {
+        showWindow(this::createContentPane);
+    }
 
     @Test
     public void retainsSelectedTextWhenSelectingNewItem() throws Exception {
