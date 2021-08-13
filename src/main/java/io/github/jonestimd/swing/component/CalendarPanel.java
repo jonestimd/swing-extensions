@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2018 Timothy D. Jones
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -288,7 +288,7 @@ public class CalendarPanel extends Box {
         private Calendar calendar = Calendar.getInstance();
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            calendar.setTime((Date) value);
+            if (value != null) calendar.setTime((Date) value);
             if (calendar.get(Calendar.MONTH) == navigationCalendar.get(Calendar.MONTH)) {
                 setForeground(MONTH_FOREGROUND);
                 setBackground(MONTH_BACKGROUND);

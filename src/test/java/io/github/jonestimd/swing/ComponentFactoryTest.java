@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -72,10 +73,10 @@ public class ComponentFactoryTest {
         assertThat(group[1].getText()).isEqualTo("Choice 2");
         assertThat(group[2].getMnemonic()).isEqualTo(0);
         assertThat(group[2].getText()).isEqualTo("Choice 3");
-        ButtonGroup buttonGroup = group[0].getModel().getGroup();
+        ButtonGroup buttonGroup = ((DefaultButtonModel) group[0].getModel()).getGroup();
         assertThat(buttonGroup.getButtonCount()).isEqualTo(3);
-        assertThat(group[1].getModel().getGroup()).isSameAs(buttonGroup);
-        assertThat(group[2].getModel().getGroup()).isSameAs(buttonGroup);
+        assertThat(((DefaultButtonModel) group[1].getModel()).getGroup()).isSameAs(buttonGroup);
+        assertThat(((DefaultButtonModel) group[2].getModel()).getGroup()).isSameAs(buttonGroup);
     }
 
     @Test
