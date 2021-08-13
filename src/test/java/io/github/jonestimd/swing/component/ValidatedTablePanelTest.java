@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -220,11 +220,12 @@ public class ValidatedTablePanelTest {
         createPanel();
         when(tableModel.isChanged()).thenReturn(false);
         ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
-        verify(tableModel, times(2)).addTableModelListener(listener.capture());
+        verify(tableModel, atLeast(2)).addTableModelListener(listener.capture());
+        reset(saveAction);
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
 
-        verify(saveAction, times(2)).setEnabled(false);
+        verify(saveAction).setEnabled(false);
     }
 
     @Test
@@ -233,8 +234,9 @@ public class ValidatedTablePanelTest {
         when(tableModel.isChanged()).thenReturn(true);
         when(tableModel.isNoErrors()).thenReturn(true);
         ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
-        verify(tableModel, times(2)).addTableModelListener(listener.capture());
+        verify(tableModel, atLeast(2)).addTableModelListener(listener.capture());
         verify(saveAction).setEnabled(false);
+        reset(saveAction);
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
 
@@ -247,11 +249,12 @@ public class ValidatedTablePanelTest {
         when(tableModel.isChanged()).thenReturn(true);
         when(tableModel.isNoErrors()).thenReturn(false);
         ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
-        verify(tableModel, times(2)).addTableModelListener(listener.capture());
+        verify(tableModel, atLeast(2)).addTableModelListener(listener.capture());
+        reset(saveAction);
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
 
-        verify(saveAction, times(2)).setEnabled(false);
+        verify(saveAction).setEnabled(false);
     }
 
     @Test
@@ -261,7 +264,7 @@ public class ValidatedTablePanelTest {
         frame.setContentPane(testPanel);
         when(tableModel.isChanged()).thenReturn(true);
         ArgumentCaptor<TableModelListener> listener = ArgumentCaptor.forClass(TableModelListener.class);
-        verify(tableModel, times(2)).addTableModelListener(listener.capture());
+        verify(tableModel, atLeast(2)).addTableModelListener(listener.capture());
 
         listener.getValue().tableChanged(new TableModelEvent(tableModel, 0));
 
