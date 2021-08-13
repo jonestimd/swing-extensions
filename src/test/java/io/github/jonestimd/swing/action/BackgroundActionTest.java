@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Timothy D. Jones
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ public class BackgroundActionTest {
 
     @Test
     public void handleExceptionReturnsFalse() throws Exception {
-        BackgroundAction<String> action = new BackgroundAction<>(null, bundle, "action") {
+        BackgroundAction<String> action = new BackgroundAction<String>(null, bundle, "action") {
             @Override
             protected boolean confirmAction(ActionEvent event) {
                 return false;
