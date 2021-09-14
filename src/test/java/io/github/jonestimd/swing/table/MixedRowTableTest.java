@@ -1,3 +1,24 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2021 Timothy D. Jones
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 package io.github.jonestimd.swing.table;
 
 import java.awt.Color;
@@ -14,7 +35,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
@@ -116,30 +136,6 @@ public class MixedRowTableTest {
         assertThat(table.getCellEditor(0, 0).getClass().getName()).isEqualTo("io.github.jonestimd.swing.table.MixedRowTable$GenericCellEditor");
         assertThat(table.getCellEditor(1, 0)).isSameAs(cellEditor);
         assertThat(table.getCellEditor(2, 0)).isSameAs(cellEditor);
-    }
-
-    @Test
-    public void getCellRendererUsesDefaultRenderer() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
-
-        assertThat(table.getCellRenderer(0, 0)).isSameAs(table.getDefaultRenderer(String.class));
-        assertThat(table.getCellRenderer(1, 0)).isSameAs(table.getDefaultRenderer(Integer.class));
-        assertThat(table.getCellRenderer(2, 0)).isSameAs(table.getDefaultRenderer(Integer.class));
-    }
-
-    @Test
-    public void getCellRendererUsesColumnRenderer() throws Exception {
-        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel(1, (i) -> newBean(2));
-        MixedRowTable<TestSummaryBean, BufferedHeaderDetailTableModel<TestSummaryBean>> table = new MixedRowTable<>(model);
-        DefaultTableCellRenderer renderer1 = new DefaultTableCellRenderer();
-        DefaultTableCellRenderer renderer2 = new DefaultTableCellRenderer();
-        table.getColumnModel().getColumn(0).setCellRenderer(renderer1);
-        ((MixedRowTableColumn) table.getColumnModel().getColumn(0)).getSubColumn(0).setCellRenderer(renderer2);
-
-        assertThat(table.getCellRenderer(0, 0)).isSameAs(renderer1);
-        assertThat(table.getCellRenderer(1, 0)).isSameAs(renderer2);
-        assertThat(table.getCellRenderer(2, 0)).isSameAs(renderer2);
     }
 
     @Test

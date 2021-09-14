@@ -1,9 +1,33 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2021 Timothy D. Jones
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 package io.github.jonestimd.swing.table;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
@@ -12,6 +36,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import io.github.jonestimd.swing.table.model.HeaderDetailTableModel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,15 +53,22 @@ public class MixedRowTableColumnTest {
     @Mock
     private MixedRowTable<?, ?> table;
     @Mock
+    private HeaderDetailTableModel<?> tableModel;
+    @Mock
     private JTableHeader tableHeader;
     @Mock
-    private TableCellRenderer headerRenderer;
+    private DefaultTableCellRenderer mockRenderer;
     @Mock
     private Component rendererComponent;
 
     @Before
     public void setupRenderer() throws Exception {
-        when(headerRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(rendererComponent);
+        when(mockRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(rendererComponent);
+
+        doReturn(tableModel).when(table).getModel();
+        when(tableModel.getRowTypeIndex(anyInt())).then((i) -> i.getArguments()[0]);
+        when(table.convertRowIndexToModel(anyInt())).then((i) -> i.getArguments()[0]);
+        when(tableModel.getRowCount()).thenReturn(10);
     }
 
     @Test
@@ -54,7 +86,6 @@ public class MixedRowTableColumnTest {
         assertThat(mixedColumn.getSubColumnCount()).isEqualTo(0);
         assertThat(mixedColumn.getHeaderValue()).isEqualTo(column.getHeaderValue());
         assertThat(mixedColumn.getCellEditor()).isSameAs(column.getCellEditor());
-        assertThat(mixedColumn.getCellRenderer()).isSameAs(column.getCellRenderer());
         assertThat(mixedColumn.getHeaderRenderer().getClass().getName()).isEqualTo("io.github.jonestimd.swing.table.MixedRowTableColumn$MixedRowHeaderRenderer");
     }
 
@@ -74,7 +105,7 @@ public class MixedRowTableColumnTest {
     @Test
     @SuppressWarnings("unchecked")
     public void usesColumnHeaderRenderer() throws Exception {
-        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(mockRenderer));
         mixedColumn.addSubColumn(subColumn(SUB_HEADER));
 
         Component component = mixedColumn.getHeaderRenderer().getTableCellRendererComponent(table, HEADER, false, false, -1, 0);
@@ -90,10 +121,10 @@ public class MixedRowTableColumnTest {
     @Test
     @SuppressWarnings("unchecked")
     public void usesTableHeaderRenderer() throws Exception {
-        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(null));
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(null));
         mixedColumn.addSubColumn(subColumn(SUB_HEADER));
         when(table.getTableHeader()).thenReturn(tableHeader);
-        when(tableHeader.getDefaultRenderer()).thenReturn(headerRenderer);
+        when(tableHeader.getDefaultRenderer()).thenReturn(mockRenderer);
 
         Component component = mixedColumn.getHeaderRenderer().getTableCellRendererComponent(table, HEADER, false, false, -1, 0);
 
@@ -108,22 +139,22 @@ public class MixedRowTableColumnTest {
     @Test
     @SuppressWarnings("unchecked")
     public void usesBlankStringForNullHeader() throws Exception {
-        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(mockRenderer));
         mixedColumn.addSubColumn(new TableColumn(-1));
         JList<Object> jList = (JList<Object>) mixedColumn.getHeaderRenderer().getTableCellRendererComponent(table, HEADER, false, false, -1, 0);
 
         jList.getCellRenderer().getListCellRendererComponent(jList, null, 0, false, false);
 
-        verify(headerRenderer).getTableCellRendererComponent(table, " ", false, false, 0, 0);
+        verify(mockRenderer).getTableCellRendererComponent(table, " ", false, false, 0, 0);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void showsIconOnFirstHeaderRow() throws Exception {
         final JLabel renderer = newDefaultTableCellHeaderRenderer();
-        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(mockRenderer));
         mixedColumn.addSubColumn(new TableColumn(-1));
-        when(headerRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(renderer);
+        when(mockRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(renderer);
         JList<Object> jList = (JList<Object>) mixedColumn.getHeaderRenderer().getTableCellRendererComponent(table, HEADER, false, false, -1, 0);
 
         jList.getCellRenderer().getListCellRendererComponent(jList, HEADER, 0, false, false);
@@ -135,14 +166,62 @@ public class MixedRowTableColumnTest {
     @SuppressWarnings("unchecked")
     public void doesNotShowIconOnHeaderSubrows() throws Exception {
         final JLabel renderer = newDefaultTableCellHeaderRenderer();
-        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(headerColumn(headerRenderer));
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(mockRenderer));
         mixedColumn.addSubColumn(new TableColumn(-1));
-        when(headerRenderer.getTableCellRendererComponent(table, SUB_HEADER, false, false, 1, 0)).thenReturn(renderer);
+        when(mockRenderer.getTableCellRendererComponent(table, SUB_HEADER, false, false, 1, 0)).thenReturn(renderer);
         JList<Object> jList = (JList<Object>) mixedColumn.getHeaderRenderer().getTableCellRendererComponent(table, HEADER, false, false, -1, 0);
 
         jList.getCellRenderer().getListCellRendererComponent(jList, SUB_HEADER, 1, false, false);
 
         assertThat(renderer.getIcon()).isNull();
+    }
+
+    @Test
+    public void cellRenderer_returnsDefaultTableCellRenderer() throws Exception {
+        TableCellRenderer expectedRenderer = new DefaultTableCellRenderer();
+        when(table.getDefaultRenderer(any())).thenReturn(expectedRenderer);
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(subColumn(SUB_HEADER));
+
+        Component cellRenderer = mixedColumn.getCellRenderer().getTableCellRendererComponent(table, "", false, false, 0, 0);
+
+        assertThat(cellRenderer).isSameAs(expectedRenderer);
+    }
+
+    @Test
+    public void cellRenderer_setsPropertiesOnHeaderCell() throws Exception {
+        final JLabel renderer = newDefaultTableCellHeaderRenderer();
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(mockRenderer));
+        when(mockRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).thenReturn(renderer);
+        Font font = renderer.getFont().deriveFont(Font.ITALIC);
+
+        TableCellRenderer cellRenderer = mixedColumn.getCellRenderer();
+        ((JComponent) cellRenderer).setForeground(Color.cyan);
+        ((JComponent) cellRenderer).setBackground(Color.gray);
+        ((JComponent) cellRenderer).setFont(font);
+
+        assertThat(cellRenderer.getTableCellRendererComponent(table, HEADER, false, false, 0, 0)).isSameAs(renderer);
+        verify(mockRenderer).setForeground(Color.cyan);
+        verify(mockRenderer).setBackground(Color.gray);
+        verify(mockRenderer).setFont(font);
+    }
+
+    @Test
+    public void cellRenderer_setsPropertiesOnSubrowCell() throws Exception {
+        final JLabel renderer = newDefaultTableCellHeaderRenderer();
+        MixedRowTableColumn mixedColumn = new MixedRowTableColumn(newColumn(new DefaultTableCellRenderer()));
+        mixedColumn.addSubColumn(newColumn(mockRenderer));
+        when(mockRenderer.getTableCellRendererComponent(table, SUB_HEADER, false, false, 1, 0)).thenReturn(renderer);
+        Font font = renderer.getFont().deriveFont(Font.ITALIC);
+
+        TableCellRenderer cellRenderer = mixedColumn.getCellRenderer();
+        ((JComponent) cellRenderer).setForeground(Color.cyan);
+        ((JComponent) cellRenderer).setBackground(Color.gray);
+        ((JComponent) cellRenderer).setFont(font);
+
+        assertThat(cellRenderer.getTableCellRendererComponent(table, SUB_HEADER, false, false, 1, 0)).isSameAs(renderer);
+        verify(mockRenderer).setForeground(Color.cyan);
+        verify(mockRenderer).setBackground(Color.gray);
+        verify(mockRenderer).setFont(font);
     }
 
     private JLabel newDefaultTableCellHeaderRenderer() {
@@ -151,10 +230,11 @@ public class MixedRowTableColumnTest {
         return renderer;
     }
 
-    private TableColumn headerColumn(TableCellRenderer renderer) {
+    private TableColumn newColumn(TableCellRenderer headerRenderer) {
         TableColumn column = new TableColumn(1);
         column.setHeaderValue(HEADER);
-        column.setHeaderRenderer(renderer);
+        column.setHeaderRenderer(headerRenderer);
+        column.setCellRenderer(headerRenderer);
         return column;
     }
 

@@ -1,4 +1,6 @@
-// Copyright (c) 2019 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +33,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
@@ -84,6 +85,7 @@ public class MixedRowTable<Bean, Model extends MixedRowTableModel & BeanTableMod
      * Overridden to use editors that handle multiple value types in a single column.
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void createDefaultEditors() {
         super.createDefaultEditors();
         defaultEditorsByColumnClass.put(Object.class, new GenericCellEditor());
@@ -107,17 +109,6 @@ public class MixedRowTable<Bean, Model extends MixedRowTableModel & BeanTableMod
      */
     public Class<?> getCellClass(int row, int column) {
         return getModel().getCellClass(convertRowIndexToModel(row), convertColumnIndexToModel(column));
-    }
-
-    @Override
-    public TableCellRenderer getCellRenderer(int row, int column) {
-        MixedRowTableModel model = getModel();
-        int typeIndex = model.getRowTypeIndex(convertRowIndexToModel(row));
-        if (typeIndex > 0) {
-            TableCellRenderer renderer = ((MixedRowTableColumn) getColumnModel().getColumn(column)).getSubColumn(typeIndex-1).getCellRenderer();
-            return renderer == null ? getDefaultRenderer(getCellClass(row, column)) : renderer;
-        }
-        return super.getCellRenderer(row, column);
     }
 
     @Override

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Timothy D. Jones
+// Copyright (c) 2021 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
+import io.github.jonestimd.swing.table.model.MixedRowTableModel;
 
 /**
  * A table column for a {@link MixedRowTable}.  Provides a header value for each sub-row of the table.
@@ -44,7 +48,7 @@ public class MixedRowTableColumn extends TableColumn {
         this.identifier = column.getIdentifier();
         this.headerValue = column.getHeaderValue();
         this.cellEditor = column.getCellEditor();
-        this.cellRenderer = column.getCellRenderer();
+        this.cellRenderer = new MixedRowCellRenderer(column.getCellRenderer());
         this.headerRenderer = new MixedRowHeaderRenderer(column.getHeaderRenderer());
     }
 
@@ -58,6 +62,42 @@ public class MixedRowTableColumn extends TableColumn {
 
     public TableColumn getSubColumn(int typeIndex) {
         return subColumns.get(typeIndex);
+    }
+
+    protected class MixedRowCellRenderer extends DefaultTableCellRenderer {
+        private TableCellRenderer cellRenderer;
+
+        protected MixedRowCellRenderer(TableCellRenderer cellRenderer) {
+            this.cellRenderer = cellRenderer;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            int modelColumn = table.convertColumnIndexToModel(column);
+            TableCellRenderer renderer = getRenderer(table, modelRow, modelColumn);
+            if (renderer instanceof JComponent) {
+                JComponent component = (JComponent) renderer;
+                component.setBackground(getBackground());
+                component.setForeground(getForeground());
+                component.setFont(getFont());
+            }
+            return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+
+        protected TableCellRenderer getRenderer(JTable table, int row, int column) {
+            if (row < table.getModel().getRowCount() && table instanceof MixedRowTable) {
+                MixedRowTableModel model = (MixedRowTableModel) table.getModel();
+                int typeIndex = model.getRowTypeIndex(row);
+                return getRenderer(table, typeIndex, model.getColumnClass(typeIndex, column));
+            }
+            return getRenderer(table, 0, table.getColumnClass(column));
+        }
+
+        protected TableCellRenderer getRenderer(JTable table, int typeIndex, Class<?> columnClass) {
+            TableCellRenderer renderer = typeIndex == 0 ? cellRenderer : getSubColumn(typeIndex-1).getCellRenderer();
+            return renderer != null ? renderer : table.getDefaultRenderer(columnClass);
+        }
     }
 
     private class MixedRowHeaderRenderer extends JList<Object> implements TableCellRenderer {
@@ -78,7 +118,7 @@ public class MixedRowTableColumn extends TableColumn {
         }
     }
 
-    private class CellRenderer implements ListCellRenderer<Object> {
+    private static class CellRenderer implements ListCellRenderer<Object> {
         private JTable table;
         private int column;
         private TableCellRenderer tableRenderer;
