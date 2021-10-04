@@ -31,7 +31,7 @@ compileJava.sourceCompatibility = 1.8
 compileJava.targetCompatibility = 1.8
 
 group = 'io.github.jonestimd'
-version = '1.4.2'
+version = '1.4.3-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -41,7 +41,7 @@ dependencies {
     compile( group: 'com.google.guava', name: 'guava', version: '18.0' )
 
     testCompile( group: 'junit', name: 'junit', version: '4.7' )
-    testCompile( group: 'org.assertj', name: 'assertj-swing-junit', version: '3.9.2' )
+    testImplementation( group: 'org.assertj', name: 'assertj-swing-junit', version: '3.9.2' )
     testCompile( group: 'org.mockito', name: 'mockito-core', version: '3.1.0' )
 
     testRuntime( group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.5.3' )
