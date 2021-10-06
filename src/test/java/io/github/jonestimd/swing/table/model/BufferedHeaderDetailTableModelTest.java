@@ -515,7 +515,7 @@ public class BufferedHeaderDetailTableModelTest {
 
         assertThat(model.isPendingAdd(3)).isTrue();
         assertThat(beans.get(0).details).hasSize(3);
-        assertThat(model.getChangedRows().iterator()).hasSize(2);
+        assertThat(model.getChangedRows()).containsExactly((beans.get(0)));
         assertThat(model.isPendingDelete(0)).isTrue();
         assertThat(model.isPendingDelete(1)).isTrue();
         assertThat(model.isPendingDelete(2)).isTrue();
@@ -541,7 +541,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.queueDelete(0)).isTrue();
 
         assertThat(model.getValueAt(1, 0)).isEqualTo(newDetailId);
-        assertThat(model.getChangedRows().iterator()).hasSize(2);
+        assertThat(model.getChangedRows()).containsExactly((beans.get(0)));
         assertThat(model.isPendingDelete(0)).isTrue();
         assertThat(model.isPendingDelete(1)).isTrue();
         assertThat(model.isPendingDelete(2)).isTrue();
@@ -613,7 +613,7 @@ public class BufferedHeaderDetailTableModelTest {
         assertThat(model.queueDelete(1)).isTrue();
 
         assertThat(model.getValueAt(1, 0)).isEqualTo(newDetailId);
-        assertThat(model.getChangedRows().iterator()).hasSize(2);
+        assertThat(model.getChangedRows()).containsExactly(beans.get((0)));
         assertThat(model.isPendingDelete(0)).isFalse();
         assertThat(model.isPendingDelete(1)).isTrue();
         assertThat(model.isPendingDelete(2)).isFalse();
