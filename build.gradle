@@ -31,7 +31,7 @@ compileJava.sourceCompatibility = 1.8
 compileJava.targetCompatibility = 1.8
 
 group = 'io.github.jonestimd'
-version = '1.4.3-SNAPSHOT'
+version = '1.4.3'
 
 repositories {
     mavenCentral()
