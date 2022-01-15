@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2021 Timothy D. Jones
+// Copyright (c) 2022 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -404,7 +404,27 @@ public class BufferedHeaderDetailTableModelTest {
     }
 
     @Test
-    public void testRemoveNonexistingBean() throws Exception {
+    public void testRemoveModifiedBean() throws Exception {
+        BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
+        List<TestSummaryBean> beans = Arrays.asList(
+            new TestSummaryBean(new TestDetailBean(), new TestDetailBean()),
+            new TestSummaryBean(new TestDetailBean(), new TestDetailBean(), new TestDetailBean()),
+            new TestSummaryBean("error value", new TestDetailBean(), new TestDetailBean()));
+        model.setBeans(beans);
+        assertThat(model.validateAt(7, 0)).isEqualTo("error value");
+        model.addTableModelListener(listener);
+        beans.get(1).details.remove(1);
+
+        model.removeBean(beans.get(1));
+
+        verify(listener).tableChanged(TableModelEventMatcher.tableModelEvent(TableModelEvent.DELETE, 3, 6, -1));
+        verifyNoMoreInteractions(listener);
+        assertThat(model.getRowCount()).isEqualTo(6);
+        assertThat(model.validateAt(3, 0)).isEqualTo("error value");
+    }
+
+    @Test
+    public void testRemoveNonExistingBean() throws Exception {
         BufferedHeaderDetailTableModel<TestSummaryBean> model = newModel();
         List<TestSummaryBean> beans = Arrays.asList(
             new TestSummaryBean(new TestDetailBean(), new TestDetailBean()),

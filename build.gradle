@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Timothy D. Jones
+ * Copyright (c) 2022 Timothy D. Jones
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ compileJava.sourceCompatibility = 1.8
 compileJava.targetCompatibility = 1.8
 
 group = 'io.github.jonestimd'
-version = '1.4.3'
+version = '1.4.4'
 
 repositories {
     mavenCentral()

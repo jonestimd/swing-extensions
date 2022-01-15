@@ -1,4 +1,6 @@
-// Copyright (c) 2016 Timothy D. Jones
+// The MIT License (MIT)
+//
+// Copyright (c) 2022 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -274,8 +276,9 @@ public class HeaderDetailTableModel<T> extends AbstractTableModel implements Mix
         int beanIndex = indexOf(bean);
         if (beanIndex >= 0) {
             int firstRow = getLeadRowForGroup(beanIndex);
+            int lastRow = getLeadRowForGroup(beanIndex+1) - 1;
             beans.remove(beanIndex);
-            fireTableRowsDeleted(firstRow, firstRow + detailAdapter.getDetailCount(bean));
+            fireTableRowsDeleted(firstRow, lastRow);
         }
     }
 
