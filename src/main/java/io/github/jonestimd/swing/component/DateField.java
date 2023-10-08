@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Timothy D. Jones
+// Copyright (c) 2023 Timothy D. Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -103,6 +103,12 @@ public class DateField extends JFormattedTextField {
     @Override
     public Date getValue() {
         return (Date) super.getValue();
+    }
+
+    @Override
+    public void commitEdit() throws ParseException {
+        if (getText().equals(NULL_TEXT)) super.setValue(null);
+        else super.commitEdit();
     }
 
     private void selectField(int dot) {

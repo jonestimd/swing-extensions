@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Timothy D. Jones
+ * Copyright (c) 2023 Timothy D. Jones
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,32 @@
  * SOFTWARE.
  */
 
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'maven'
-apply plugin: 'signing'
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'maven-publish'
+    id 'signing'
+}
 
 compileJava.sourceCompatibility = 1.8
 compileJava.targetCompatibility = 1.8
 
 group = 'io.github.jonestimd'
-version = '1.4.4'
+version = '1.4.5'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile( group: 'com.google.guava', name: 'guava', version: '18.0' )
+    implementation( group: 'com.google.guava', name: 'guava', version: '18.0' )
 
-    testCompile( group: 'junit', name: 'junit', version: '4.7' )
+    testCompileOnly( group: 'junit', name: 'junit', version: '4.7' )
     testImplementation( group: 'org.assertj', name: 'assertj-swing-junit', version: '3.9.2' )
-    testCompile( group: 'org.mockito', name: 'mockito-core', version: '3.1.0' )
+    testCompileOnly( group: 'org.mockito', name: 'mockito-core', version: '3.1.0' )
 
-    testRuntime( group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.5.3' )
-    testRuntime( group: 'com.jgoodies', name: 'jgoodies-common', version: '1.7.0' )
+    testRuntimeOnly( group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.5.3' )
+    testRuntimeOnly( group: 'com.jgoodies', name: 'jgoodies-common', version: '1.7.0' )
 }
 
 jar {
@@ -57,8 +59,8 @@ jar {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = false
     }
 }
 
@@ -75,35 +77,29 @@ javadoc {
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
 task sourceJar(type: Jar) {
-    classifier "sources"
+    archiveClassifier = "sources"
     from(sourceSets.main.allSource)
 }
 
-artifacts {
-    archives javadocJar, sourceJar
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 if (hasProperty('signing.keyId')) signing {
     sign configurations.archives
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            if (project.hasProperty('ossrhUsername')) repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: 'file:///' + System.properties['user.home'] + '/.m2/repository')
-
-            pom.project {
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
                 name = rootProject.group + ':' + rootProject.name
                 packaging = 'jar'
                 description = 'Extensions for Java Swing'
@@ -131,5 +127,21 @@ uploadArchives {
                 }
             }
         }
+    }
+    repositories {
+        maven {
+            name = 'sonatype'
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
+        }
+    }
+}
+
+signing {
+    if (project.hasProperty('ossrhUsername')) {
+        sign publishing.publications.mavenJava
     }
 }

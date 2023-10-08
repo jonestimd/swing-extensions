@@ -2,6 +2,8 @@ package io.github.jonestimd.swing.component;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JTable;
@@ -11,6 +13,29 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class DateFieldTest {
+    @Test
+    public void commitNullValue() throws ParseException {
+        DateField dateField = new DateField("MM/dd/yyyy");
+        dateField.setValue(new Date());
+
+        dateField.setText(DateField.NULL_TEXT);
+        dateField.commitEdit();
+
+        assertThat(dateField.getValue()).isNull();
+    }
+
+    @Test
+    public void commitDate() throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        Date date = format.parse("01/12/2023");
+        DateField dateField = new DateField("MM/dd/yyyy");
+
+        dateField.setText(format.format(date));
+        dateField.commitEdit();
+
+        assertThat(dateField.getValue()).isEqualTo(date);
+    }
+
     @Test
     public void setNullValue() throws Exception {
         DateField dateField = new DateField("MM/dd/yyyy");
